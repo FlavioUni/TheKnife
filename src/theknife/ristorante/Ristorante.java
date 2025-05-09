@@ -1,4 +1,4 @@
-package theknife;
+package theknife.ristorante;
 
 public class Ristorante {
 
