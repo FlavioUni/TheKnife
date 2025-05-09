@@ -2,19 +2,20 @@ package theknife;
 
 public class Ristorante {
 
-	private String name;
-	private String address;
-	private String location;
-	private double price;
-	private enum cuisine;
-	private double longitude;
+	private String nome;
+	private String indirizzo;
+	private String citta;
+	private String nazione;
 	private double latitude;
-	private String phoneNumber;
-	private String url;
+	private double longitude;
+	private double fasciaPrezzo;
+	private boolean delivery;
+	private boolean PrenotazioneOnline;
+	private String tipoCucina;
+	private String NumeroTelefono;
 	private String websiteUrl;
-	private int award;
-	private boolean greenStar;
-	private String facilitiesAndServices;
-	private String description;
-	
+	private int premi;
+	private int stelle;
+	private String descrizione;
+		
 }
