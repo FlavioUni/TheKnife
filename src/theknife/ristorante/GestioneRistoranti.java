@@ -1,3 +1,9 @@
+/*
+Ciani Flavio Angelo, 761581, VA
+Scolaro Gabriele, 760123, VA
+Gasparini Lorenzo, 759929, VA
+*/
+
 package theknife.ristorante;
 
 import java.io.*;
@@ -6,7 +12,7 @@ import java.util.List;
 
 public class GestioneRistorante {
 
-	private List<Ristorante> ristoranti = new ArratList<>();
+	private List<Ristorante> ristoranti = new ArraytList<>();
 	
 	
 	public void caricaDaCSV(String filePath) {
@@ -16,8 +22,8 @@ public class GestioneRistorante {
 				String[] c = riga.split(",");
 				String location = c[2];
 				String luogo = location.split(",\\s*");
-				String citta = luogo.length > 0 ? luogo[0] : "";
-				String nazione = luogo.length > 1 ? luogo[1] : "";
+				String citta = luogo.length() > 0 ? luogo[0] : "";
+				String nazione = luogo.length() > 1 ? luogo[1] : "";
 				if(c.length < 15) continue;
 				Ristorante r = new Ristorante(c[0], c[1], citta, nazione,
 		                Double.parseDouble(c[4]), Double.parseDouble(c[5]),
