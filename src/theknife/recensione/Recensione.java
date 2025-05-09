@@ -24,7 +24,7 @@ public class Recensione {
 		this.descrizione = descrizione;
 		this.data = LocalDate.now();
 	}
-
+	//getter e setter
 	public int getStelle() {
 		return stelle;
 	}
@@ -49,9 +49,10 @@ public class Recensione {
 		return data;
 	}
 	
+	//metodi
 	@Override
 	public String toString() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/mm/aaaa");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		return "Autore: " + autore +  " *Stelle*: " + stelle + "\n" +
 				descrizione + "\n" +
 				"Data: " + data.format(formatter);
@@ -63,6 +64,15 @@ public class Recensione {
 	
 	public boolean isRecente() {
 		return data.isAfter(LocalDate.now().minusDays(30));
+	}
+	
+	public void modificaRecensione(int newStelle, String newDescrizione) {
+		if (newStelle < 1 || newStelle > 5) {
+	        throw new IllegalArgumentException("Le stelle devono essere tra 1 e 5.");
+	    }
+		this.stelle = newStelle;
+		this.descrizione = newDescrizione;
+		this.data = LocalDate.now();
 	}
 	
 }
