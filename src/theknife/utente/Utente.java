@@ -6,14 +6,16 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.utente;
 
-public class Utente {
-	// dichiarazione attributi
+public class Utente
+{
+	// campi
 	private String nome, cognome, username, password, domicilio;
 	private LocalDate data;
 	private Ruolo ruolo;
 	
-	//costruttore
-	public Utente (String a1, String a2, String a3, String a4, String a5, LocalDate a6, Ruolo a7) {
+	// costruttore
+	public Utente (String a1, String a2, String a3, String a4, String a5, LocalDate a6, Ruolo a7)
+	{
 		this.nome = a1;
 		this.cognome = a2;
 		this.username = a3;
@@ -21,5 +23,32 @@ public class Utente {
 		this.domicilio = a5;
 		this.data = a6;
 		this.ruolo = a7;
+	}
+	
+	// metodi getter e setter
+	public String getNome () {
+		return nome;
+	}
+	public String getCognome () {
+		return cognome;
+	}
+	public String getUsername () {
+		return username;
+	}
+	public String getDomicilio () {
+		return domicilio;
+	}
+	public LocalDate getData () {
+		return data;
+	}
+	public Ruolo getRuolo () {
+		return ruolo;
+	}
+	// - //
+	public void setNome (String x) {
+		this.nome = x;
+	}
+	public void setCognome (String x) {
+		this.cognome = x;
 	}
 }
