@@ -2,6 +2,7 @@ package theknife.ristorante;
 
 public class Ristorante {
 
+	//ATTRIBUTI
 	private String nome;
 	private String indirizzo;
 	private String citta;
@@ -18,6 +19,8 @@ public class Ristorante {
 	private int stelle;
 	private String descrizione;
 	
+	
+	//COSTRUTTORE
 	public Ristorante(String nome, String indirizzo, String citta, String nazione, double latitudine,
 					  double longitudine, double fasciaPrezzo, boolean delivery, boolean prenotazioneOnline,
 					  String tipoCucina, String numeroTelefono, String websiteUrl, int premi, int stelle,
@@ -38,25 +41,71 @@ public class Ristorante {
         this.premi = premi;
         this.stelle = stelle;
         this.descrizione = descrizione;
-		
 	}
 	
-	public String getNome() { return nome; }
-    public String getIndirizzo() { return indirizzo; }
-    public String getCitta() { return citta; }
-    public String getNazione() { return nazione; }
-    public double getLatitudine() { return latitudine; }
-    public double getLongitudine() { return longitudine; }
-    public double getFasciaPrezzo() { return fasciaPrezzo; }
-    public boolean isDelivery() { return delivery; }
-    public boolean isPrenotazioneOnline() { return prenotazioneOnline; }
-    public String getTipoCucina() { return tipoCucina; }
-    public String getNumeroTelefono() { return numeroTelefono; }
-    public String getWebsiteUrl() { return websiteUrl; }
-    public int getPremi() { return premi; }
-    public int getStelle() { return stelle; }
-    public String getDescrizione() { return descrizione; }
-		
+	//GETTER
+	public String getNome() { 
+		return nome; 
+	}
+	
+    public String getIndirizzo() {
+    	return indirizzo;
+    }
+    
+    public String getCitta() {
+    	return citta; 
+    }
+    
+    public String getNazione() { 
+    	return nazione; 
+    }
+    
+    public double getLatitudine() { 
+    	return latitudine; 
+    }
+    
+    public double getLongitudine() { 
+    	return longitudine;
+    }
+    
+    public double getFasciaPrezzo() { 
+    	return fasciaPrezzo; 
+    }
+    
+    public boolean isDelivery() { 
+    	return delivery; 
+    }
+    
+    public boolean isPrenotazioneOnline() { 
+    	return prenotazioneOnline; 
+    }
+    
+    public String getTipoCucina() {
+    	return tipoCucina; 
+    }
+    
+    public String getNumeroTelefono() { 
+    	return numeroTelefono; 
+    }
+    
+    public String getWebsiteUrl() { 
+    	return websiteUrl; 
+    }
+    
+    public int getPremi() { 
+    	return premi; 
+    }
+    
+    public int getStelle() { 
+    	return stelle; 
+    }
+    
+    public String getDescrizione() { 
+    	return descrizione; 
+    }
+	
+    
+    //SETTER
     public void setStelle(int stelle) {
     	if(stelle>=1 && stelle<=5)
     		this.stelle = stelle;
