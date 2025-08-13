@@ -6,6 +6,8 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.utente;
 
+import java.time.LocalDate;
+
 public class Utente
 {
 	// campi
@@ -34,6 +36,9 @@ public class Utente
 	}
 	public String getUsername () {
 		return username;
+	}
+	public String getPassword () {
+		return password;
 	}
 	public String getDomicilio () {
 		return domicilio;
