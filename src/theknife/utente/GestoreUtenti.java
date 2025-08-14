@@ -24,6 +24,10 @@ public class GestoreUtenti {
 		utenti.add(u);
 	}
 	
+	public List<Utente> getUtenti () {
+		return utenti;
+	}
+	
 	public Utente trovaUtente (String username) {
 		for (Utente u: utenti)
 			if (u.getUsername().equalsIgnoreCase(username))
@@ -63,5 +67,14 @@ public class GestoreUtenti {
 				}
 			}
 		}
+	}
+	public boolean registrazione (Utente nuovo) {
+		if (trovaUtente(nuovo.getUsername()) != null) {
+			System.out.println("Username già esistente");
+			return false;
+		}
+		utenti.add(nuovo);
+		System.out.println("Registrazione avvenuta con successo");
+		return true;
 	}
 }
