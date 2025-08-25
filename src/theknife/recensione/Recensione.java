@@ -8,23 +8,25 @@ package theknife.recensione;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class Recensione {
 	
 	//campi
-	private String autore;
+	private final String autore;
+	private final String nomeRistorante;
 	private int stelle;
 	private String descrizione;
-	private String idRistorante;
 	private LocalDate data;
+	private String risposta = "";
 
 	
 	//costruttore
-	public Recensione(String autore, int stelle, String descrizione, String idRistorante) {
+	public Recensione(String autore, String nomeRistorante, int stelle, String descrizione) {
 		this.autore = autore;
+		this.nomeRistorante = nomeRistorante;
 		this.stelle = stelle;
 		this.descrizione = descrizione;
-		this.idRistorante = idRistorante;
 		this.data = LocalDate.now();
 	}
 	//getter e setter
@@ -47,18 +49,51 @@ public class Recensione {
 	public String getAutore() {
 		return autore;
 	}
+	
+	public String getNomeRistorante() {
+		return nomeRistorante;
+	}
 
 	public LocalDate getData() {
 		return data;
 	}
 	
+	public String getRisposta() {
+	    return risposta;
+	}
+
+	public void setRisposta(String risposta) {
+	    this.risposta = risposta;
+	}
+	
 	//metodi
 	@Override
 	public String toString() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		return "Autore: " + autore +  " *Stelle*: " + stelle + "\n" +
-				descrizione + "\n" +
-				"Data: " + data.format(formatter);
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	    return "Ristorante: " + nomeRistorante + "\n" +
+	           "Autore: " + autore + " *Stelle*: " + stelle + "\n" +
+	           descrizione + "\n" +
+	           "Data: " + data.format(formatter) + "\n" +
+	           "Risposta del ristoratore: " + (risposta.isEmpty() ? "Nessuna" : risposta);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj) return true;
+	    if (obj == null || getClass() != obj.getClass()) return false;
+	    
+	    Recensione other = (Recensione) obj;
+	    
+	    return autore.equals(other.autore) &&
+	           nomeRistorante.equals(other.nomeRistorante) &&
+	           data.equals(other.data) &&
+	           descrizione.equals(other.descrizione) &&
+	           stelle == other.stelle;
+	}
+	
+	@Override
+	public int hashCode() {
+	    return Objects.hash(autore, nomeRistorante, data, descrizione, stelle);
 	}
 	
 	public boolean isPositiva() {
@@ -76,6 +111,23 @@ public class Recensione {
 		this.stelle = newStelle;
 		this.descrizione = newDescrizione;
 		this.data = LocalDate.now();
+	}
+	
+	public String visualizzaRecensione() {
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	    String base = "Autore: " + autore + " *Stelle*: " + stelle + "\n" +
+	                  descrizione + "\n" +
+	                  "Data: " + data.format(formatter);
+
+	    if (!risposta.isEmpty()) {
+	        base += "\nRisposta del ristoratore: " + risposta;
+	    }
+
+	    return base;
+	}
+	
+	public void eliminaRisposta() {
+	    this.risposta = "";
 	}
 	
 }
