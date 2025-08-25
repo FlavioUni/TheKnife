@@ -15,13 +15,16 @@ public class Recensione {
 	private String autore;
 	private int stelle;
 	private String descrizione;
+	private String idRistorante;
 	private LocalDate data;
+
 	
 	//costruttore
-	public Recensione(String autore, int stelle, String descrizione) {
+	public Recensione(String autore, int stelle, String descrizione, String idRistorante) {
 		this.autore = autore;
 		this.stelle = stelle;
 		this.descrizione = descrizione;
+		this.idRistorante = idRistorante;
 		this.data = LocalDate.now();
 	}
 	//getter e setter
