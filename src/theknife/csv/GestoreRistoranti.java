@@ -4,7 +4,7 @@ Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
 
-package theknife.ristorante;
+package theknife.csv;
 
 import java.io.*;
 import java.util.ArrayList;

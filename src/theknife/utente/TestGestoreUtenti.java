@@ -2,6 +2,8 @@ package theknife.utente;
 
 import java.time.LocalDate;
 
+import theknife.csv.GestoreUtenti;
+
 public class TestGestoreUtenti {
 	public static void main (String[] args) {
 		GestoreUtenti gestore = new GestoreUtenti();

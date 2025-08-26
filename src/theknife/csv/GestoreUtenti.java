@@ -4,7 +4,7 @@ Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
 
-package theknife.utente;
+package theknife.csv;
 
 import java.util.ArrayList;
 import java.util.List;
