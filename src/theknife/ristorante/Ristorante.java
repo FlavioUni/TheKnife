@@ -141,6 +141,8 @@ public class Ristorante {
                (cittaFiltro == null || citta.equalsIgnoreCase(cittaFiltro)) &&
                fasciaPrezzo <= prezzoMax;
     }
+    //ciao
+    //coglione
     
     
     
