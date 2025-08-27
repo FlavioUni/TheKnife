@@ -13,21 +13,33 @@ import java.util.Objects;
 public class Recensione {
 	
 	//campi
-	private final String autore;
+	private final String username;
 	private final String nomeRistorante;
+	
 	private int stelle;
-	private String descrizione;
+	private String commento;
 	private LocalDate data;
-	private String risposta = "";
+	private String risposta;
 
 	
-	//costruttore
-	public Recensione(String autore, String nomeRistorante, int stelle, String descrizione) {
-		this.autore = autore;
+	//costruttore in esecuzione (quando viene creata una nuova recensione)
+	public Recensione(String username, String nomeRistorante, int stelle, String commento) {
+		this.username = username;
 		this.nomeRistorante = nomeRistorante;
 		this.stelle = stelle;
-		this.descrizione = descrizione;
+		this.commento = commento;
 		this.data = LocalDate.now();
+		this.risposta = "";
+	}
+	
+	//costruttore per gestoreRecensioni (quando le recensioni vengono caricate dal CSV)
+	public Recensione(String username, String nomeRistorante, int stelle, String commento, LocalDate data, String risposta) {
+		this.username = username;
+		this.nomeRistorante = nomeRistorante;
+		this.stelle = stelle;
+		this.commento = commento;
+		this.data = data;
+		this.risposta = risposta;
 	}
 	//getter e setter
 	public int getStelle() {
@@ -39,15 +51,15 @@ public class Recensione {
 	}
 
 	public String getDescrizione() {
-		return descrizione;
+		return commento;
 	}
 
 	public void setDescrizione(String descrizione) {
-		this.descrizione = descrizione;
+		this.commento = descrizione;
 	}
 
 	public String getAutore() {
-		return autore;
+		return username;
 	}
 	
 	public String getNomeRistorante() {
@@ -71,8 +83,8 @@ public class Recensione {
 	public String toString() {
 	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	    return "Ristorante: " + nomeRistorante + "\n" +
-	           "Autore: " + autore + " *Stelle*: " + stelle + "\n" +
-	           descrizione + "\n" +
+	           "Autore: " + username + " *Stelle*: " + stelle + "\n" +
+	           commento + "\n" +
 	           "Data: " + data.format(formatter) + "\n" +
 	           "Risposta del ristoratore: " + (risposta.isEmpty() ? "Nessuna" : risposta);
 	}
@@ -84,16 +96,16 @@ public class Recensione {
 	    
 	    Recensione other = (Recensione) obj;
 	    
-	    return autore.equals(other.autore) &&
+	    return username.equals(other.username) &&
 	           nomeRistorante.equals(other.nomeRistorante) &&
 	           data.equals(other.data) &&
-	           descrizione.equals(other.descrizione) &&
+	           commento.equals(other.commento) &&
 	           stelle == other.stelle;
 	}
 	
 	@Override
 	public int hashCode() {
-	    return Objects.hash(autore, nomeRistorante, data, descrizione, stelle);
+	    return Objects.hash(username, nomeRistorante, data, commento, stelle);
 	}
 	
 	public boolean isPositiva() {
@@ -109,14 +121,14 @@ public class Recensione {
 	        throw new IllegalArgumentException("Le stelle devono essere tra 1 e 5.");
 	    }
 		this.stelle = newStelle;
-		this.descrizione = newDescrizione;
+		this.commento = newDescrizione;
 		this.data = LocalDate.now();
 	}
 	
 	public String visualizzaRecensione() {
 	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	    String base = "Autore: " + autore + " *Stelle*: " + stelle + "\n" +
-	                  descrizione + "\n" +
+	    String base = "Autore: " + username + " *Stelle*: " + stelle + "\n" +
+	                  commento + "\n" +
 	                  "Data: " + data.format(formatter);
 
 	    if (!risposta.isEmpty()) {

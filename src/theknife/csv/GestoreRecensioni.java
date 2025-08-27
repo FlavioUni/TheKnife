@@ -12,6 +12,12 @@ import theknife.recensione.Recensione;
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
 	
 	//campi
+	private final String username;
+	private final String nomeRistorante;
+	
+	private int voto;
+	private String commento;
+	private String risposta;
 	@Override
 	public void caricaDaCSV(String filePath) {
 	    // TODO: Implementa lettura da CSV
