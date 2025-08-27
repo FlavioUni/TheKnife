@@ -1,0 +1,6 @@
+Nome,Cognome,Username,Password,Domicilio,Data di nascita,Ruolo,PreferitiOGestiti
+Flavio,Ciani,flavio.c,0Ntg8p,Via Roma 3,15/04/2003,CLIENTE,Ristorante1|Ristorante2
+Gabriele,Scolaro,gab.s,qhabwd,Via Milano 12,30/09/2002,RISTORATORE,RistoSiciliano
+Lorenzo,Gasparini,lor.gas,8VuZin,Piazza Duomo 1,07/12/2001,CLIENTE,BurgerZone|SushiHouse
+Anna,Verdi,anna.v,FivTJx,Via Venezia 9,22/05/2000,RISTORATORE,PizzeriaBellaNapoli
+Marco,Bianchi,marco.b,rBqeqP,Corso Como 45,05/01/2004,CLIENTE,VeggieHeaven

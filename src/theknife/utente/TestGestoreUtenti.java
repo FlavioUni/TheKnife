@@ -32,5 +32,38 @@ public class TestGestoreUtenti {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			gestore.caricaDalFile("data/utenti.csv");
+		} catch (Exception e) {
+			System.out.println("Nessun file trovato, lista vuota.");
+		}
+		Utente nuovo = new Utente ("Giovanna", "Gennaro", "ggennaro", "gg67221", "Caserta", LocalDate.of(1982, 03, 29), Ruolo.CLIENTE);
+		if (gestore.registrazione(nuovo)) {
+			try {
+				gestore.salvaSuFile("data/utenti.csv");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		Utente u = gestore.login("ggennaro", "gg67221");
+		if (u != null) {
+			// gestore.aggiungiPreferito("ggennaro", "Pizzeria La Napoletana");
+			gestore.aggiungiPreferito("ggennaro", "Trattoria da Salvatore");
+			
+			System.out.println("Preferiti");
+			gestore.visualizzaPreferiti("ggennaro");
+			
+			// gestore.rimuoviPreferito("ggennaro", "Trattoria da Salvatore");
+			System.out.println("Preferiti aggiornati");
+			gestore.visualizzaPreferiti("ggennaro");
+			
+			try {
+				gestore.salvaSuFile("data/utenti.csv");
+				System.out.println("File aggiornato.");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
