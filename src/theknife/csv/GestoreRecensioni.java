@@ -7,25 +7,76 @@ Gasparini Lorenzo, 759929, VA
 package theknife.csv;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
+
 import theknife.recensione.Recensione;
 
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
-	
-	//campi
-	private final String username;
-	private final String nomeRistorante;
-	
-	private int voto;
-	private String commento;
-	private String risposta;
-	@Override
-	public void caricaDaCSV(String filePath) {
-	    // TODO: Implementa lettura da CSV
-	}
 
-	@Override
-	public void salvaSuCSV(String filePath) {
-	    // TODO: Implementa scrittura su CSV
-	}
-	
+    @Override
+    public void caricaDaCSV(String filePath) {
+        elementi = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+            String[] campi;
+            boolean primaRiga = true;
+
+            while ((campi = reader.readNext()) != null) {
+                if (primaRiga) {
+                    primaRiga = false;
+                    continue; // Salta intestazione
+                }
+
+                String username = campi[0];
+                String nomeRistorante = campi[1];
+                int stelle = Integer.parseInt(campi[2]);
+                String commento = campi[3];
+                LocalDate data = LocalDate.parse(campi[4], formatter);
+                String risposta = campi.length > 5 ? campi[5] : "";
+
+                Recensione r = new Recensione(username, nomeRistorante, stelle, commento, data, risposta);
+                elementi.add(r);
+            }
+
+        } catch (IOException | CsvValidationException e) {
+            System.err.println("Errore nella lettura del file: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void salvaSuCSV(String filePath) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+            // Scrive intestazione
+            String[] intestazione = { "Username", "NomeRistorante", "Stelle", "Commento", "Data", "Risposta" };
+            writer.writeNext(intestazione);
+
+            // Scrive ogni recensione
+            for (Recensione r : elementi) {
+                String[] riga = {
+                    r.getAutore(),
+                    r.getNomeRistorante(),
+                    String.valueOf(r.getStelle()),
+                    r.getDescrizione(),
+                    r.getData().format(formatter),
+                    r.getRisposta()
+                };
+                writer.writeNext(riga);
+            }
+
+        } catch (IOException e) {
+            System.err.println("Errore nella scrittura del file: " + e.getMessage());
+        }
+    }
 }
