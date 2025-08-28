@@ -113,8 +113,8 @@ public class MenuHandler {
             case 3:
             	System.out.print("Nome ristorante da rimuovere: ");
                 String r2 = sc.nextLine();
-                Ristorante r = gestoreRistoranti.trovaRistorante(r2);
-                if (r != null) gestoreUtenti.rimuoviPreferito(utente.getUsername(), r);
+                Ristorante ri = gestoreRistoranti.trovaRistorante(r2);
+                if (ri != null) gestoreUtenti.rimuoviPreferito(utente.getUsername(), ri);
                 else System.out.println("Ristorante non trovato.");
                 break;
             case 4:
