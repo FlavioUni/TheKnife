@@ -17,7 +17,7 @@ public class Ristorante {
 	private String nome;
 	private String indirizzo;
 	private String location;
-	private double prezzo;
+	private String prezzo;
 	private String cucina;
 	private double longitudine;
 	private double latitudine;
@@ -33,7 +33,7 @@ public class Ristorante {
 	
 	
 	//COSTRUTTORE
-	public Ristorante(String nome, String indirizzo, String location, double prezzo, String cucina, double longitudine,
+	public Ristorante(String nome, String indirizzo, String location, String prezzo, String cucina, double longitudine,
 					  double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi, boolean prenotazioneOnline,
 					  boolean delivery, String descrizione){
 		
@@ -68,7 +68,7 @@ public class Ristorante {
     	return location; 
     }
     
-    public double getPrezzo() { 
+    public String getPrezzo() { 
     	return prezzo; 
     }
     
@@ -136,7 +136,7 @@ public class Ristorante {
     	this.location = location;
     }
     
-    public void setPrezzo(Double prezzo){
+    public void setPrezzo(String prezzo){
         if (prezzo < 0) throw new IllegalArgumentException("Il prezzo non può essere negativo");
     	this.prezzo = prezzo;
     }
