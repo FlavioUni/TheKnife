@@ -6,9 +6,7 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.logica;
 
-import java.util.ArrayList;
 import java.util.List;
-import theknife.csv.Util;
 
 import theknife.ristorante.Ristorante;
 import theknife.utente.Ruolo;
