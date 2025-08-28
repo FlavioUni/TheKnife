@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 import theknife.csv.GestoreUtenti;
 
-public class PaginaIniziale {
+public class MenuHandler {
 	public static void main (String[] args) {
 		Scanner sc = new Scanner(System.in);
 		GestoreUtenti gestoreUtenti = new GestoreUtenti();

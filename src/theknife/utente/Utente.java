@@ -20,7 +20,7 @@ public class Utente
 	private List<Ristorante> ristorantiPreferiti;
 	private List<Ristorante> ristorantiGestiti;
 	
-	// costruttore
+	// costruttori
 	public Utente (String a1, String a2, String a3, String a4, String a5, LocalDate a6, Ruolo a7)
 	{
 		this.nome = a1;
@@ -32,6 +32,11 @@ public class Utente
 		this.ruolo = a7;
 		this.ristorantiPreferiti = new ArrayList<>();
 		this.ristorantiGestiti = new ArrayList<>();
+	}
+	
+	public Utente (String a1, String a2, String a3, String a4, String a5, Ruolo a6)
+	{
+		this(a1, a2, a3, a4, a5, null, a6);
 	}
 	
 	// metodi getter e setter
@@ -76,7 +81,7 @@ public class Utente
 			else {
 				System.out.println("Ristoranti preferiti di " + username + ":");
 				for (Ristorante r : ristorantiPreferiti)
-					System.out.println("- " + r.getNome() + " (" + r.getCitta() + ")");
+					System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
 			}
 		}
 		else {
@@ -102,7 +107,7 @@ public class Utente
 			else {
 				System.out.println("Ristoranti gestiti da " + username + ":");
 				for (Ristorante r : ristorantiPreferiti)
-					System.out.println("- " + r.getNome() + " (" + r.getCitta() + ")");
+					System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
 			}
 		}
 		else {
