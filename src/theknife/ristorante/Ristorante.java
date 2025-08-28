@@ -29,6 +29,7 @@ public class Ristorante {
 	private boolean delivery;
 	private String descrizione;
 	private ArrayList<Recensione> ListaRecensioni;
+	private Double mediaStelle;
 	
 	
 	//COSTRUTTORE
@@ -51,6 +52,7 @@ public class Ristorante {
         this.delivery = delivery;
         this.descrizione = descrizione;
         this.ListaRecensioni = new ArrayList<>();
+        this.mediaStelle = mediaStelle();
 	}
 	
 	//GETTER
@@ -226,6 +228,46 @@ public class Ristorante {
     }
     
     
+    //Restituisce una stringa contenente tutte le recensioni del ristorante
+    public String getRecensioniString(){
+        String s = "";
+        for(Recensione r : ListaRecensioni)
+            s += r.visualizzaRecensione() + "\n";
+        return s;
+    }
+    
+    
+    //Rimuove una recensione in base all'username e commento corrispondente
+    public void RimuoviRecensione(String username, String commento){
+        for(int i = ListaRecensioni.size() - 1; i >= 0; i--) {
+            Recensione r = ListaRecensioni.get(i);
+            if(r.getUsername().equals(username) && r.getCommento().equals(commento)) {
+                ListaRecensioni.remove(i);
+            }
+        }
+    }
+    
+    
+    //Modifica una recensione esistente con lo stesso username, commento e voto
+    public void ModificaRecensione(String username, String commento, int voto){
+        int i=0;
+        for(Recensione r : ListaRecensioni){
+            if(r.getUsername().equals(username) && r.getCommento().equals(commento) && r.getVoto() == voto){
+                ListaRecensioni.get(i).setCommento(commento);
+                ListaRecensioni.get(i).setVoto(voto);
+            }
+            i++;
+        }
+    }
+
+    
+    //Aggiunge una recensione alla lista del ristorante
+    public void AggiungiRecensione(Recensione recensione){
+        ListaRecensioni.add(recensione);
+        ContaRecensioni++;
+    }
+
+
     
     public String toCSV() {
         return nome + ";" + indirizzo + ";" + location + ";" + prezzo + ";" + cucina + ";" +
