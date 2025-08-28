@@ -6,6 +6,11 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.csv;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+
+import theknife.recensione.Recensione;
+
 import java.util.ArrayList;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,16 +18,13 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
-import theknife.recensione.Recensione;
-
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
-
+	
+	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	
     @Override
     public void caricaDaCSV(String filePath) {
         elementi = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
             String[] campi;
@@ -54,7 +56,6 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
 
     @Override
     public void salvaSuCSV(String filePath) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             // Scrive intestazione
