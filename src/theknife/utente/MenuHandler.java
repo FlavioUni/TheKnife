@@ -168,7 +168,7 @@ public class MenuHandler {
                 else System.out.println("Ristorante non trovato.");
                 break;
             case 4: continua = false; break;
-            default: System.out.println("Scelta non valida.");
+            default: System.out.println("Scelta non valida."); 
             }
         }
 	}
