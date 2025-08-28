@@ -85,7 +85,7 @@ public class Utente
 			}
 		}
 		else {
-			System.out.println("Errore: lista dei preferiti disponibile solo per i clienti.");
+			System.err.println("Errore: lista dei preferiti disponibile solo per i clienti.");
 		}
 	}
 	public boolean aggiungiRistoranteGestito (Ristorante ristorante) {
@@ -111,7 +111,7 @@ public class Utente
 			}
 		}
 		else {
-			System.out.println("Errore: solo i ristoratori possono gestire ristoranti.");
+			System.err.println("Errore: solo i ristoratori possono gestire ristoranti.");
 		}
 	}
 }
