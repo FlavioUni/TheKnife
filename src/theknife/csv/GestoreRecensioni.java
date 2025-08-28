@@ -7,7 +7,6 @@ Gasparini Lorenzo, 759929, VA
 package theknife.csv;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvValidationException;
-
 import theknife.recensione.Recensione;
 
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
@@ -48,7 +45,9 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
                 elementi.add(r);
             }
 
-        } catch (IOException | CsvValidationException e) {
+        } catch (IOException e) {
+            System.err.println("Errore di I/O nella lettura del file: " + e.getMessage());
+        } catch (Exception e) {
             System.err.println("Errore nella lettura del file: " + e.getMessage());
         }
     }
