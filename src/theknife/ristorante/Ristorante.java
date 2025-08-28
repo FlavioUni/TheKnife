@@ -28,9 +28,7 @@ public class Ristorante {
 	private boolean prenotazioneOnline;
 	private boolean delivery;
 	private String descrizione;
-	private ArrayList<Recensione> ListaRecensioni;
-	private Double mediaStelle;
-	
+	private ArrayList<Recensione> ListaRecensioni;	
 	
 	//COSTRUTTORE
 	public Ristorante(String nome, String indirizzo, String location, String prezzo, String cucina, double longitudine,
@@ -52,8 +50,7 @@ public class Ristorante {
         this.delivery = delivery;
         this.descrizione = descrizione;
         this.ListaRecensioni = new ArrayList<>();
-        this.mediaStelle = mediaStelle();
-	}
+        }
 	
 	//GETTER
 	public String getNome() { 
@@ -181,13 +178,7 @@ public class Ristorante {
     	this.descrizione = descrizione;
     }
     
-    
-    //Carica le recensioni da file
-    public void caricaRecensione(String Path){
-    	this.ListaRecensioni = leggiDaFile(Path);
-    }
-    
-    
+
     
     @Override
     public String toString() {
@@ -266,13 +257,22 @@ public class Ristorante {
         ListaRecensioni.add(recensione);
         ContaRecensioni++;
     }
-
-
     
-    public String toCSV() {
-        return nome + ";" + indirizzo + ";" + location + ";" + prezzo + ";" + cucina + ";" +
-               longitudine + ";" + latitudine + ";" + numeroTelefono + ";" + websiteUrl + ";" +
-               premi + ";" + servizi + ";" + prenotazioneOnline + ";" + delivery + ";" + descrizione;
+    
+    //Calcola la media dei voti delle recensioni
+    public Double MediaStelle(){
+        Double somma = 0.0;
+        for(Recensione r : ListaRecensioni)
+            somma += r.getVoto();
+        return somma / ListaRecensioni.size();
+    }
+    
+    
+    //Stampa su console tutte le recensioni del ristorante
+    public void VisualizzaRecensioni(){
+        System.out.println("La lista delle recensioni del ristorante " + this.Nome + ":\n");
+        for(Recensione rec: ListaRecensioni)
+            System.out.println(rec.visualizzaRecensione());
     }
     
     
