@@ -6,46 +6,48 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.ristorante;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class Ristorante {
 
 	//ATTRIBUTI
 	private String nome;
 	private String indirizzo;
-	private String citta;
-	private String nazione;
-	private double latitudine;
+	private String location;
+	private double prezzo;
+	private String cucina;
 	private double longitudine;
-	private double fasciaPrezzo;
-	private boolean delivery;
-	private boolean prenotazioneOnline;
-	private String tipoCucina;
+	private double latitudine;
 	private String numeroTelefono;
 	private String websiteUrl;
 	private int premi;
-	private int stelle;
+	private String servizi;
+	private boolean prenotazioneOnline;
+	private boolean delivery;
 	private String descrizione;
 	
 	
 	//COSTRUTTORE
-	public Ristorante(String nome, String indirizzo, String citta, String nazione, double latitudine,
-					  double longitudine, double fasciaPrezzo, boolean delivery, boolean prenotazioneOnline,
-					  String tipoCucina, String numeroTelefono, String websiteUrl, int premi, int stelle,
-					  String descrizione){
+	public Ristorante(String nome, String indirizzo, String location, double prezzo, String cucina, double longitudine,
+					  double latitudine, String numeroTelefono, String websiteUrl, int premi, String servizi, boolean prenotazioneOnline,
+					  boolean delivery, String descrizione){
 		
 		this.nome = nome;
         this.indirizzo = indirizzo;
-        this.citta = citta;
-        this.nazione = nazione;
-        this.latitudine = latitudine;
+        this.location = location;
+        this.prezzo = prezzo;
+        this.cucina = cucina;
         this.longitudine = longitudine;
-        this.fasciaPrezzo = fasciaPrezzo;
-        this.delivery = delivery;
-        this.prenotazioneOnline = prenotazioneOnline;
-        this.tipoCucina = tipoCucina;
+        this.latitudine = latitudine;
         this.numeroTelefono = numeroTelefono;
         this.websiteUrl = websiteUrl;
         this.premi = premi;
-        this.stelle = stelle;
+        this.servizi = servizi;
+        this.prenotazioneOnline = prenotazioneOnline;
+        this.delivery = delivery;
         this.descrizione = descrizione;
 	}
 	
@@ -58,36 +60,24 @@ public class Ristorante {
     	return indirizzo;
     }
     
-    public String getCitta() {
-    	return citta; 
+    public String getLocation() {
+    	return location; 
     }
     
-    public String getNazione() { 
-    	return nazione; 
+    public double getPrezzo() { 
+    	return prezzo; 
     }
     
-    public double getLatitudine() { 
-    	return latitudine; 
+    public String getCucina() {
+    	return cucina; 
     }
     
     public double getLongitudine() { 
     	return longitudine;
     }
     
-    public double getFasciaPrezzo() { 
-    	return fasciaPrezzo; 
-    }
-    
-    public boolean isDelivery() { 
-    	return delivery; 
-    }
-    
-    public boolean isPrenotazioneOnline() { 
-    	return prenotazioneOnline; 
-    }
-    
-    public String getTipoCucina() {
-    	return tipoCucina; 
+    public double getLatitudine() { 
+    	return latitudine; 
     }
     
     public String getNumeroTelefono() { 
@@ -102,8 +92,16 @@ public class Ristorante {
     	return premi; 
     }
     
-    public int getStelle() { 
-    	return stelle; 
+    public String getServizi() {
+    	return servizi;
+    }
+    
+    public boolean isPrenotazioneOnline() { 
+    	return prenotazioneOnline; 
+    }
+    
+    public boolean isDelivery() { 
+    	return delivery; 
     }
     
     public String getDescrizione() { 
