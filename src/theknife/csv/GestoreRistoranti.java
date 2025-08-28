@@ -1,8 +1,3 @@
-/*
-Ciani Flavio Angelo, 761581, VA
-Scolaro Gabriele, 760123, VA
-Gasparini Lorenzo, 759929, VA
-*/
 package theknife.csv;
 
 import com.opencsv.CSVReader;
@@ -21,90 +16,95 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         elementi = new ArrayList<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            String[] c;
+            String[] riga;
             boolean header = true;
 
-            while ((c = reader.readNext()) != null) {
-                if (header) { header = false; continue; }
+            while ((riga = reader.readNext()) != null) {
+                if (header) { 
+                    header = false; 
+                    continue; 
+                }
 
-                String nome           = c[0];
-                String indirizzo      = c[1];
-                String location       = c[2];
-                String prezzo         = c[3];   // "€€€€", "$$$", ecc.
-                String cucina         = c[4];
+                String nome = riga[0];
+                String indirizzo = riga[1];
+                String location = riga[2];
+                String prezzo = riga[3]; // "€€€€", "$$$", ecc.
+                String cucina = riga[4];
 
-                double longit = parseDouble(c[5]);
-                double latit  = parseDouble(c[6]);
+                double longitudine = parseDouble(riga[5]);
+                double latitudine = parseDouble(riga[6]);
 
-                String telefono   = c[7];
-                String websiteUrl = c[8];
-                String premio     = c[9];      // "Selected Restaurants"/"Bib Gourmand"/"1 Star"...
-                String servizi    = c[10];     // lista CSV di servizi
+                String telefono = riga[7];
+                String websiteUrl = riga[8];
+                String premio = riga[9]; // "Selected Restaurants"/"Bib Gourmand"/"1 Star"...
+                String servizi = riga[10]; // lista CSV di servizi
 
-                boolean prenOnline = parseBool(c[11]); // "SI"/"NO"/"TRUE"/"FALSE"/"1"
-                boolean delivery   = parseBool(c[12]);
+                boolean prenotazioneOnline = parseBool(riga[11]); // "SI"/"NO"/"TRUE"/"FALSE"/"1"
+                boolean delivery = parseBool(riga[12]);
 
-                String descrizione = c.length > 13 ? c[13] : "";
+                String descrizione = riga.length > 13 ? riga[13] : "";
 
-                // Adatta all’ordine del TUO costruttore
-                Ristorante r = new Ristorante(
+                Ristorante ristorante = new Ristorante(
                         nome, indirizzo, location, prezzo, cucina,
-                        longit, latit, telefono, websiteUrl,
-                        premio, servizi, prenOnline, delivery, descrizione
+                        longitudine, latitudine, telefono, websiteUrl,
+                        premio, servizi, prenotazioneOnline, delivery, descrizione
                 );
 
-                elementi.add(r);
+                elementi.add(ristorante);
             }
         } catch (IOException e) {
-            System.err.println("Errore I/O lettura ristoranti: " + e.getMessage());
+            System.err.println("Errore I/O durante la lettura dei ristoranti: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Errore parsing ristoranti: " + e.getMessage());
+            System.err.println("Errore durante il parsing dei ristoranti: " + e.getMessage());
         }
     }
 
     @Override
     public void salvaSuCSV(String filePath) {
-        try (CSVWriter w = new CSVWriter(new FileWriter(filePath))) {
-            w.writeNext(new String[]{
-                    "Nome","Indirizzo","Location","Prezzo","Cucina",
-                    "Longitudine","Latitudine","PhoneNumber","WebsiteUrl",
-                    "Award","FacilitiesAndServices","PrenotazioneOnline","Delivery","Descrizione"
+        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+            writer.writeNext(new String[]{
+                    "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
+                    "Longitudine", "Latitudine", "Telefono", "SitoWeb",
+                    "Premio", "Servizi", "PrenotazioneOnline", "Delivery", "Descrizione"
             });
 
-            for (Ristorante r : elementi) {
-                w.writeNext(new String[]{
-                        r.getNome(),
-                        r.getIndirizzo(),
-                        r.getLocation(),
-                        r.getPrezzo(),
-                        r.getCucina(),
-                        String.valueOf(r.getLongitudine()),
-                        String.valueOf(r.getLatitudine()),
-                        r.getNumeroTelefono(),
-                        r.getWebsiteUrl(),
-                        r.getPremio(),
-                        r.getServizi(),
-                        r.isPrenotazioneOnline() ? "SI" : "NO",
-                        r.isDelivery() ? "SI" : "NO",
-                        r.getDescrizione() == null ? "" : r.getDescrizione()
+            for (Ristorante ristorante : elementi) {
+                writer.writeNext(new String[]{
+                        ristorante.getNome(),
+                        ristorante.getIndirizzo(),
+                        ristorante.getLocation(),
+                        ristorante.getPrezzo(),
+                        ristorante.getCucina(),
+                        String.valueOf(ristorante.getLongitudine()),
+                        String.valueOf(ristorante.getLatitudine()),
+                        ristorante.getNumeroTelefono(),
+                        ristorante.getWebsiteUrl(),
+                        ristorante.getPremio(),
+                        ristorante.getServizi(),
+                        ristorante.isPrenotazioneOnline() ? "SI" : "NO",
+                        ristorante.isDelivery() ? "SI" : "NO",
+                        ristorante.getDescrizione() == null ? "" : ristorante.getDescrizione()
                 });
             }
         } catch (IOException e) {
-            System.err.println("Errore scrittura ristoranti: " + e.getMessage());
+            System.err.println("Errore durante la scrittura dei ristoranti: " + e.getMessage());
         }
     }
 
-    // parsing locale, semplice e leggibile
-    private static double parseDouble(String s) {
-        if (s == null) return 0.0;
-        s = s.trim(); if (s.isEmpty()) return 0.0;
-        return Double.parseDouble(s.replace(',', '.'));
+    private static double parseDouble(String valore) {
+        if (valore == null) return 0.0;
+        valore = valore.trim();
+        if (valore.isEmpty()) return 0.0;
+        return Double.parseDouble(valore.replace(',', '.'));
     }
-    private static boolean parseBool(String s) {
-        if (s == null) return false;
-        String t = s.trim();
-        return t.equalsIgnoreCase("SI") || t.equalsIgnoreCase("Sì")
-            || t.equalsIgnoreCase("YES") || t.equalsIgnoreCase("TRUE")
-            || t.equals("1");
+    
+    private static boolean parseBool(String valore) {
+        if (valore == null) return false;
+        String valoreNormalizzato = valore.trim();
+        return valoreNormalizzato.equalsIgnoreCase("SI") || 
+               valoreNormalizzato.equalsIgnoreCase("SÌ") ||
+               valoreNormalizzato.equalsIgnoreCase("YES") || 
+               valoreNormalizzato.equalsIgnoreCase("TRUE") ||
+               valoreNormalizzato.equals("1");
     }
 }
