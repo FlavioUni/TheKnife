@@ -17,6 +17,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import theknife.ristorante.Ristorante;
+import theknife.csv.GestoreRistoranti;
+
 
 public class GestoreUtenti {
 	private List<Utente> utenti;
@@ -25,7 +28,7 @@ public class GestoreUtenti {
 		this.utenti = new ArrayList<>();
 	}
 	
-	public void aggiungiUtente (Utente u) {
+	private void aggiungiUtente (Utente u) { // Metodo interno, usare il metodo registrazione per nuovi utenti.
 		Utente hashato = new Utente (
 				u.getNome(), u.getCognome(), u.getUsername(),
 				Util.hashPassword(u.getPassword()),
@@ -53,14 +56,25 @@ public class GestoreUtenti {
 						u.getNome(), u.getCognome(),
 						u.getUsername(), u.getPassword(),
 						u.getDomicilio(), u.getData() != null ? GestoreDate.format(u.getData()) : "",
-						u.getRuolo().name(),
-						String.join(",", u.getRistorantiPreferiti())
+						u.getRuolo().name()
 						);
+				String locali = "";
+				if (u.getRuolo() == Ruolo.CLIENTE) {
+					List<String> preferiti = new ArrayList<>();
+					for (Ristorante r : u.getRistorantiPreferiti())
+						preferiti.add(r.getNome());
+					locali = String.join(",", preferiti);
+				} else if (u.getRuolo() == Ruolo.RISTORATORE) {
+					List<String> gestiti = new ArrayList<>();
+                    for (Ristorante r : u.getRistorantiGestiti())
+                    	gestiti.add(r.getNome());
+                    locali = String.join(",", gestiti);
+				}
 				fw.write(riga + "\n");
 			}
 		}
 	}
-	public void caricaDalFile (String nomeFile) throws IOException {
+	public void caricaDalFile (String nomeFile, GestoreRistoranti gestoreRistoranti) throws IOException {
 		utenti.clear();
 		try (BufferedReader br = new BufferedReader (new FileReader (nomeFile))) {
 			String riga;
@@ -74,19 +88,35 @@ public class GestoreUtenti {
 							campi[5].isEmpty() ? null : GestoreDate.parse(campi[5]), // data (se presente)
 							Ruolo.valueOf(campi[6]) // ruolo
 							);
+					// ultima colonna
 					if (campi.length >= 8 && !campi[7].isEmpty()) {
-						String[] preferiti = campi[7].split(";");
-						for (String r : preferiti)
-							u.aggiungiPreferito(r);
+						String[] lista = campi[7].split(";");
+						if (u.getRuolo() == Ruolo.CLIENTE) 
+							for (String nomeRistorante : lista) {
+								Ristorante r = gestoreRistoranti.trovaRistorante(nomeRistorante);
+                                if (r != null) u.aggiungiPreferito(r);
+							}
+						else if (u.getRuolo() == Ruolo.RISTORATORE)
+							for (String nomeRistorante : lista) {
+								Ristorante r = gestoreRistoranti.trovaRistorante(nomeRistorante);
+                                if (r != null) u.aggiungiRistoranteGestito(r);
+							}
 					}
 					utenti.add(u);
 				}
 			}
 		}
 	}
+	private boolean controlloPassword (String password) {
+		return password != null && password.length()>5 && password.length()<13;
+	}
 	public boolean registrazione (Utente nuovo) {
 		if (trovaUtente(nuovo.getUsername()) != null) {
 			System.out.println("Username non disponibile.");
+			return false;
+		}
+		if (!controlloPassword(nuovo.getPassword())) {
+			System.out.println("La password deve contenere tra i 6 e i 12 caratteri.");
 			return false;
 		}
 		nuovo = new Utente (
@@ -109,13 +139,13 @@ public class GestoreUtenti {
 		return null;
 	}
 	
-	public boolean aggiungiPreferito (String username, String ristorante) {
+	public boolean aggiungiPreferito (String username, Ristorante ristorante) {
 		Utente u = trovaUtente(username);
 		if (u != null)
 			return u.aggiungiPreferito(ristorante);
 		return false;
 	}
-	public boolean rimuoviPreferito (String username, String ristorante) {
+	public boolean rimuoviPreferito (String username, Ristorante ristorante) {
 		Utente u = trovaUtente(username);
 		if (u != null)
 			return u.rimuoviPreferito(ristorante);
@@ -126,6 +156,28 @@ public class GestoreUtenti {
 		if (u != null)
 			u.visualizzaPreferiti();
 		else
-			System.out.println("Utente non trovato.");
+			System.out.println("Utente non trovato nella sezione clienti.");
+	}
+	public boolean aggiungiRistoranteGestito(String username, Ristorante ristorante) {
+	    Utente u = trovaUtente(username);
+	    if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
+	        return u.aggiungiRistoranteGestito(ristorante);
+	    }
+	    return false;
+	}
+	public boolean rimuoviRistoranteGestito(String username, Ristorante ristorante) {
+	    Utente u = trovaUtente(username);
+	    if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
+	        return u.rimuoviRistoranteGestito(ristorante);
+	    }
+	    return false;
+	}
+	public void visualizzaRistorantiGestiti(String username) {
+	    Utente u = trovaUtente(username);
+	    if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
+	        u.visualizzaRistorantiGestiti();
+	    } else {
+	        System.out.println("Utente non trovato nella sezione ristoratori.");
+	    }
 	}
 }

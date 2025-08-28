@@ -8,7 +8,7 @@ public class TestGestoreUtenti {
 	public static void main (String[] args) {
 		GestoreUtenti gestore = new GestoreUtenti();
 		
-		gestore.aggiungiUtente(new Utente(
+		/* gestore.aggiungiUtente(new Utente(
 				"Gianfranco", "Milani", "gianmilani", "gnfrnc18", "Monza", LocalDate.of(1989, 11, 02), Ruolo.CLIENTE)
 				);
 		gestore.aggiungiUtente(new Utente(
@@ -17,7 +17,7 @@ public class TestGestoreUtenti {
 		gestore.aggiungiUtente(new Utente(
 				"Edoardo", "Esposito", "eesposito", "ee12drd", "Napoli", LocalDate.of(1999, 06, 30), Ruolo.CLIENTE)
 				);
-		
+		*/
 		try {
 			gestore.salvaSuFile("data/utenti.csv");
 			System.out.println("File salvato con successo");
