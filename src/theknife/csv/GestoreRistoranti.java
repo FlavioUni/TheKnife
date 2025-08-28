@@ -36,7 +36,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
 
                 String telefono = riga[7];
                 String websiteUrl = riga[8];
-                String premio = riga[9]; // "Selected Restaurants"/"Bib Gourmand"/"1 Star"...
+                String premi = riga[9]; // "Selected Restaurants"/"Bib Gourmand"/"1 Star"...
                 String servizi = riga[10]; // lista CSV di servizi
 
                 boolean prenotazioneOnline = parseBool(riga[11]); // "SI"/"NO"/"TRUE"/"FALSE"/"1"
@@ -47,7 +47,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                 Ristorante ristorante = new Ristorante(
                         nome, indirizzo, location, prezzo, cucina,
                         longitudine, latitudine, telefono, websiteUrl,
-                        premio, servizi, prenotazioneOnline, delivery, descrizione
+                        premi, servizi, prenotazioneOnline, delivery, descrizione
                 );
 
                 elementi.add(ristorante);
@@ -79,7 +79,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                         String.valueOf(ristorante.getLatitudine()),
                         ristorante.getNumeroTelefono(),
                         ristorante.getWebsiteUrl(),
-                        ristorante.getPremio(),
+                        ristorante.getPremi(),
                         ristorante.getServizi(),
                         ristorante.isPrenotazioneOnline() ? "SI" : "NO",
                         ristorante.isDelivery() ? "SI" : "NO",
