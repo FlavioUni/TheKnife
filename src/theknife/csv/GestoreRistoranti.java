@@ -28,7 +28,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                 String nome = riga[0];
                 String indirizzo = riga[1];
                 String location = riga[2];
-                String prezzo = riga[3]; // "€€€€", "$$$", ecc.
+                String prezzo = riga[3]; 
                 String cucina = riga[4];
 
                 double longitudine = parseDouble(riga[5]);
@@ -36,10 +36,10 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
 
                 String telefono = riga[7];
                 String websiteUrl = riga[8];
-                String premi = riga[9]; // "Selected Restaurants"/"Bib Gourmand"/"1 Star"...
-                String servizi = riga[10]; // lista CSV di servizi
+                String premi = riga[9]; 
+                String servizi = riga[10];
 
-                boolean prenotazioneOnline = parseBool(riga[11]); // "SI"/"NO"/"TRUE"/"FALSE"/"1"
+                boolean prenotazioneOnline = parseBool(riga[11]); 
                 boolean delivery = parseBool(riga[12]);
 
                 String descrizione = riga.length > 13 ? riga[13] : "";
