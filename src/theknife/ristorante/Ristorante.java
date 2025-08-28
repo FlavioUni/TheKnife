@@ -141,7 +141,13 @@ public class Ristorante {
     }
     
     
-    
+    //Metodo per la lista dei ristoranti gestiti
+    public Ristorante trovaRistorante(String nome) {
+        for (Ristorante r : ristoranti) {
+            if (r.getNome().equalsIgnoreCase(nome)) return r;
+        }
+        return null;
+    }
     
     
 }
