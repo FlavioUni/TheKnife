@@ -134,7 +134,8 @@ public class Ristorante {
     	this.location = location;
     }
     
-    public void setPrezzo(String prezzo){
+    public void setPrezzo(Double prezzo){
+        if (prezzo < 0) throw new IllegalArgumentException("Il prezzo non può essere negativo");
     	this.prezzo = prezzo;
     }
     
@@ -142,11 +143,11 @@ public class Ristorante {
     	this.cucina = cucina;
     }
     
-    public void setLongitudine(String longitudine){
+    public void setLongitudine(Double longitudine){
     	this.longitudine = longitudine;
     }
     
-    public void setLatitudine(String latitudine){
+    public void setLatitudine(Double latitudine){
     	this.latitudine = latitudine;
     }
     
@@ -166,11 +167,11 @@ public class Ristorante {
     	this.servizi = servizi;
     }
     
-    public void setPrenotazioneOnline(String prenotazioneOnline){
+    public void setPrenotazioneOnline(Boolean prenotazioneOnline){
     	this.prenotazioneOnline = prenotazioneOnline;
     }
     
-    public void setDelivery(String delivery){
+    public void setDelivery(Boolean delivery){
     	this.delivery = delivery;
     }
     
@@ -188,24 +189,31 @@ public class Ristorante {
     
     @Override
     public String toString() {
-        return String.format("%s - %s, %s (%s)\nTipo cucina: %s\nFascia prezzo: %.2f€\nStelle: %d ⭐",
-                nome, indirizzo, citta, nazione, tipoCucina, fasciaPrezzo, stelle);
+        return "Ristorante{" +
+               "nome='" + nome + '\'' +
+               ", indirizzo='" + indirizzo + '\'' +
+               ", location='" + location + '\'' +
+               ", prezzo=" + prezzo +
+               ", cucina='" + cucina + '\'' +
+               ", longitudine=" + longitudine +
+               ", latitudine=" + latitudine +
+               ", numeroTelefono='" + numeroTelefono + '\'' +
+               ", websiteUrl='" + websiteUrl + '\'' +
+               ", premi='" + premi + '\'' +
+               ", servizi='" + servizi + '\'' +
+               ", prenotazioneOnline=" + prenotazioneOnline +
+               ", delivery=" + delivery +
+               ", descrizione='" + descrizione;
     }
+
     
-    
-    public String toCSV() {
-        return String.join(";",
-                nome, indirizzo, citta, nazione,
-                String.valueOf(latitudine), String.valueOf(longitudine),
-                String.valueOf(fasciaPrezzo), String.valueOf(delivery),
-                String.valueOf(prenotazioneOnline), tipoCucina, numeroTelefono,
-                websiteUrl, String.valueOf(premi), String.valueOf(stelle), descrizione);
+    //metodi per aggiungere o rimuovere recensioni dalla lista
+    public void aggiungiRecensione(Recensione recensione) {
+        ListaRecensioni.add(recensione);
     }
-    
-    public boolean match(String tipoCucinaFiltro, String cittaFiltro, double prezzoMax) {
-        return (tipoCucinaFiltro == null || tipoCucina.equalsIgnoreCase(tipoCucinaFiltro)) &&
-               (cittaFiltro == null || citta.equalsIgnoreCase(cittaFiltro)) &&
-               fasciaPrezzo <= prezzoMax;
+
+    public void rimuoviRecensione(Recensione recensione) {
+        ListaRecensioni.remove(recensione);
     }
     
     
@@ -215,6 +223,14 @@ public class Ristorante {
             if (r.getNome().equalsIgnoreCase(nome)) return r;
         }
         return null;
+    }
+    
+    
+    
+    public String toCSV() {
+        return nome + ";" + indirizzo + ";" + location + ";" + prezzo + ";" + cucina + ";" +
+               longitudine + ";" + latitudine + ";" + numeroTelefono + ";" + websiteUrl + ";" +
+               premi + ";" + servizi + ";" + prenotazioneOnline + ";" + delivery + ";" + descrizione;
     }
     
     
