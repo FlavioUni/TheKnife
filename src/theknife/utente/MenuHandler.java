@@ -3,24 +3,32 @@ package theknife.utente;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+
+import theknife.csv.GestoreRecensioni;
 import theknife.csv.GestoreRistoranti;
 
 import theknife.csv.GestoreUtenti;
-import theknife.ristorante.*;
+import theknife.ristorante.Ristorante;
+import theknife.logica.UtenteService;
 
 public class MenuHandler {
 	private Scanner sc;
 	private GestoreUtenti gestoreUtenti;
 	private GestoreRistoranti gestoreRistoranti;
+	private UtenteService utenteService;
+	private GestoreRecensioni gestoreRecensioni;
 		
 	public MenuHandler () {
 		sc = new Scanner(System.in);
 		gestoreUtenti = new GestoreUtenti();
 		gestoreRistoranti = new GestoreRistoranti();
+		utenteService = new UtenteService(gestoreUtenti.getElementi());
+		gestoreRecensioni = new GestoreRecensioni();
 	}
 		
 	public void avvia () {
-		// gestoreUtenti.caricaDalFile("data/utenti.csv", gestoreRistoranti);
+		gestoreUtenti.caricaDaCSV("data/utenti.csv");
+        gestoreRistoranti.caricaDaCSV("data/ristoranti.csv");
 		boolean continua = true;
 		while (continua) {
 			System.out.println("\n--------- MENU PRINCIPALE ---------");
@@ -35,7 +43,9 @@ public class MenuHandler {
 			case 2 -> login();
 			case 3 -> {
 				continua = false;
-				// gestoreUtenti.salvaSuFile("data/utenti.csv");
+				gestoreUtenti.salvaSuCSV("data/utenti.csv");
+                gestoreRistoranti.salvaSuCSV("data/ristoranti.csv");
+                gestoreRecensioni.salvaSuCSV("data/recensioni.csv");
 				System.out.println("Chiusura programma in corso.");
 			}
 			default -> System.out.println("Scelta non valida.");
@@ -69,7 +79,7 @@ public class MenuHandler {
         Ruolo ruolo = Ruolo.valueOf(ruoloStr.toUpperCase());
         
         Utente nuovo = new Utente(nome, cognome, username, password, domicilio, null, ruolo);
-        gestoreUtenti.registrazione(nuovo);
+        utenteService.registrazione(nuovo);
 	}
 	
 	// LOGIN
@@ -78,7 +88,7 @@ public class MenuHandler {
         String user = sc.nextLine();
         System.out.print("Password: ");
         String pass = sc.nextLine();
-        Utente logged = gestoreUtenti.login(user, pass);
+        Utente logged = utenteService.login(user, pass);
         if (logged != null) {
             if (logged.getRuolo() == Ruolo.CLIENTE) {
                 menuCliente(logged);
@@ -97,24 +107,26 @@ public class MenuHandler {
             System.out.println("2. Aggiungi preferito");
             System.out.println("3. Rimuovi preferito");
             System.out.println("4. Ricerca ristoranti");
-            System.out.println("5. Logout");
+            System.out.println("5. Aggiungi recensione");
+            System.out.println("6. Visualizza le recensioni di un ristorante");
+            System.out.println("7. Logout");
             System.out.print("Scelta: ");
             int scelta = Integer.parseInt(sc.nextLine());
             
             switch (scelta) {
-            case 1: gestoreUtenti.visualizzaPreferiti(utente.getUsername()); break;
+            case 1: utenteService.visualizzaPreferiti(utente.getUsername()); break;
             case 2:
                 System.out.print("Nome ristorante da aggiungere: ");
                 String r1 = sc.nextLine();
                 Ristorante r = gestoreRistoranti.trovaRistorante(r1);
-                if (r != null) gestoreUtenti.aggiungiPreferito(utente.getUsername(), r);
+                if (r != null) utenteService.aggiungiPreferito(utente.getUsername(), r);
                 else System.out.println("Ristorante non trovato.");
                 break;
             case 3:
             	System.out.print("Nome ristorante da rimuovere: ");
                 String r2 = sc.nextLine();
                 Ristorante ri = gestoreRistoranti.trovaRistorante(r2);
-                if (ri != null) gestoreUtenti.rimuoviPreferito(utente.getUsername(), ri);
+                if (ri != null) utenteService.rimuoviPreferito(utente.getUsername(), ri);
                 else System.out.println("Ristorante non trovato.");
                 break;
             case 4:
@@ -132,6 +144,12 @@ public class MenuHandler {
         		);
                 break;
             case 5:
+            	aggiungiRecensione(utente);
+            	break;
+            case 6:
+            	visualizzaRecensioni();
+            	break;
+            case 7:
             	continua = false;
             default: System.out.println("Scelta non valida.");
             }
@@ -144,18 +162,19 @@ public class MenuHandler {
             System.out.println("1. Visualizza ristoranti gestiti");
             System.out.println("2. Aggiungi ristorante gestito");
             System.out.println("3. Rimuovi ristorante gestito");
-            System.out.println("4. Logout");
+            System.out.println("4. Visualizza le recensioni sui miei ristoranti");
+            System.out.println("5. Logout");
             System.out.print("Scelta: ");
             int scelta = Integer.parseInt(sc.nextLine());
             
             switch (scelta) {
-            case 1: gestoreUtenti.visualizzaRistorantiGestiti(utente.getUsername()); break;
+            case 1: utenteService.visualizzaRistorantiGestiti(utente.getUsername()); break;
             case 2:
                 System.out.print("Nome ristorante da aggiungere: ");
                 String r1 = sc.nextLine();
                 Ristorante r = gestoreRistoranti.trovaRistorante(r1);
                 if (r != null) {
-                    gestoreUtenti.aggiungiPreferito(utente.getUsername(), r);
+                    utenteService.aggiungiPreferito(utente.getUsername(), r);
                 } else {
                     System.out.println("Ristorante non trovato.");
                 }
@@ -163,8 +182,8 @@ public class MenuHandler {
             case 3:
                 System.out.print("Nome ristorante da rimuovere: ");
                 String r2 = sc.nextLine();
-                Ristorante r = gestoreRistoranti.trovaRistorante(r2);
-                if (r != null) gestoreUtenti.rimuoviRistoranteGestito(utente.getUsername(), r);
+                Ristorante ri = gestoreRistoranti.trovaRistorante(r2);
+                if (ri != null) utenteService.rimuoviRistoranteGestito(utente.getUsername(), ri);
                 else System.out.println("Ristorante non trovato.");
                 break;
             case 4: continua = false; break;

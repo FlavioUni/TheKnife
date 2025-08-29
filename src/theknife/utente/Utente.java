@@ -114,4 +114,22 @@ public class Utente
 			System.err.println("Errore: solo i ristoratori possono gestire ristoranti.");
 		}
 	}
+	
+	@Override
+	public String toString () {
+	    return String.format("Utente[%s %s, username=%s, ruolo=%s, domicilio=%s, nascita=%s]",
+	            nome, cognome, username, ruolo, domicilio, data != null ? data.toString() : "n/d");
+	}
+
+	@Override
+	public boolean equals (Object obj) {
+	    if (this == obj) return true;
+	    if (!(obj instanceof Utente other)) return false;
+	    return this.username.equalsIgnoreCase(other.username);
+	}
+
+	@Override
+	public int hashCode () {
+	    return username.toLowerCase().hashCode();
+	}
 }
