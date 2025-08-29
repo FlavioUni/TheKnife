@@ -10,17 +10,16 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import theknife.recensione.Recensione;
+import theknife.utente.GestoreDate;
 
 import java.util.ArrayList;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
 	
-	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	
     @Override
     public void caricaDaCSV(String filePath) {
@@ -40,7 +39,7 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
                 String nomeRistorante = campi[1];
                 int stelle = Integer.parseInt(campi[2]);
                 String commento = campi[3];
-                LocalDate data = LocalDate.parse(campi[4], formatter);
+                LocalDate data = GestoreDate.parseNullable(campi[4]);
                 String risposta = campi.length > 5 ? campi[5] : "";
 
                 Recensione r = new Recensione(username, nomeRistorante, stelle, commento, data, risposta);
@@ -69,7 +68,7 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
                     r.getNomeRistorante(),
                     String.valueOf(r.getStelle()),
                     r.getDescrizione(),
-                    r.getData().format(formatter),
+                    GestoreDate.formatOrEmpty(r.getData()), 
                     r.getRisposta()
                 };
                 writer.writeNext(riga);

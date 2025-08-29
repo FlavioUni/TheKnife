@@ -106,7 +106,7 @@ public class Utente
 				System.out.println("Nessun ristorante in gestione.");
 			else {
 				System.out.println("Ristoranti gestiti da " + username + ":");
-				for (Ristorante r : ristorantiPreferiti)
+				for (Ristorante r : ristorantiGestiti)
 					System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
 			}
 		}

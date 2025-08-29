@@ -6,9 +6,8 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.ristorante;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import theknife.recensione.Recensione;
+
 import java.util.ArrayList;
 
 public class Ristorante {

@@ -10,18 +10,16 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import theknife.utente.Utente;
+import theknife.utente.GestoreDate;
 import theknife.utente.Ruolo;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class GestoreUtenti extends GestoreCSV<Utente> {
-
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("ddMMyyyy");
 
     @Override
     public void caricaDaCSV(String filePath) {
@@ -42,7 +40,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                 String username = campi[2];
                 String password = campi[3];
                 String domicilio = campi[4];
-                LocalDate data = campi[5].isEmpty() ? null : LocalDate.parse(campi[5], FORMATTER);
+                LocalDate data = theknife.utente.GestoreDate.parseNullable(campi[5]);
                 Ruolo ruolo = Ruolo.valueOf(campi[6]);
 
                 Utente u = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
@@ -72,7 +70,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                     u.getUsername(),
                     u.getPassword(),
                     u.getDomicilio(),
-                    u.getData() == null ? "" : u.getData().format(FORMATTER),
+                    GestoreDate.formatOrEmpty(u.getData()),
                     u.getRuolo().name()
                 };
                 writer.writeNext(riga);
