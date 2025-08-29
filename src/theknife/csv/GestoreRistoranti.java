@@ -1,3 +1,8 @@
+/*
+Ciani Flavio Angelo, 761581, VA
+Scolaro Gabriele, 760123, VA
+Gasparini Lorenzo, 759929, VA
+*/
 package theknife.csv;
 
 import com.opencsv.CSVReader;
@@ -20,27 +25,31 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
             boolean header = true;
 
             while ((riga = reader.readNext()) != null) {
-                if (header) { 
-                    header = false; 
-                    continue; 
-                }
+                if (header) { header = false; continue; }
 
-                String nome = riga[0];
-                String indirizzo = riga[1];
-                String location = riga[2];
-                String prezzo = riga[3]; 
-                String cucina = riga[4];
+                // minimo fino a "Delivery" => 13 colonne (Descrizione opzionale)
+                if (riga.length < 13) {
+                    System.err.println("Riga ristoranti ignorata: colonne insufficienti (" + riga.length + ")");
+                    continue;
+                }
+                for (int i = 0; i < riga.length; i++) riga[i] = riga[i].trim();
+
+                String nome       = riga[0];
+                String indirizzo  = riga[1];
+                String location   = riga[2];
+                String prezzo     = riga[3];
+                String cucina     = riga[4];
 
                 double longitudine = parseDouble(riga[5]);
-                double latitudine = parseDouble(riga[6]);
+                double latitudine  = parseDouble(riga[6]);
 
-                String telefono = riga[7];
+                String telefono   = riga[7];
                 String websiteUrl = riga[8];
-                String premi = riga[9]; 
-                String servizi = riga[10];
+                String premi      = riga[9];
+                String servizi    = riga[10];
 
-                boolean prenotazioneOnline = parseBool(riga[11]); 
-                boolean delivery = parseBool(riga[12]);
+                boolean prenotazioneOnline = parseBool(riga[11]);
+                boolean delivery           = parseBool(riga[12]);
 
                 String descrizione = riga.length > 13 ? riga[13] : "";
 
@@ -63,27 +72,27 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
     public void salvaSuCSV(String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[]{
-                    "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
-                    "Longitudine", "Latitudine", "Telefono", "SitoWeb",
-                    "Premio", "Servizi", "PrenotazioneOnline", "Delivery", "Descrizione"
+                "Nome","Indirizzo","Location","Prezzo","Cucina",
+                "Longitudine","Latitudine","Telefono","SitoWeb",
+                "Premio","Servizi","PrenotazioneOnline","Delivery","Descrizione"
             });
 
-            for (Ristorante ristorante : elementi) {
+            for (Ristorante r : elementi) {
                 writer.writeNext(new String[]{
-                        ristorante.getNome(),
-                        ristorante.getIndirizzo(),
-                        ristorante.getLocation(),
-                        ristorante.getPrezzo(),
-                        ristorante.getCucina(),
-                        String.valueOf(ristorante.getLongitudine()),
-                        String.valueOf(ristorante.getLatitudine()),
-                        ristorante.getNumeroTelefono(),
-                        ristorante.getWebsiteUrl(),
-                        ristorante.getPremi(),
-                        ristorante.getServizi(),
-                        ristorante.isPrenotazioneOnline() ? "SI" : "NO",
-                        ristorante.isDelivery() ? "SI" : "NO",
-                        ristorante.getDescrizione() == null ? "" : ristorante.getDescrizione()
+                    r.getNome(),
+                    r.getIndirizzo(),
+                    r.getLocation(),
+                    r.getPrezzo(),
+                    r.getCucina(),
+                    String.valueOf(r.getLongitudine()),
+                    String.valueOf(r.getLatitudine()),
+                    r.getNumeroTelefono(),
+                    r.getWebsiteUrl(),
+                    r.getPremi(),
+                    r.getServizi(),
+                    r.isPrenotazioneOnline() ? "SI" : "NO",
+                    r.isDelivery() ? "SI" : "NO",
+                    r.getDescrizione() == null ? "" : r.getDescrizione()
                 });
             }
         } catch (IOException e) {
@@ -97,14 +106,12 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         if (valore.isEmpty()) return 0.0;
         return Double.parseDouble(valore.replace(',', '.'));
     }
-    
+
     private static boolean parseBool(String valore) {
         if (valore == null) return false;
-        String valoreNormalizzato = valore.trim();
-        return valoreNormalizzato.equalsIgnoreCase("SI") || 
-               valoreNormalizzato.equalsIgnoreCase("SÌ") ||
-               valoreNormalizzato.equalsIgnoreCase("YES") || 
-               valoreNormalizzato.equalsIgnoreCase("TRUE") ||
-               valoreNormalizzato.equals("1");
+        String v = valore.trim();
+        return v.equalsIgnoreCase("SI") || v.equalsIgnoreCase("SÌ")
+            || v.equalsIgnoreCase("YES") || v.equalsIgnoreCase("TRUE")
+            || v.equals("1");
     }
 }
