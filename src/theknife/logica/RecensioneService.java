@@ -9,27 +9,31 @@ package theknife.logica;
 import theknife.recensione.Recensione;
 import theknife.ristorante.Ristorante;
 import theknife.utente.Utente;
-import java.util.*;
 
 public class RecensioneService {
+	
     private final DataContext dataContext;
 
     public RecensioneService(DataContext dataContext) {
         this.dataContext = dataContext;
     }
-
-    // metodi TODO sotto
     
     
-    //aggiuge recensione
+    //aggiunge una recensione a un ristorante da parte di un utente
     public Recensione aggiungiRecensione(Utente autore, Ristorante ristorante, int stelle, String testo) {
         // Validazioni
         if (autore == null) throw new IllegalArgumentException("Utente non valido");
         if (ristorante == null) throw new IllegalArgumentException("Ristorante non valido");
         if (stelle < 1 || stelle > 5) throw new IllegalArgumentException("Stelle devono essere 1–5");
 
-        // Crea recensione
-        Recensione r = new Recensione(autore, ristorante, stelle, testo, new Date());
+        // Crea recensione usando i campi richiesti dal costruttore
+        Recensione r = new Recensione(
+                autore.getUsername(),
+                ristorante.getNome(),
+                ristorante.getLocation(), // se non hai il campo location in Ristorante, passa "" qui
+                stelle,
+                testo
+        );
 
         // Aggiorna RAM
         ristorante.getRecensioni().add(r);
@@ -38,43 +42,50 @@ public class RecensioneService {
         return r;
     }
 
+
     
-    //risponde alla recensione
-    public void rispondiRecensione(Utente ristoratore, Recensione recensione, String risposta) {
+    //il ristoratore risponde a una recensione del proprio ristorante
+    public void rispondiRecensione(Utente ristoratore, Ristorante ristorante, Recensione recensione, String risposta) {
         if (recensione == null) throw new IllegalArgumentException("Recensione nulla");
-        if (ristoratore == null || !ristoratore.gestisce(recensione.getRistorante())) {
-            throw new SecurityException("Non puoi rispondere a questo ristorante");
+        if (ristoratore == null) throw new IllegalArgumentException("Ristoratore non valido");
+
+        // check: il ristoratore deve gestire quel ristorante
+        if (!ristoratore.gestisce(ristorante)) {
+            throw new SecurityException("Non puoi rispondere a recensioni di ristoranti che non gestisci.");
         }
+
         recensione.setRisposta(risposta);
     }
     
-    //modifica recensione
+    //l’autore modifica la propria recensione
     public void modificaRecensione(Utente autore, Recensione recensione, int nuoveStelle, String nuovoTesto) {
         if (recensione == null) throw new IllegalArgumentException("Recensione nulla");
-        if (!recensione.getAutore().equals(autore)) {
-            throw new SecurityException("Puoi modificare solo le tue recensioni");
-        }
-        if (nuoveStelle < 1 || nuoveStelle > 5) throw new IllegalArgumentException("Stelle devono essere 1–5");
+        if (autore == null) throw new IllegalArgumentException("Utente non valido");
 
-        recensione.setStelle(nuoveStelle);
-        recensione.setTesto(nuovoTesto);
-        recensione.setDataUltimaModifica(new Date());
+        // controllo: l’autore deve coincidere
+        if (!recensione.getAutore().equalsIgnoreCase(autore.getUsername())) {
+            throw new SecurityException("Puoi modificare solo le tue recensioni.");
+        }
+
+        recensione.modificaRecensione(nuoveStelle, nuovoTesto);
     }
     
     
     
-    //elimina recensione
-    public void eliminaRecensione(Utente utente, Recensione recensione) {
+    //l’autore o il ristoratore possono eliminare la recensione
+    public void eliminaRecensione(Utente utente, Ristorante ristorante, Recensione recensione) {
         if (recensione == null) throw new IllegalArgumentException("Recensione nulla");
+        if (utente == null) throw new IllegalArgumentException("Utente non valido");
 
-        // Autore può eliminare la sua, ristoratore può rimuovere dal proprio ristorante
-        if (!recensione.getAutore().equals(utente) &&
-            !utente.gestisce(recensione.getRistorante())) {
-            throw new SecurityException("Non puoi eliminare questa recensione");
+        boolean isAutore = recensione.getAutore().equalsIgnoreCase(utente.getUsername());
+        boolean isGestore = utente.gestisce(ristorante);
+
+        if (!isAutore && !isGestore) {
+            throw new SecurityException("Non puoi eliminare questa recensione.");
         }
 
-        // Rimuovi da RAM
-        recensione.getRistorante().getRecensioni().remove(recensione);
+        // rimuovi da RAM
+        ristorante.getRecensioni().remove(recensione);
         dataContext.getGestoreRecensioni().getAll().remove(recensione);
     }
 

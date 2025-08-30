@@ -115,6 +115,15 @@ public class Utente
 		}
 	}
 	
+	//Metodo per la classe RecensioneService. Ritorno true/false se il ristorante è gestito dall'utente
+    public boolean gestisce(Ristorante ristorante) {
+        if (ruolo == Ruolo.RISTORATORE) {
+            return ristorantiGestiti.contains(ristorante);
+        }
+        return false;
+    }
+	
+	
 	@Override
 	public String toString () {
 	    return String.format("Utente[%s %s, username=%s, ruolo=%s, domicilio=%s, nascita=%s]",
