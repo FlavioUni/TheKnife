@@ -7,5 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="/Users/flosh/Desktop/Laboratorio A/TheKnife/lib/opencsv-3.8.jar"/>
+	<classpathentry kind="lib" path="lib/jopencage-2.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
