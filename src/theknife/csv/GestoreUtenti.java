@@ -43,7 +43,9 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                 String username = campi[2];
                 String password = campi[3];
                 String domicilio = campi[4];
+                
                 LocalDate data = GestoreDate.parseNullable(campi[5]);
+                
                 Ruolo ruolo = Ruolo.valueOf(campi[6]);
 
                 Utente u = new Utente(nome, cognome, username, password, domicilio, data, ruolo);

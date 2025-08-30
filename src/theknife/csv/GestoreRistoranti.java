@@ -30,7 +30,6 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                     continue;
                 }
 
-                // minimo fino a "Delivery" => 13 colonne (Descrizione rimossa)
                 if (riga.length < 13) {
                     System.err.println("Riga ristoranti ignorata: colonne insufficienti (" + riga.length + ")");
                     continue;
@@ -57,12 +56,8 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                 boolean prenotazioneOnline = parseBool(riga[11]);
                 boolean delivery = parseBool(riga[12]);
 
-                // Passo descrizione vuota "" per compatibilità con il costruttore attuale
-                Ristorante ristorante = new Ristorante(
-                    nome, indirizzo, location, prezzo, cucina,
-                    longitudine, latitudine, telefono, websiteUrl,
-                    premi, servizi, prenotazioneOnline, delivery, ""
-                );
+                Ristorante ristorante = new Ristorante(nome, indirizzo, location, prezzo, cucina, longitudine, latitudine, 
+                		telefono, websiteUrl, premi, servizi, prenotazioneOnline, delivery);
 
                 elementi.add(ristorante);
             }
@@ -111,12 +106,9 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         return Double.parseDouble(valore.replace(',', '.'));
     }
 
-    // accetta solo "si", "sì" (accentata) o "true" (case-insensitive). Altro -> false
     private static boolean parseBool(String valore) {
         if (valore == null) return false;
         String v = valore.trim();
-        return v.equalsIgnoreCase("si")
-            || v.equalsIgnoreCase("sì")
-            || v.equalsIgnoreCase("true");
+        return v.equalsIgnoreCase("si") || v.equalsIgnoreCase("sì") || v.equalsIgnoreCase("true");
     }
 }

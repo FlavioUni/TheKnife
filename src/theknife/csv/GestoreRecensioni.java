@@ -39,15 +39,19 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
 
                 String username = campi[0];
                 String nomeRistorante = campi[1];
-                int stelle;
+                
+                int stelle;              
                 try {
                     stelle = Integer.parseInt(campi[2]);
                 } catch (NumberFormatException ex) {
                     System.err.println("Riga recensione ignorata: stelle non numeriche (" + campi[2] + ")");
                     continue;
                 }
+                
                 String commento = campi[3];
+                
                 LocalDate data = GestoreDate.parseNullable(campi[4]);
+                
                 String risposta = campi.length > 5 ? campi[5] : "";
 
                 Recensione r = new Recensione(username, nomeRistorante, stelle, commento, data, risposta);
