@@ -6,16 +6,17 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.logica;
 
+import theknife.database.DataContext;   //per dopo
+import theknife.ristorante.Ristorante;
 import theknife.recensione.Recensione;
 import theknife.utente.Utente;
-import theknife.ristorante.Ristorante;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RistoranteService {
     
-    private DataContext dataContext;
+    private final DataContext dataContext;
     
     public RistoranteService(DataContext dataContext) {
         this.dataContext = dataContext;
@@ -29,54 +30,56 @@ public class RistoranteService {
         List<Ristorante> tuttiRistoranti = dataContext.getRistoranti();
         
         for (Ristorante ristorante : tuttiRistoranti) {
-            boolean matches = true;
-            
-            // Filtro per location (obbligatorio)
-            if (location != null && !ristorante.getLocation().toLowerCase().contains(location.toLowerCase())) {
-                matches = false;
-            }
-            
-            // Filtro per cucina
-            if (cucina != null && !ristorante.getCucina().toLowerCase().contains(cucina.toLowerCase())) {
-                matches = false;
-            }
-            
-            // Filtro per fascia prezzo
-            if (fasciaPrezzo != null && !matchesFasciaPrezzo(ristorante.getPrezzo(), fasciaPrezzo)) {
-                matches = false;
-            }
-            
-            // Filtro per delivery
-            if (delivery != null && ristorante.isDelivery() != delivery) {
-                matches = false;
-            }
-            
-            // Filtro per prenotazione online
-            if (prenotazioneOnline != null && ristorante.isPrenotazioneOnline() != prenotazioneOnline) {
-                matches = false;
-            }
-            
-            // Filtro per stelle minime
-            if (minStelle != null && ristorante.MediaStelle() < minStelle) {
-                matches = false;
-            }
-            
-            if (matches) {
+            if (matchesCriteri(ristorante, cucina, location, fasciaPrezzo, delivery, prenotazioneOnline, minStelle)) {
                 risultati.add(ristorante);
             }
         }
         return risultati;
     }
     
+    private boolean matchesCriteri(Ristorante ristorante, String cucina, String location, String fasciaPrezzo,
+                                  Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
+        
+        // Filtro location (obbligatorio secondo specifiche)
+        if (location != null && !ristorante.getLocation().toLowerCase().contains(location.toLowerCase())) {
+            return false;
+        }
+        
+        // Altri filtri
+        if (cucina != null && !ristorante.getCucina().toLowerCase().contains(cucina.toLowerCase())) {
+            return false;
+        }
+        
+        if (fasciaPrezzo != null && !matchesFasciaPrezzo(ristorante.getPrezzo(), fasciaPrezzo)) {
+            return false;
+        }
+        
+        if (delivery != null && ristorante.isDelivery() != delivery) {
+            return false;
+        }
+        
+        if (prenotazioneOnline != null && ristorante.isPrenotazioneOnline() != prenotazioneOnline) {
+            return false;
+        }
+        
+        if (minStelle != null) {
+            Double media = ristorante.mediaStelle();
+            if (media.isNaN() || media < minStelle) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     private boolean matchesFasciaPrezzo(String prezzoRistorante, String fascia) {
         try {
-            double prezzo = Double.parseDouble(prezzoRistorante);
+            double prezzo = Double.parseDouble(prezzoRistorante.replace("€", "").trim());
             
             if (fascia.equals("minore di 30€")) return prezzo < 30;
             if (fascia.equals("tra 20€ e 50€")) return prezzo >= 20 && prezzo <= 50;
             if (fascia.equals("maggiore di 50€")) return prezzo > 50;
             
-            // Gestione di altre fasce se necessario
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -89,9 +92,13 @@ public class RistoranteService {
         System.out.println("Location: " + ristorante.getLocation());
         System.out.println("Prezzo medio: " + ristorante.getPrezzo() + "€");
         System.out.println("Cucina: " + ristorante.getCucina());
+        System.out.println("Telefono: " + ristorante.getNumeroTelefono());
+        System.out.println("Sito web: " + ristorante.getWebsiteUrl());
         System.out.println("Delivery: " + (ristorante.isDelivery() ? "Sì" : "No"));
         System.out.println("Prenotazione online: " + (ristorante.isPrenotazioneOnline() ? "Sì" : "No"));
-        System.out.println("Valutazione media: " + String.format("%.1f", ristorante.MediaStelle()) + " stelle");
+        
+        Double mediaStelle = ristorante.mediaStelle();
+        System.out.println("Valutazione media: " + (mediaStelle.isNaN() ? "Nessuna valutazione" : String.format("%.1f", mediaStelle) + " stelle"));
         System.out.println("Numero recensioni: " + ristorante.getRecensioni().size());
     }
     
@@ -102,9 +109,6 @@ public class RistoranteService {
         } else {
             for (Recensione recensione : ristorante.getRecensioni()) {
                 System.out.println(recensione.visualizzaRecensione());
-                if (recensione.getRisposta() != null && !recensione.getRisposta().isEmpty()) {
-                    System.out.println("Risposta del ristorante: " + recensione.getRisposta());
-                }
                 System.out.println("---");
             }
         }
@@ -114,16 +118,16 @@ public class RistoranteService {
     
     public boolean aggiungiPreferito(Utente cliente, Ristorante ristorante) {
         try {
-            return cliente.aggiungiRistorantePreferito(ristorante);
+            return cliente.aggiungiPreferito(ristorante); // ✅ METODO CORRETTO
         } catch (Exception e) {
             System.err.println("Errore nell'aggiunta ai preferiti: " + e.getMessage());
             return false;
         }
     }
-    
+
     public boolean rimuoviPreferito(Utente cliente, Ristorante ristorante) {
         try {
-            return cliente.rimuoviRistorantePreferito(ristorante);
+            return cliente.rimuoviPreferito(ristorante); // ✅ METODO CORRETTO
         } catch (Exception e) {
             System.err.println("Errore nella rimozione dai preferiti: " + e.getMessage());
             return false;
@@ -137,16 +141,25 @@ public class RistoranteService {
         } else {
             System.out.println("=== I TUOI RISTORANTI PREFERITI ===");
             for (int i = 0; i < preferiti.size(); i++) {
-                System.out.println((i + 1) + ". " + preferiti.get(i).getNome() + 
-                                 " - " + preferiti.get(i).getLocation() +
-                                 " (" + preferiti.get(i).MediaStelle() + "★)");
+                Ristorante r = preferiti.get(i);
+                Double media = r.mediaStelle();
+                System.out.println((i + 1) + ". " + r.getNome() + 
+                                 " - " + r.getLocation() +
+                                 " (" + (media.isNaN() ? "Nessuna valutazione" : String.format("%.1f", media) + "★") + ")");
             }
         }
     }
     
     public boolean aggiungiRecensione(Utente cliente, Ristorante ristorante, int stelle, String descrizione) {
         try {
-            Recensione nuovaRecensione = new Recensione(cliente.getUsername(), stelle, descrizione);
+            // Verifica se l'utente ha già recensito questo ristorante
+            if (ristorante.hasRecensioneFromUser(cliente.getUsername())) {
+                System.err.println("Hai già recensito questo ristorante.");
+                return false;
+            }
+            
+            Recensione nuovaRecensione = new Recensione(cliente.getUsername(), ristorante.getNome(), 
+                                                      ristorante.getLocation(), stelle, descrizione);
             ristorante.aggiungiRecensione(nuovaRecensione);
             dataContext.aggiornaRistorante(ristorante);
             return true;
@@ -158,13 +171,11 @@ public class RistoranteService {
     
     public boolean modificaRecensione(Utente cliente, Ristorante ristorante, int stelle, String nuovaDescrizione) {
         try {
-            for (Recensione recensione : ristorante.getRecensioni()) {
-                if (recensione.getAutore().equals(cliente.getUsername())) {
-                    recensione.setStelle(stelle);
-                    recensione.setDescrizione(nuovaDescrizione);
-                    dataContext.aggiornaRistorante(ristorante);
-                    return true;
-                }
+            Recensione recensioneEsistente = ristorante.getRecensioneFromUser(cliente.getUsername());
+            if (recensioneEsistente != null) {
+                recensioneEsistente.modificaRecensione(stelle, nuovaDescrizione);
+                dataContext.aggiornaRistorante(ristorante);
+                return true;
             }
             return false;
         } catch (Exception e) {
@@ -175,13 +186,11 @@ public class RistoranteService {
     
     public boolean eliminaRecensione(Utente cliente, Ristorante ristorante) {
         try {
-            List<Recensione> recensioni = ristorante.getRecensioni();
-            for (int i = 0; i < recensioni.size(); i++) {
-                if (recensioni.get(i).getAutore().equals(cliente.getUsername())) {
-                    recensioni.remove(i);
-                    dataContext.aggiornaRistorante(ristorante);
-                    return true;
-                }
+            Recensione recensione = ristorante.getRecensioneFromUser(cliente.getUsername());
+            if (recensione != null) {
+                ristorante.rimuoviRecensione(recensione);
+                dataContext.aggiornaRistorante(ristorante);
+                return true;
             }
             return false;
         } catch (Exception e) {
@@ -199,9 +208,14 @@ public class RistoranteService {
                 return false;
             }
             
+            // Verifica che non esista già un ristorante con lo stesso nome
+            if (getRistoranteByNome(nuovoRistorante.getNome()) != null) {
+                System.err.println("Esiste già un ristorante con questo nome");
+                return false;
+            }
+            
             nuovoRistorante.setProprietario(ristoratore.getUsername());
             dataContext.aggiungiRistorante(nuovoRistorante);
-            ristoratore.aggiungiRistoranteGestito(nuovoRistorante);
             return true;
         } catch (Exception e) {
             System.err.println("Errore nell'aggiunta del ristorante: " + e.getMessage());
@@ -210,19 +224,20 @@ public class RistoranteService {
     }
     
     public void visualizzaRiepilogo(Utente ristoratore) {
-        List<Ristorante> ristorantiGestiti = ristoratore.getRistorantiGestiti();
+        List<Ristorante> ristorantiGestiti = getRistorantiByProprietario(ristoratore.getUsername());
         System.out.println("=== RIEPILOGO DEI TUOI RISTORANTI ===");
         
         for (Ristorante ristorante : ristorantiGestiti) {
+            Double media = ristorante.MediaStelle();
             System.out.println("Ristorante: " + ristorante.getNome());
             System.out.println("Recensioni: " + ristorante.getRecensioni().size());
-            System.out.println("Valutazione media: " + String.format("%.1f", ristorante.MediaStelle()) + "★");
+            System.out.println("Valutazione media: " + (media.isNaN() ? "Nessuna valutazione" : String.format("%.1f", media) + "★"));
             System.out.println("---");
         }
     }
     
     public void visualizzaRecensioniRistoratore(Utente ristoratore) {
-        List<Ristorante> ristorantiGestiti = ristoratore.getRistorantiGestiti();
+        List<Ristorante> ristorantiGestiti = getRistorantiByProprietario(ristoratore.getUsername());
         System.out.println("=== RECENSIONI DEI TUOI RISTORANTI ===");
         
         for (Ristorante ristorante : ristorantiGestiti) {
@@ -239,16 +254,15 @@ public class RistoranteService {
                 return false;
             }
             
-            for (Recensione recensione : ristorante.getRecensioni()) {
-                if (recensione.getAutore().equals(autoreRecensione)) {
-                    if (recensione.getRisposta() != null && !recensione.getRisposta().isEmpty()) {
-                        System.err.println("Hai già risposto a questa recensione");
-                        return false;
-                    }
-                    recensione.setRisposta(risposta);
-                    dataContext.aggiornaRistorante(ristorante);
-                    return true;
+            Recensione recensione = ristorante.getRecensioneFromUser(autoreRecensione);
+            if (recensione != null) {
+                if (recensione.getRisposta() != null && !recensione.getRisposta().isEmpty()) {
+                    System.err.println("Hai già risposto a questa recensione");
+                    return false;
                 }
+                recensione.setRisposta(risposta);
+                dataContext.aggiornaRistorante(ristorante);
+                return true;
             }
             return false;
         } catch (Exception e) {
@@ -257,5 +271,33 @@ public class RistoranteService {
         }
     }
     
-
+    // ===== METODI AUSILIARI =====
+    
+    public Ristorante getRistoranteByNome(String nome) {
+        for (Ristorante ristorante : dataContext.getRistoranti()) {
+            if (ristorante.getNome().equalsIgnoreCase(nome)) {
+                return ristorante;
+            }
+        }
+        return null;
+    }
+    
+    public List<Ristorante> getRistorantiByProprietario(String usernameProprietario) {
+        List<Ristorante> risultati = new ArrayList<>();
+        for (Ristorante ristorante : dataContext.getRistoranti()) {
+            if (ristorante.getProprietario() != null && 
+                ristorante.getProprietario().equals(usernameProprietario)) {
+                risultati.add(ristorante);
+            }
+        }
+        return risultati;
+    }
+    
+    public List<Ristorante> getRistorantiVicini(String location) {
+        return cercaRistorante(null, location, null, null, null, null);
+    }
+    
+    public boolean existsRistorante(String nomeRistorante) {
+        return getRistoranteByNome(nomeRistorante) != null;
+    }
 }

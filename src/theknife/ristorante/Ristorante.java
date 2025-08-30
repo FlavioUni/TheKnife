@@ -27,6 +27,7 @@ public class Ristorante {
 	private boolean prenotazioneOnline;
 	private boolean delivery;
 	private ArrayList<Recensione> listaRecensioni;	
+	private String proprietario;
 	
 	//COSTRUTTORE
 	public Ristorante(String nome, String indirizzo, String location, String prezzo, String cucina, double longitudine,
@@ -109,6 +110,10 @@ public class Ristorante {
     public Recensione getRecensione(int index){
     	return listaRecensioni.get(index);
     	}
+    
+    public String getProprietario() {
+    	return proprietario;
+    }
 
 	//SETTER
     public void setNome(String nome){
@@ -161,6 +166,10 @@ public class Ristorante {
     
     public void setDelivery(boolean delivery){
     	this.delivery = delivery;
+    }
+    
+    public void setProprietario(String proprietario) {
+    	this.proprietario = proprietario;
     }
     
     @Override
@@ -234,4 +243,27 @@ public class Ristorante {
     public void clearRecensioni(){
     	this.listaRecensioni.clear();
     }
+    
+    
+ // Metodo per verificare se una recensione esiste già
+    public boolean hasRecensioneFromUser(String username) {
+        for (Recensione recensione : listaRecensioni) {
+            if (recensione.getAutore().equals(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Metodo per ottenere una recensione specifica di un utente
+    public Recensione getRecensioneFromUser(String username) {
+        for (Recensione recensione : listaRecensioni) {
+            if (recensione.getAutore().equals(username)) {
+                return recensione;
+            }
+        }
+        return null;
+    }
+    
+    
 }
