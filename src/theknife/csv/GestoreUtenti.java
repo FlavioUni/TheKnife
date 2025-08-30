@@ -38,13 +38,13 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                 }
                 for (int i = 0; i < campi.length; i++) campi[i] = campi[i].trim();
 
-                String nome      = campi[0];
-                String cognome   = campi[1];
-                String username  = campi[2];
-                String password  = campi[3];
+                String nome = campi[0];
+                String cognome = campi[1];
+                String username = campi[2];
+                String password = campi[3];
                 String domicilio = campi[4];
-                LocalDate data   = GestoreDate.parseNullable(campi[5]);
-                Ruolo ruolo      = Ruolo.valueOf(campi[6]);
+                LocalDate data = GestoreDate.parseNullable(campi[5]);
+                Ruolo ruolo = Ruolo.valueOf(campi[6]);
 
                 Utente u = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
                 elementi.add(u);
