@@ -32,50 +32,29 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
                     continue;
                 }
 
-                if (c.length < 5) {
-                    System.err.println("Riga recensioni ignorata: colonne insufficienti (" + c.length + ")");
+                if (c.length < 7) {
+                    System.err.println("Riga recensioni ignorata: servono 7 colonne, trovate " + c.length);
                     continue;
                 }
                 for (int i = 0; i < c.length; i++) {
                     c[i] = c[i].trim();
                 }
 
-                String username;
-                String nomeRistorante;
-                String location;
-                int stelle;
-                String commento;
-                LocalDate data;
-                String risposta;
+                String username = c[0];
+                String nomeRistorante = c[1];
+                String location = c[2];
 
-                boolean formatoNuovo = c.length >= 7;
-                if (formatoNuovo) {
-                    username = c[0];
-                    nomeRistorante = c[1];
-                    location = c[2];
-                    try {
-                        stelle = Integer.parseInt(c[3]);
-                    } catch (NumberFormatException ex) {
-                        System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[3] + ")");
-                        continue;
-                    }
-                    commento = c[4];
-                    data = GestoreDate.parseNullable(c[5]);
-                    risposta = c.length > 6 ? c[6] : "";
-                } else {
-                    username = c[0];
-                    nomeRistorante = c[1];
-                    location = "";
-                    try {
-                        stelle = Integer.parseInt(c[2]);
-                    } catch (NumberFormatException ex) {
-                        System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[2] + ")");
-                        continue;
-                    }
-                    commento = c[3];
-                    data = c.length > 4 ? GestoreDate.parseNullable(c[4]) : null;
-                    risposta = c.length > 5 ? c[5] : "";
+                int stelle;
+                try {
+                    stelle = Integer.parseInt(c[3]);
+                } catch (NumberFormatException ex) {
+                    System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[3] + ")");
+                    continue;
                 }
+
+                String commento = c[4];
+                LocalDate data = GestoreDate.parseNullable(c[5]);
+                String risposta = c[6];
 
                 Recensione r = new Recensione(username, nomeRistorante, location, stelle, commento, data, risposta);
                 elementi.add(r);
