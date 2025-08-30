@@ -1,4 +1,4 @@
-package eccezioni;
+package theknife.eccezioni;
 
 public class InputAnnullatoException extends RuntimeException {
 	public InputAnnullatoException() {

@@ -1,1 +1,10 @@
 bin/
+# File di configurazione con chiavi API
+data/config.properties
+
+# File di cache della geolocalizzazione  
+data/geocache.ser
+
+# Altri file sensibili
+*.key
+*.secret

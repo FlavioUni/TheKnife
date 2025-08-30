@@ -101,6 +101,34 @@ public class MenuHandler {
             }
         }
 	}
+	
+	// MENU UTENTE NON REGISTRATO
+	private void menuOspite () {
+		boolean continua = true;
+	    while (continua) {
+	        System.out.println("\n--------- MENU OSPITE ---------");
+	        System.out.println("1. Visualizza lista ristoranti");
+	        System.out.println("2. Visualizza le recensioni di un ristorante");
+	        System.out.println("3. Registrati");
+	        System.out.println("4. Torna al menu principale");
+	        System.out.print("Scelta: ");
+	        int scelta = Integer.parseInt(sc.nextLine());
+	        
+	        switch (scelta) {
+	        case 1:
+	        	
+	        case 2:
+	        	visualizzaRecensioni();
+	        case 3:
+	        	
+	        case 4:
+	        	continua = false;
+                break;
+	        default:
+	        	System.out.println("Scelta non valida.");            	
+	        }
+	    }
+	}
 	         
 	// MENU CLIENTE
 	private void menuCliente (Utente utente) {
@@ -116,46 +144,49 @@ public class MenuHandler {
             System.out.println("7. Logout");
             System.out.print("Scelta: ");
             int scelta = Integer.parseInt(sc.nextLine());
-            
-            switch (scelta) {
-            case 1: utenteService.visualizzaPreferiti(utente.getUsername()); break;
-            case 2:
-                System.out.print("Nome ristorante da aggiungere: ");
-                String r1 = sc.nextLine();
-                Ristorante r = gestoreRistoranti.trovaRistorante(r1);
-                if (r != null) utenteService.aggiungiPreferito(utente.getUsername(), r);
-                else System.out.println("Ristorante non trovato.");
-                break;
-            case 3:
-            	System.out.print("Nome ristorante da rimuovere: ");
-                String r2 = sc.nextLine();
-                Ristorante ri = gestoreRistoranti.trovaRistorante(r2);
-                if (ri != null) utenteService.rimuoviPreferito(utente.getUsername(), ri);
-                else System.out.println("Ristorante non trovato.");
-                break;
-            case 4:
-            	System.out.print("Tipo cucina (invio per nessun filtro): ");
-                String tipo = sc.nextLine();
-                System.out.print("Città (invio per nessun filtro): ");
-                String citta = sc.nextLine();
-                System.out.print("Prezzo massimo: ");
-                double prezzo = Double.parseDouble(sc.nextLine());
-                gestoreRistoranti.ricercaRistoranti
-                (
-                        tipo.isEmpty() ? null : tipo,
-                        citta.isEmpty() ? null : citta,
-                        prezzo
-        		);
-                break;
-            case 5:
-            	aggiungiRecensione(utente);
-            	break;
-            case 6:
-            	visualizzaRecensioni();
-            	break;
-            case 7:
-            	continua = false;
-            default: System.out.println("Scelta non valida.");
+            try {
+	            switch (scelta) {
+	            case 1: utenteService.visualizzaPreferiti(utente.getUsername()); break;
+	            case 2:
+	                System.out.print("Nome ristorante da aggiungere: ");
+	                String r1 = sc.nextLine();
+	                Ristorante r = gestoreRistoranti.trovaRistorante(r1);
+	                if (r != null) utenteService.aggiungiPreferito(utente.getUsername(), r);
+	                else System.out.println("Ristorante non trovato.");
+	                break;
+	            case 3:
+	            	System.out.print("Nome ristorante da rimuovere: ");
+	                String r2 = sc.nextLine();
+	                Ristorante ri = gestoreRistoranti.trovaRistorante(r2);
+	                if (ri != null) utenteService.rimuoviPreferito(utente.getUsername(), ri);
+	                else System.out.println("Ristorante non trovato.");
+	                break;
+	            case 4:
+	            	System.out.print("Tipo cucina (invio per nessun filtro): ");
+	                String tipo = sc.nextLine();
+	                System.out.print("Città (invio per nessun filtro): ");
+	                String citta = sc.nextLine();
+	                System.out.print("Prezzo massimo: ");
+	                double prezzo = Double.parseDouble(sc.nextLine());
+	                gestoreRistoranti.ricercaRistoranti
+	                (
+	                        tipo.isEmpty() ? null : tipo,
+	                        citta.isEmpty() ? null : citta,
+	                        prezzo
+	        		);
+	                break;
+	            case 5:
+	            	aggiungiRecensione(utente);
+	            	break;
+	            case 6:
+	            	visualizzaRecensioni();
+	            	break;
+	            case 7:
+	            	continua = false;
+	            default: System.out.println("Scelta non valida.");
+	            }
+            } finally {
+            geoService.shutdown();
             }
         }
 	}

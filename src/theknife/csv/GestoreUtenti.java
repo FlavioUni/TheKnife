@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class GestoreUtenti extends GestoreCSV<Utente> {
 
     @Override
-    public void caricaDaCSV(String filePath) {
+    public void caricaDaCSV (String filePath) {
         elementi = new ArrayList<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
@@ -31,7 +31,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
             while ((campi = reader.readNext()) != null) {
                 if (primaRiga) { primaRiga = false; continue; }
 
-                // minimo: Nome..Ruolo => 7 colonne
+                // Minimo: Nome..Ruolo => 7 colonne
                 if (campi.length < 7) {
                     System.err.println("Riga utenti ignorata: colonne insufficienti (" + campi.length + ")");
                     continue;
@@ -61,7 +61,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
     }
 
     @Override
-    public void salvaSuCSV(String filePath) {
+    public void salvaSuCSV (String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[]{
                 "Nome","Cognome","Username","Password","Domicilio","Data","Ruolo","PreferitiOGestiti"
@@ -85,7 +85,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
         }
     }
     
-    private static String buildAssocCell(Utente u) {
+    private static String buildAssocCell (Utente u) {
         java.util.List<theknife.ristorante.Ristorante> src =
             (u.getRuolo() == theknife.utente.Ruolo.CLIENTE)
             ? u.getRistorantiPreferiti()
