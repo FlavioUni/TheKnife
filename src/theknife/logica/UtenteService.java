@@ -6,6 +6,7 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.logica;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import theknife.ristorante.Ristorante;
@@ -15,26 +16,26 @@ import theknife.utente.Utente;
 public class UtenteService {
     private List<Utente> utenti;
 
-    public UtenteService(List<Utente> utenti) {
+    public UtenteService (List<Utente> utenti) {
         this.utenti = utenti;
     }
 
-    public List<Utente> getUtenti() {
+    public List<Utente> getUtenti () {
         return utenti;
     }
 
-    public Utente trovaUtente(String username) {
+    public Utente trovaUtente (String username) {
         for (Utente u : utenti)
             if (u.getUsername().equalsIgnoreCase(username))
                 return u;
         return null;
     }
 
-    private boolean controlloPassword(String password) {
+    private boolean controlloPassword (String password) {
         return password != null && password.length() >= 6 && password.length() <= 12;
     }
 
-    public boolean registrazione(Utente nuovo) {
+    public boolean registrazione (Utente nuovo) {
         if (trovaUtente(nuovo.getUsername()) != null) {
             System.out.println("Username non disponibile.");
             return false;
@@ -53,7 +54,7 @@ public class UtenteService {
         return true;
     }
 
-    public Utente login(String username, String password) {
+    public Utente login (String username, String password) {
         Utente u = trovaUtente(username);
         if (u != null && u.getPassword().equals(Util.hashPassword(password))) {
             System.out.println("Login avvenuto con successo.");
@@ -62,22 +63,30 @@ public class UtenteService {
         System.out.println("Credenziali errate.");
         return null;
     }
+    
+    public Utente registraGuest (String nome, String cognome, String username, String password,
+            String domicilio, LocalDate data, Ruolo ruolo) {
+    	Utente nuovo = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
+    	if (registrazione(nuovo))
+    		return trovaUtente(username);
+    	return null;
+    }
 
-    public boolean aggiungiPreferito(String username, Ristorante ristorante) {
+    public boolean aggiungiPreferito (String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null)
             return u.aggiungiPreferito(ristorante);
         return false;
     }
 
-    public boolean rimuoviPreferito(String username, Ristorante ristorante) {
+    public boolean rimuoviPreferito (String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null)
             return u.rimuoviPreferito(ristorante);
         return false;
     }
 
-    public void visualizzaPreferiti(String username) {
+    public void visualizzaPreferiti (String username) {
         Utente u = trovaUtente(username);
         if (u != null)
             u.visualizzaPreferiti();
@@ -85,7 +94,7 @@ public class UtenteService {
             System.out.println("Utente non trovato nella sezione clienti.");
     }
 
-    public boolean aggiungiRistoranteGestito(String username, Ristorante ristorante) {
+    public boolean aggiungiRistoranteGestito (String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             return u.aggiungiRistoranteGestito(ristorante);
@@ -93,7 +102,7 @@ public class UtenteService {
         return false;
     }
 
-    public boolean rimuoviRistoranteGestito(String username, Ristorante ristorante) {
+    public boolean rimuoviRistoranteGestito (String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             return u.rimuoviRistoranteGestito(ristorante);
@@ -101,7 +110,7 @@ public class UtenteService {
         return false;
     }
 
-    public void visualizzaRistorantiGestiti(String username) {
+    public void visualizzaRistorantiGestiti (String username) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             u.visualizzaRistorantiGestiti();
