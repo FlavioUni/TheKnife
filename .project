@@ -14,11 +14,4 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>lib/jopencage-2.1.0.jar</name>
-			<type>1</type>
-			<location>C:/Users/loryg/Downloads/jopencage-2.1.0.jar</location>
-		</link>
-	</linkedResources>
 </projectDescription>

@@ -7,6 +7,14 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="/Users/flosh/Desktop/Laboratorio A/TheKnife/lib/opencsv-3.8.jar"/>
-	<classpathentry kind="lib" path="lib/jopencage-2.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-annotations-2.13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-core-2.13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-databind-2.13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jopencage-1.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-simple-1.7.30.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
