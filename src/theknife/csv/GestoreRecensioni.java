@@ -7,7 +7,6 @@ package theknife.csv;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-
 import theknife.recensione.Recensione;
 import theknife.utente.GestoreDate;
 
@@ -24,37 +23,61 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
         elementi = new ArrayList<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            String[] campi;
-            boolean primaRiga = true;
+            String[] c;
+            boolean header = true;
 
-            while ((campi = reader.readNext()) != null) {
-                if (primaRiga) { primaRiga = false; continue; }
-
-                // minimo: Username..Data => 5 colonne (Risposta opzionale)
-                if (campi.length < 5) {
-                    System.err.println("Riga recensioni ignorata: colonne insufficienti (" + campi.length + ")");
+            while ((c = reader.readNext()) != null) {
+                if (header) {
+                    header = false;
                     continue;
                 }
-                for (int i = 0; i < campi.length; i++) campi[i] = campi[i].trim();
 
-                String username = campi[0];
-                String nomeRistorante = campi[1];
-                
-                int stelle;              
-                try {
-                    stelle = Integer.parseInt(campi[2]);
-                } catch (NumberFormatException ex) {
-                    System.err.println("Riga recensione ignorata: stelle non numeriche (" + campi[2] + ")");
+                if (c.length < 5) {
+                    System.err.println("Riga recensioni ignorata: colonne insufficienti (" + c.length + ")");
                     continue;
                 }
-                
-                String commento = campi[3];
-                
-                LocalDate data = GestoreDate.parseNullable(campi[4]);
-                
-                String risposta = campi.length > 5 ? campi[5] : "";
+                for (int i = 0; i < c.length; i++) {
+                    c[i] = c[i].trim();
+                }
 
-                Recensione r = new Recensione(username, nomeRistorante, stelle, commento, data, risposta);
+                String username;
+                String nomeRistorante;
+                String location;
+                int stelle;
+                String commento;
+                LocalDate data;
+                String risposta;
+
+                boolean formatoNuovo = c.length >= 7;
+                if (formatoNuovo) {
+                    username = c[0];
+                    nomeRistorante = c[1];
+                    location = c[2];
+                    try {
+                        stelle = Integer.parseInt(c[3]);
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[3] + ")");
+                        continue;
+                    }
+                    commento = c[4];
+                    data = GestoreDate.parseNullable(c[5]);
+                    risposta = c.length > 6 ? c[6] : "";
+                } else {
+                    username = c[0];
+                    nomeRistorante = c[1];
+                    location = "";
+                    try {
+                        stelle = Integer.parseInt(c[2]);
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[2] + ")");
+                        continue;
+                    }
+                    commento = c[3];
+                    data = c.length > 4 ? GestoreDate.parseNullable(c[4]) : null;
+                    risposta = c.length > 5 ? c[5] : "";
+                }
+
+                Recensione r = new Recensione(username, nomeRistorante, location, stelle, commento, data, risposta);
                 elementi.add(r);
             }
 
@@ -67,15 +90,17 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
 
     @Override
     public void salvaSuCSV(String filePath) {
-        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
-            writer.writeNext(new String[]{
-                "Username","NomeRistorante","Stelle","Commento","Data","Risposta"
+        try (CSVWriter w = new CSVWriter(new FileWriter(filePath))) {
+            w.writeNext(new String[]{
+                "Username", "NomeRistorante", "LocationRistorante",
+                "Stelle", "Commento", "Data", "Risposta"
             });
 
             for (Recensione r : elementi) {
-                writer.writeNext(new String[]{
+                w.writeNext(new String[]{
                     r.getAutore(),
                     r.getNomeRistorante(),
+                    r.getLocationRistorante(),
                     String.valueOf(r.getStelle()),
                     r.getDescrizione(),
                     GestoreDate.formatOrEmpty(r.getData()),
