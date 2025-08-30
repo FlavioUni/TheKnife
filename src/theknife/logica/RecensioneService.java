@@ -42,7 +42,6 @@ public class RecensioneService {
         return r;
     }
 
-
     
     //il ristoratore risponde a una recensione del proprio ristorante
     public void rispondiRecensione(Utente ristoratore, Ristorante ristorante, Recensione recensione, String risposta) {
@@ -57,6 +56,7 @@ public class RecensioneService {
         recensione.setRisposta(risposta);
     }
     
+    
     //l’autore modifica la propria recensione
     public void modificaRecensione(Utente autore, Recensione recensione, int nuoveStelle, String nuovoTesto) {
         if (recensione == null) throw new IllegalArgumentException("Recensione nulla");
@@ -69,7 +69,6 @@ public class RecensioneService {
 
         recensione.modificaRecensione(nuoveStelle, nuovoTesto);
     }
-    
     
     
     //l’autore o il ristoratore possono eliminare la recensione
