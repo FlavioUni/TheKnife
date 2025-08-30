@@ -21,7 +21,7 @@ public class GeoService {
     private final Map<String, double[]> cache = new HashMap<>(); // Indirizzo → [lat, lon]
     
     public GeoService(String apiKey) {
-        this.geocoder = new JOpenCageGeocoder(apiKey);
+        this.geocoder = new JOpenCageGeocoder(apiKey); 
     }
 
     /**
