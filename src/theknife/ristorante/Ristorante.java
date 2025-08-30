@@ -110,10 +110,7 @@ public class Ristorante {
     	return listaRecensioni.get(index);
     	}
 
-	
-    
-    //SETTER
-    
+	//SETTER
     public void setNome(String nome){
     	this.nome = nome;
     }
@@ -134,11 +131,11 @@ public class Ristorante {
     	this.cucina = cucina;
     }
     
-    public void setLongitudine(Double longitudine){
+    public void setLongitudine(double longitudine){
     	this.longitudine = longitudine;
     }
     
-    public void setLatitudine(Double latitudine){
+    public void setLatitudine(double latitudine){
     	this.latitudine = latitudine;
     }
     
@@ -158,35 +155,33 @@ public class Ristorante {
     	this.servizi = servizi;
     }
     
-    public void setPrenotazioneOnline(Boolean prenotazioneOnline){
+    public void setPrenotazioneOnline(boolean prenotazioneOnline){
     	this.prenotazioneOnline = prenotazioneOnline;
     }
     
-    public void setDelivery(Boolean delivery){
+    public void setDelivery(boolean delivery){
     	this.delivery = delivery;
     }
     
-    
     @Override
     public String toString() {
-        return "Ristorante{" +
-               "nome='" + nome + '\'' +
-               ", indirizzo='" + indirizzo + '\'' +
-               ", location='" + location + '\'' +
-               ", prezzo=" + prezzo +
-               ", cucina='" + cucina + '\'' +
-               ", longitudine=" + longitudine +
-               ", latitudine=" + latitudine +
-               ", numeroTelefono='" + numeroTelefono + '\'' +
-               ", websiteUrl='" + websiteUrl + '\'' +
-               ", premi='" + premi + '\'' +
-               ", servizi='" + servizi + '\'' +
-               ", prenotazioneOnline=" + prenotazioneOnline +
-               ", delivery=" + delivery;
+    	return "Ristorante{" +
+    	       "nome='" + nome + '\'' +
+    	       ", indirizzo='" + indirizzo + '\'' +
+    	       ", location='" + location + '\'' +
+    	       ", prezzo='" + prezzo + '\'' +
+    	       ", cucina='" + cucina + '\'' +
+    	       ", longitudine=" + longitudine +
+    	       ", latitudine=" + latitudine +
+    	       ", numeroTelefono='" + numeroTelefono + '\'' +
+    	       ", websiteUrl='" + websiteUrl + '\'' +
+    	       ", premi='" + premi + '\'' +
+    	       ", servizi='" + servizi + '\'' +
+    	       ", prenotazioneOnline=" + prenotazioneOnline +
+    	       ", delivery=" + delivery +
+    	       '}';
     }
 
-    
-    //metodi per aggiungere o rimuovere recensioni dalla lista
     public void aggiungiRecensione(Recensione recensione) {
         listaRecensioni.add(recensione);
     }
@@ -195,8 +190,6 @@ public class Ristorante {
         listaRecensioni.remove(recensione);
     }
     
-    
-    //Restituisce una stringa contenente tutte le recensioni del ristorante
     public String getRecensioniString(){
         String s = "";
         for(Recensione r : listaRecensioni)
@@ -204,9 +197,7 @@ public class Ristorante {
         return s;
     }
     
-    
-    //Rimuove una recensione in base all'username e commento corrispondente
-    public void RimuoviRecensione(String username, String descrizione){
+    public void rimuoviRecensione(String username, String descrizione){
         for(int i = listaRecensioni.size() - 1; i >= 0; i--) {
             Recensione r = listaRecensioni.get(i);
             if(r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)) {
@@ -215,9 +206,7 @@ public class Ristorante {
         }
     }
     
-    
-    //Modifica una recensione esistente con lo stesso username, commento e voto
-    public void ModificaRecensione(String username, String descrizione, int stelle){
+    public void modificaRecensione(String username, String descrizione, int stelle){
         int i=0;
         for(Recensione r : listaRecensioni){
             if(r.getAutore().equals(username) && r.getDescrizione().equals(descrizione) && r.getStelle() == stelle){
@@ -228,28 +217,21 @@ public class Ristorante {
         }
     }
 
-    
-    //Aggiunge una recensione alla lista del ristorante
-    public void AggiungiRecensione(Recensione recensione){
-        listaRecensioni.add(recensione);
-    }
-    
-    
-    //Calcola la media dei voti delle recensioni
-    public Double MediaStelle(){
+    public Double mediaStelle(){
+        if (listaRecensioni.isEmpty()) return 0.0;
         Double somma = 0.0;
         for(Recensione r : listaRecensioni)
             somma += r.getStelle();
         return somma / listaRecensioni.size();
     }
-    
-    
-    //Stampa su console tutte le recensioni del ristorante
-    public void VisualizzaRecensioni(){
+
+    public void visualizzaRecensioni(){
         System.out.println("La lista delle recensioni del ristorante " + this.nome + ":\n");
         for(Recensione rec: listaRecensioni)
             System.out.println(rec.visualizzaRecensione());
     }
-    
-    
+
+    public void clearRecensioni(){
+    	this.listaRecensioni.clear();
+    }
 }
