@@ -49,6 +49,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                 Ruolo ruolo = Ruolo.valueOf(campi[6]);
 
                 Utente u = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
+                if (campi.length > 7) u.setAssocKeysRaw(campi[7]);
                 elementi.add(u);
             }
 
@@ -63,10 +64,11 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
     public void salvaSuCSV(String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[]{
-                "Nome","Cognome","Username","Password","Domicilio","Data","Ruolo"
+                "Nome","Cognome","Username","Password","Domicilio","Data","Ruolo","PreferitiOGestiti"
             });
 
             for (Utente u : elementi) {
+            	String preferitiOGestiti = buildAssocCell(u);
                 writer.writeNext(new String[]{
                     u.getNome(),
                     u.getCognome(),
@@ -74,11 +76,27 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                     u.getPassword(),
                     u.getDomicilio(),
                     GestoreDate.formatOrEmpty(u.getData()),
-                    u.getRuolo().name()
+                    u.getRuolo().name(),
+                    preferitiOGestiti
                 });
             }
         } catch (IOException e) {
             System.err.println("Errore nella scrittura del file utenti: " + e.getMessage());
         }
+    }
+    
+    private static String buildAssocCell(Utente u) {
+        java.util.List<theknife.ristorante.Ristorante> src =
+            (u.getRuolo() == theknife.utente.Ruolo.CLIENTE)
+            ? u.getRistorantiPreferiti()
+            : u.getRistorantiGestiti();
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < src.size(); i++) {
+            theknife.ristorante.Ristorante r = src.get(i);
+            if (i > 0) sb.append(';');
+            sb.append(r.getNome()).append('|').append(r.getLocation());
+        }
+        return sb.toString();
     }
 }

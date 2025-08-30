@@ -123,6 +123,11 @@ public class Utente
         return false;
     }
 	
+ // --- supporto per persistenza preferiti/gestiti --- 
+    private String assocKeysRaw = "";
+
+    public String getAssocKeysRaw() { return assocKeysRaw; }
+    public void setAssocKeysRaw(String s) { this.assocKeysRaw = (s == null ? "" : s); }
 	
 	@Override
 	public String toString () {

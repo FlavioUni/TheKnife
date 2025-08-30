@@ -61,6 +61,7 @@ public class DataContext {
 	    // prepara indici e collega
 	    buildIndici();
 	    recensioniRistorante();
+	    linkAssocUtenti();
 	}
 	
 	private void buildIndici() {
@@ -114,4 +115,130 @@ public class DataContext {
 			System.err.println("Recensioni orfane: " + orfane);
 	}
 	
+	// metodi getter
+	public List<Utente> getUtenti() {return utenti;}
+	public List<Ristorante> getRistoranti() {return ristoranti;}
+	public List<Recensione> getRecensioni() {return recensioni;}
+	
+	// ricerche rapide
+	public Utente findUtente(String username) {
+	    if (username == null) return null;
+	    return utentiPerUsername.get(username.trim().toLowerCase());
+	}
+
+	public Ristorante findRistorante(String nome, String location) {
+	    return ristorantePerKey.get(ristoKey(nome, location));
+	}
+	
+	// aggiunta recensione
+	public boolean addRecensione(Recensione rec) {
+	    if (rec == null) return false;
+
+	    Ristorante r = findRistorante(rec.getNomeRistorante(), rec.getLocationRistorante());
+	    if (r == null) {
+	        System.err.println("Ristorante non trovato per recensione: "
+	                + rec.getNomeRistorante() + " | " + rec.getLocationRistorante());
+	        return false; // blocca orfane
+	    }
+
+	    recensioni.add(rec);
+	    r.aggiungiRecensione(rec);
+
+	    String key = ristoKey(rec.getNomeRistorante(), rec.getLocationRistorante());
+	    List<Recensione> lista = recensioniPerRistoKey.get(key);
+	    if (lista == null) {
+	        lista = new ArrayList<>();
+	        recensioniPerRistoKey.put(key, lista);
+	    }
+	    lista.add(rec);
+
+	    return true;
+	}
+	
+	// aggiunta utente
+	public boolean addUtente(Utente u) {
+		if (u == null) return false;
+
+		String user = (u.getUsername() == null) ? "" : u.getUsername().trim().toLowerCase();
+		if (user.isEmpty()) {
+			System.err.println("Impossibile aggiungere utente: username vuoto.");
+			return false;
+		}
+
+		if (utentiPerUsername == null) 
+			buildIndici(); 
+		if (utentiPerUsername.containsKey(user)) {
+			System.err.println("Utente già esistente: " + user);
+			return false;
+		}
+
+		utenti.add(u);
+		utentiPerUsername.put(user, u);
+		return true;
+	}
+	
+	// aggiunta ristorante 
+
+public boolean addRistorante(Ristorante r) {
+	if (r == null) return false;
+
+	String key = ristoKey(r.getNome(), r.getLocation());
+	if (key.equals("|")) {
+		System.err.println("Impossibile aggiungere ristorante: nome/location mancanti.");
+		return false;
+	}
+
+	if (ristorantePerKey == null) 
+		buildIndici();
+	if (ristorantePerKey.containsKey(key)) {
+		System.err.println("Ristorante già presente: " + r.getNome() + " | " + r.getLocation());
+		return false;
+	}
+
+	ristoranti.add(r);
+	ristorantePerKey.put(key, r);
+
+	if (recensioniPerRistoKey != null) {
+		List<Recensione> pendenti = recensioniPerRistoKey.get(key);
+		if (pendenti != null) {
+			for (Recensione rec : pendenti) r.aggiungiRecensione(rec);
+		}
+	}
+	return true;
+}
+
+private void linkAssocUtenti() {
+    for (Utente u : utenti) {
+        String raw = u.getAssocKeysRaw();
+        if (raw == null || raw.trim().isEmpty()) continue;
+
+        String[] tokens = raw.split(";");
+        for (String tok : tokens) {
+            tok = tok.trim();
+            if (tok.isEmpty()) continue;
+
+            String[] parts = tok.split("\\|", 2); // split una sola volta
+            String nome = parts[0];
+            String loc  = (parts.length > 1) ? parts[1] : "";
+
+            Ristorante r = findRistorante(nome, loc);
+            if (r == null) {
+                System.err.println("Associazione utente non risolta: " + tok);
+                continue;
+            }
+
+            if (u.getRuolo() == theknife.utente.Ruolo.CLIENTE) {
+                u.aggiungiPreferito(r);
+            } else if (u.getRuolo() == theknife.utente.Ruolo.RISTORATORE) {
+                u.aggiungiRistoranteGestito(r);
+            }
+        }
+    }
+}
+	
+	public void saveAll(String utentiCsv, String ristorantiCsv, String recensioniCsv) {
+	    gestoreUtenti.salvaSuCSV(utentiCsv);
+	    gestoreRistoranti.salvaSuCSV(ristorantiCsv);
+	    gestoreRecensioni.salvaSuCSV(recensioniCsv);
+	}
 }

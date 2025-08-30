@@ -1,6 +1,6 @@
 Nome,Cognome,Username,Password,Domicilio,DataNascita,Ruolo,PreferitiOGestiti
-Mario,Rossi,mrossi,pwd1234,Milano,12/05/1990,CLIENTE,"Trattoria da Mario,Sushi World"
-Anna,Verdi,averdi,ciao4567,Varese,23/11/1985,RISTORATORE,La Brace
+Mario,Rossi,mrossi,pwd1234,Milano,12/05/1990,CLIENTE,Trattoria da Mario|Milano;Sushi World|Milano
+Anna,Verdi,averdi,ciao4567,Varese,23/11/1985,RISTORATORE,La Brace|Varese
 Luca,Bianchi,lbianchi,pass7890,Como,01/07/1992,CLIENTE,
-Sara,Neri,sneri,qwerty12,Lecco,17/02/1988,RISTORATORE,"Pizzeria Bella Napoli,La Brace"
-Giulia,Russo,grusso,abc12345,Bergamo,31/12/1995,CLIENTE,Sushi World
+Sara,Neri,sneri,qwerty12,Lecco,17/02/1988,RISTORATORE,Pizzeria Bella Napoli|Lecco;La Brace|Varese
+Giulia,Russo,grusso,abc12345,Bergamo,31/12/1995,CLIENTE,Sushi World|Milano
