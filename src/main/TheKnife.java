@@ -1,6 +1,6 @@
 package main;
 
-import theknife.utente.MenuHandler;
+import theknife.logica.MenuHandler;
 
 public class TheKnife {
     public static void main(String[] args) {

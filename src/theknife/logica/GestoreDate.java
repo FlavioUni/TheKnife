@@ -2,7 +2,7 @@
 Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
-package theknife.utente;
+package theknife.logica;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

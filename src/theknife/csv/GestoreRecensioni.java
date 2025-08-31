@@ -7,8 +7,9 @@ package theknife.csv;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+
+import theknife.logica.GestoreDate;
 import theknife.recensione.Recensione;
-import theknife.utente.GestoreDate;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -45,7 +46,7 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
 	            java.time.LocalDate data = null;
 	            if (idxData != -1) {
 	                try {
-	                    data = theknife.utente.GestoreDate.parseNullable(c[idxData]); // usa il tuo GestoreDate
+	                    data = theknife.logica.GestoreDate.parseNullable(c[idxData]); // usa il tuo GestoreDate
 	                } catch (Exception ex) {
 	                    System.err.println("Data non valida '" + c[idxData] + "', la ignoro.");
 	                    data = null;

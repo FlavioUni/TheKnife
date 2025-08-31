@@ -7,7 +7,8 @@ package theknife.recensione;
 
 import java.time.LocalDate;
 import java.util.Objects;
-import theknife.utente.GestoreDate; 
+
+import theknife.logica.GestoreDate; 
 
 public class Recensione {
 

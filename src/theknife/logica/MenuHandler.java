@@ -3,19 +3,15 @@ Ciani Flavio Angelo, 761581, VA
 Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
-package theknife.utente;
+package theknife.logica;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
-import theknife.logica.DataContext;
-import theknife.logica.UtenteService;
-import theknife.logica.RistoranteService;
-import theknife.logica.RecensioneService;
-
 import theknife.ristorante.Ristorante;
+import theknife.utente.*;
 import theknife.recensione.Recensione;
 
 public class MenuHandler {
