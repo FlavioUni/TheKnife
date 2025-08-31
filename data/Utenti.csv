@@ -1,6 +1,6 @@
 Nome,Cognome,Username,Password,Domicilio,DataNascita,Ruolo,PreferitiOGestiti
-Mario,Rossi,mrossi,pwd1234,Milano,12/05/1990,CLIENTE,Smoke’N Ash BBQ|Arlington
-Anna,Verdi,averdi,ciao4567,Varese,23/11/1985,RISTORATORE,Konoba Fetivi|Split
-Luca,Bianchi,lbianchi,pass7890,Como,01/07/1992,CLIENTE,Fang Xiang Jing|Chengdu
+Mario,Rossi,mrossi,pwd1234,Milano,12/05/1990,CLIENTE,"Smoke'n Ash BBQ|Arlington, USA"
+Anna,Verdi,averdi,ciao4567,Varese,23/11/1985,RISTORATORE,"Konoba Fetivi|Split, Croatia"
+Luca,Bianchi,lbianchi,pass7890,Como,01/07/1992,CLIENTE,"Fang Xiang Jing|Chengdu, China Mainland"
 Sara,Neri,sneri,qwerty12,Lecco,17/02/1988,RISTORATORE,21 Grams|Dubai
-Giulia,Russo,grusso,abc12345,Bergamo,31/12/1995,CLIENTE,The Little Pickle|Oslo
+Giulia,Russo,grusso,abc12345,Bergamo,31/12/1995,CLIENTE,"The Little Pickle|Oslo, Norway"
