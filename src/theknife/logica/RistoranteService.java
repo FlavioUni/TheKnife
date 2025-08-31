@@ -55,9 +55,9 @@ public class RistoranteService {
     private boolean matchesFasciaPrezzo(String prezzoRistorante, String fascia) {
         try {
             double prezzo = Double.parseDouble(prezzoRistorante.replace("€", "").trim());
-            if (fascia.equals("minore di 30€")) return prezzo < 30;
-            if (fascia.equals("tra 20€ e 50€")) return prezzo >= 20 && prezzo <= 50;
-            if (fascia.equals("maggiore di 50€")) return prezzo > 50;
+            if ("minore di 20€".equals(fascia)) return prezzo < 20;
+            if ("tra 20€ e 50€".equals(fascia)) return prezzo >= 20 && prezzo <= 50;
+            if ("maggiore di 50€".equals(fascia)) return prezzo > 50;
             return true;
         } catch (NumberFormatException e) {
             return false;

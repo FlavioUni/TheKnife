@@ -24,100 +24,107 @@ public class Utente
 	private List<Ristorante> ristorantiPreferiti;
 	private List<Ristorante> ristorantiGestiti;
 	
-	// costruttori
-	public Utente (String a1, String a2, String a3, String a4, String a5, LocalDate a6, Ruolo a7)
+	/**COSTRUTTORE parametrico della classe Utente
+	 * @param nome Nome dell'utente
+	 * @param cognome Cognome dell'utente
+	 * @param username Username dell'utente
+	 * @param password Password dell'utente
+	 * @param domicilio Domicilio dell'utente
+	 * @param data Data di nascita dell'utente
+	 * @param ruolo Ruolo dell'utente che può essere {@link theknife.utente.Ruolo#CLIENTE} o {@link theknife.utente.Ruolo#RISTORATORE}
+	 * 		CLIENTE può gestire i suoi preferiti, mentre RISTORATORE gestisce i suoi ristoranti*/
+	public Utente (String nome, String cognome, String username, String password, String domicilio, LocalDate data, Ruolo ruolo)
 	{
-		this.nome = a1;
-		this.cognome = a2;
-		this.username = a3;
-		this.password = a4;
-		this.domicilio = a5;
-		this.data = a6;
-		this.ruolo = a7;
+		this.nome = nome;
+		this.cognome = cognome;
+		this.username = username;
+		this.password = password;
+		this.domicilio = domicilio;
+		this.data = data;
+		this.ruolo = ruolo;
 		this.ristorantiPreferiti = new ArrayList<>();
 		this.ristorantiGestiti = new ArrayList<>();
 	}
 	
-	public Utente (String a1, String a2, String a3, String a4, String a5, Ruolo a6)
-	{
-		this(a1, a2, a3, a4, a5, null, a6);
-	}
-	
 	// metodi getter e setter
-	public String getNome () {return nome;}
-	
-	public String getCognome () {return cognome;}
-	
-	public String getUsername () {return username;}
-	
-	public String getPassword () {return password;}
-	
-	public String getDomicilio () {return domicilio;}
-	
-	public LocalDate getData () {return data;}
-	
-	public Ruolo getRuolo () {return ruolo;}
-	
-	public List<Ristorante> getRistorantiPreferiti () {return ristorantiPreferiti;}
-	
+	public String getNome () {return nome;}	
+	public String getCognome () {return cognome;}	
+	public String getUsername () {return username;}	
+	public String getPassword () {return password;}	
+	public String getDomicilio () {return domicilio;}	
+	public LocalDate getData () {return data;}	
+	public Ruolo getRuolo () {return ruolo;}	
+	public List<Ristorante> getRistorantiPreferiti () {return ristorantiPreferiti;}	
 	public List<Ristorante> getRistorantiGestiti () {return ristorantiGestiti;}
-	// - //
-	public void setNome (String x) {this.nome = x;}
 	
+	public void setNome (String x) {this.nome = x;}	
 	public void setCognome (String x) {this.cognome = x;}
-	// - //
-	public boolean aggiungiPreferito (Ristorante ristorante) {
-		if (ruolo == Ruolo.CLIENTE && !ristorantiPreferiti.contains(ristorante)) {
-			ristorantiPreferiti.add(ristorante);
-			return true;
-		}
-		return false;
+	
+	
+	// --- API UNIFICATA ---
+
+	/** Aggiunge l'associazione coerente col ruolo:
+	 *  - CLIENTE  -> in ristorantiPreferiti
+	 *  - RISTORATORE -> in ristorantiGestiti
+	 */
+	public boolean aggiungiAssoc(Ristorante ristorante) {
+	    if (ruolo == Ruolo.CLIENTE) {
+	        if (!ristorantiPreferiti.contains(ristorante)) {
+	            ristorantiPreferiti.add(ristorante);
+	            return true;
+	        }
+	        return false;
+	    } else if (ruolo == Ruolo.RISTORATORE) {
+	        if (!ristorantiGestiti.contains(ristorante)) {
+	            ristorantiGestiti.add(ristorante);
+	            return true;
+	        }
+	        return false;
+	    }
+	    return false;
 	}
-	public boolean rimuoviPreferito (Ristorante ristorante) {
-		if (ruolo == Ruolo.CLIENTE)
-			return ristorantiPreferiti.remove(ristorante);
-		return false;
+
+	/** Rimuove l'associazione coerente col ruolo. */
+	public boolean rimuoviAssoc(Ristorante ristorante) {
+	    if (ruolo == Ruolo.CLIENTE) {
+	        return ristorantiPreferiti.remove(ristorante);
+	    } else if (ruolo == Ruolo.RISTORATORE) {
+	        return ristorantiGestiti.remove(ristorante);
+	    }
+	    return false;
 	}
-	public void visualizzaPreferiti () {
-		if (ruolo == Ruolo.CLIENTE) {
-			if (ristorantiPreferiti.isEmpty())
-				System.out.println("Lista dei preferiti vuota.");
-			else {
-				System.out.println("Ristoranti preferiti di " + username + ":");
-				for (Ristorante r : ristorantiPreferiti)
-					System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
-			}
-		}
-		else {
-			System.err.println("Errore: lista dei preferiti disponibile solo per i clienti.");
-		}
+
+	/** Stampa a video l’elenco coerente col ruolo. */
+	public void visualizzaAssoc() {
+	    if (ruolo == Ruolo.CLIENTE) {
+	        if (ristorantiPreferiti.isEmpty()) {
+	            System.out.println("Lista dei preferiti vuota.");
+	        } else {
+	            System.out.println("Ristoranti preferiti di " + username + ":");
+	            for (Ristorante r : ristorantiPreferiti)
+	                System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
+	        }
+	    } else if (ruolo == Ruolo.RISTORATORE) {
+	        if (ristorantiGestiti.isEmpty()) {
+	            System.out.println("Nessun ristorante in gestione.");
+	        } else {
+	            System.out.println("Ristoranti gestiti da " + username + ":");
+	            for (Ristorante r : ristorantiGestiti)
+	                System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
+	        }
+	    } else {
+	        System.err.println("Ruolo non supportato.");
+	    }
 	}
-	public boolean aggiungiRistoranteGestito (Ristorante ristorante) {
-		if (ruolo == Ruolo.RISTORATORE && !ristorantiGestiti.contains(ristorante)) {
-			ristorantiGestiti.add(ristorante);
-			return true;
-		}
-		return false;
-	}
-	public boolean rimuoviRistoranteGestito (Ristorante ristorante) {
-		if (ruolo == Ruolo.RISTORATORE)
-			return ristorantiGestiti.remove(ristorante);
-		return false;
-	}
-	public void visualizzaRistorantiGestiti () {
-		if (ruolo == Ruolo.RISTORATORE) {
-			if (ristorantiGestiti.isEmpty())
-				System.out.println("Nessun ristorante in gestione.");
-			else {
-				System.out.println("Ristoranti gestiti da " + username + ":");
-				for (Ristorante r : ristorantiGestiti)
-					System.out.println("- " + r.getNome() + " (" + r.getLocation() + ")");
-			}
-		}
-		else {
-			System.err.println("Errore: solo i ristoratori possono gestire ristoranti.");
-		}
-	}
+	
+	// --- Vecchi metodi -> delega all’API unificata (retro-compatibilità) ---
+	public boolean aggiungiPreferito(Ristorante ristorante) { return aggiungiAssoc(ristorante); }
+	public boolean rimuoviPreferito(Ristorante ristorante)   { return rimuoviAssoc(ristorante); }
+	public void visualizzaPreferiti()                        { visualizzaAssoc(); }
+
+	public boolean aggiungiRistoranteGestito(Ristorante ristorante) { return aggiungiAssoc(ristorante); }
+	public boolean rimuoviRistoranteGestito(Ristorante ristorante)  { return rimuoviAssoc(ristorante); }
+	public void visualizzaRistorantiGestiti()                       { visualizzaAssoc(); }
 	
 	//Metodo per la classe RecensioneService. Ritorno true/false se il ristorante è gestito dall'utente
     public boolean gestisce (Ristorante ristorante) {
@@ -133,11 +140,14 @@ public class Utente
     public String getAssocKeysRaw() { return assocKeysRaw; }
     public void setAssocKeysRaw(String s) { this.assocKeysRaw = (s == null ? "" : s); }
 	
-	@Override
-	public String toString () {
-	    return String.format("Utente[%s %s, username=%s, ruolo=%s, domicilio=%s, nascita=%s]",
-	            nome, cognome, username, ruolo, domicilio, data != null ? data.toString() : "n/d");
-	}
+    @Override
+    public String toString() {
+        return String.format(
+            "Utente[%s %s, username=%s, ruolo=%s, domicilio=%s, nascita=%s]",
+            nome, cognome, username, ruolo, domicilio,
+            theknife.logica.GestoreDate.formatOrEmpty(data)
+        );
+    }
 
 	@Override
 	public boolean equals (Object obj) {

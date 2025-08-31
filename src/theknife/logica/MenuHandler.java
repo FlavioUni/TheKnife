@@ -88,7 +88,8 @@ public class MenuHandler {
             System.out.println("1) Elenco ristoranti (rapido)");
             System.out.println("2) Cerca ristoranti");
             System.out.println("3) Visualizza le recensioni di un ristorante");
-            System.out.println("4) Torna indietro");
+            System.out.println("4) Cerca ristoranti vicino a un indirizzo");
+            System.out.println("5) Torna indietro");
             System.out.print("Scelta: ");
             int scelta = leggiInt();
 
@@ -96,7 +97,8 @@ public class MenuHandler {
                 case 1 -> stampaElencoRistoranti(data.getRistoranti());
                 case 2 -> cercaRistorantiConFiltri();
                 case 3 -> visualizzaRecensioniRistorante();
-                case 4 -> continua = false;
+                case 4 -> cercaVicinoAMe();              // <--- QUI LA CHIAMATA
+                case 5 -> continua = false;
                 default -> System.out.println("Scelta non valida.");
             }
         }
@@ -124,11 +126,11 @@ public class MenuHandler {
         String dataInput = sc.nextLine().trim();
         LocalDate dataNascita = null;
         if (!dataInput.isEmpty()) {
-            try {
-                dataNascita = GestoreDate.parse(dataInput);
-            } catch (DateTimeParseException e) {
-                System.out.println("Formato della data non valido, ignoro la data.");
-            }
+        	try {
+        	    dataNascita = GestoreDate.parse(dataInput);
+        	} catch (IllegalArgumentException e) { 
+        	    System.out.println("Formato della data non valido, ignoro la data.");
+        	}
         }
 
         System.out.print("Ruolo (CLIENTE/RISTORATORE): ");
@@ -169,13 +171,13 @@ public class MenuHandler {
             System.out.println("4) Cerca ristoranti");
             System.out.println("5) Aggiungi recensione");
             System.out.println("6) Visualizza le recensioni di un ristorante");
-            System.out.println("7) Logout");
+            System.out.println("7) Cerca ristoranti vicino a un indirizzo"); // <--- NUOVA
+            System.out.println("8) Logout");
             System.out.print("Scelta: ");
             int scelta = leggiInt();
 
             switch (scelta) {
                 case 1 -> utenteService.visualizzaPreferiti(utente.getUsername());
-
                 case 2 -> {
                     Ristorante r = chiediRistorante();
                     if (r != null) {
@@ -183,7 +185,6 @@ public class MenuHandler {
                         System.out.println(ok ? "Aggiunto ai preferiti." : "Non aggiunto.");
                     }
                 }
-
                 case 3 -> {
                     Ristorante r = chiediRistorante();
                     if (r != null) {
@@ -191,9 +192,7 @@ public class MenuHandler {
                         System.out.println(ok ? "Rimosso dai preferiti." : "Non rimosso.");
                     }
                 }
-
                 case 4 -> cercaRistorantiConFiltri();
-
                 case 5 -> {
                     Ristorante r = chiediRistorante();
                     if (r == null) break;
@@ -208,11 +207,9 @@ public class MenuHandler {
                         System.out.println("Errore: " + e.getMessage());
                     }
                 }
-
                 case 6 -> visualizzaRecensioniRistorante();
-
-                case 7 -> continua = false;
-
+                case 7 -> cercaVicinoAMe();              // <--- QUI LA CHIAMATA
+                case 8 -> continua = false;
                 default -> System.out.println("Scelta non valida.");
             }
         }
@@ -352,6 +349,31 @@ public class MenuHandler {
     private void visualizzaRecensioniRistorante () {
         Ristorante r = chiediRistorante();
         if (r != null) ristoranteService.visualizzaRecensioni(r);
+    }
+    
+    private void cercaVicinoAMe() {
+        try {
+            String indirizzo = leggiStringa("Inserisci un indirizzo (o 'annulla'): ");
+            System.out.print("Distanza massima in km: ");
+            double km = Double.parseDouble(sc.nextLine().trim());
+            if (km <= 0) {
+                System.out.println("La distanza deve essere > 0.");
+                return;
+            }
+            List<Ristorante> vicini = ristoranteService.cercaVicinoA(indirizzo, km);
+            if (vicini.isEmpty()) {
+                System.out.println("Nessun ristorante entro " + km + " km.");
+            } else {
+                System.out.println("Ristoranti entro " + km + " km da: " + indirizzo);
+                stampaElencoRistoranti(vicini);
+            }
+        } catch (InputAnnullatoException ex) {
+            System.out.println("Ricerca annullata.");
+        } catch (NumberFormatException ex) {
+            System.out.println("Distanza non valida.");
+        } catch (Exception ex) {
+            System.out.println("Errore durante la ricerca: " + ex.getMessage());
+        }
     }
 
     private Ristorante chiediRistorante () {

@@ -253,11 +253,7 @@ private void linkAssocUtenti() {
                 continue;
             }
 
-            if (u.getRuolo() == theknife.utente.Ruolo.CLIENTE) {
-                u.aggiungiPreferito(r);
-            } else if (u.getRuolo() == theknife.utente.Ruolo.RISTORATORE) {
-                u.aggiungiRistoranteGestito(r);
-            }
+            u.aggiungiAssoc(r);
         }
     }
 }
