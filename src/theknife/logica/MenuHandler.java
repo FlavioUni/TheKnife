@@ -21,15 +21,15 @@ public class MenuHandler {
     private static final String RISTORANTI_CSV = "data/Ristoranti.csv";
     private static final String RECENSIONI_CSV = "data/Recensioni.csv";
 
-    private final Scanner sc = new Scanner(System.in);
+    private Scanner sc;
+	private DataContext data;
+	private UtenteService utenteService;
+	private RistoranteService ristoranteService;
+    private RecensioneService recensioneService;
+    private GeoService geoService;
 
-    // Core app
-    private final DataContext data = new DataContext();
-    private final UtenteService utenteService;
-    private final RistoranteService ristoranteService;
-    private final RecensioneService recensioneService;
-
-    public MenuHandler() {
+    public MenuHandler () {
+    	sc = new Scanner(System.in);
         // Carica tutto in RAM
         data.loadAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
 
@@ -37,59 +37,60 @@ public class MenuHandler {
         utenteService = new UtenteService(data);
         ristoranteService = new RistoranteService(data);
         recensioneService = new RecensioneService(data);
+        geoService = new GeoService();
     }
 
-    public void avvia() {
+    public void avvia () {
         boolean continua = true;
         while (continua) {
-            System.out.println("\n========= MENU PRINCIPALE =========");
+            System.out.println("\n--------- MENU PRINCIPALE ---------");
             System.out.println("1) Registrazione");
             System.out.println("2) Login");
-            System.out.println("3) Continua come Ospite");
+            System.out.println("3) Continua come ospite");
             System.out.println("4) Esci");
             System.out.print("Scelta: ");
-            int scelta = leggiInt();
+            int scelta = Integer.parseInt(sc.nextLine());
 
             switch (scelta) {
-                case 1 -> registrazione();
-                case 2 -> login();
-                case 3 -> menuOspite();
-                case 4 -> {
-                    // Salvataggi
-                    data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
-                    System.out.println("Ciao!");
+			case 1: registrazione();
+			case 2: login();
+			case 3: menuOspite();
+			case 4: {
+				continua = false;
+				data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
+                    System.out.println("Chiusura programma in corso.");
                     continua = false;
-                }
-                default -> System.out.println("Scelta non valida.");
-            }
+			}
+			default: System.out.println("Scelta non valida.");
+			}
         }
     }
 
     // ================== OSPITE ==================
-    private void menuOspite() {
+    private void menuOspite () {
         boolean continua = true;
         while (continua) {
             System.out.println("\n--------- MENU OSPITE ---------");
             System.out.println("1) Elenco ristoranti (rapido)");
-            System.out.println("2) Cerca ristoranti (filtri)");
-            System.out.println("3) Visualizza recensioni di un ristorante");
+            System.out.println("2) Cerca ristoranti");
+            System.out.println("3) Visualizza le recensioni di un ristorante");
             System.out.println("4) Torna indietro");
             System.out.print("Scelta: ");
-            int s = leggiInt();
+            int scelta = Integer.parseInt(sc.nextLine());
 
-            switch (s) {
-                case 1 -> stampaElencoRistoranti(data.getRistoranti());
-                case 2 -> cercaRistorantiConFiltri();
-                case 3 -> visualizzaRecensioniRistorante();
-                case 4 -> continua = false;
-                default -> System.out.println("Scelta non valida.");
+            switch (scelta) {
+                case 1: stampaElencoRistoranti(data.getRistoranti());
+                case 2: cercaRistorantiConFiltri();
+                case 3: visualizzaRecensioniRistorante();
+                case 4: continua = false;
+                default: System.out.println("Scelta non valida.");
             }
         }
     }
 
-    // ================== REGISTRAZIONE / LOGIN ==================
-    private void registrazione() {
-        System.out.println("\n--- Registrazione ---");
+    // ================== REGISTRAZIONE ==================
+    private void registrazione () {
+        System.out.println("\n--- REGISTRAZIONE ---");
         System.out.print("Nome: ");
         String nome = sc.nextLine().trim();
 
@@ -105,15 +106,14 @@ public class MenuHandler {
         System.out.print("Domicilio: ");
         String domicilio = sc.nextLine().trim();
 
-        System.out.print("Data di nascita (YYYY-MM-DD) oppure invio per saltare: ");
-        String di = sc.nextLine().trim();
+        System.out.print("Data di nascita DD/MM/YYYY (o premere invio per saltare): ");
+        String dataInput = sc.nextLine().trim();
         LocalDate dataNascita = null;
-        if (!di.isEmpty()) {
+        if (!dataInput.isEmpty()) {
             try {
-                // Usa il tuo GestoreDate
-                dataNascita = GestoreDate.parse(di);
-            } catch (DateTimeParseException ex) {
-                System.out.println("Formato data non valido, ignoro la data.");
+                dataNascita = GestoreDate.parse(dataInput);
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato della data non valido, ignoro la data.");
             }
         }
 
@@ -122,10 +122,10 @@ public class MenuHandler {
 
         Utente nuovo = new Utente(nome, cognome, username, password, domicilio, dataNascita, ruolo);
         boolean ok = utenteService.registrazione(nuovo);
-        if (ok) System.out.println("✅ Registrazione completata.");
+        if (ok) System.out.println("Registrazione completata.");
     }
-
-    private void login() {
+    // LOGIN
+    private void login () {
         System.out.println("\n--- Login ---");
         System.out.print("Username: ");
         String u = sc.nextLine().trim();
@@ -145,7 +145,7 @@ public class MenuHandler {
     }
 
     // ================== CLIENTE ==================
-    private void menuCliente(Utente utente) {
+    private void menuCliente (Utente utente) {
         boolean continua = true;
         while (continua) {
             System.out.println("\n--------- MENU CLIENTE ---------");
