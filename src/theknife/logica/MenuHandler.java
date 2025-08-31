@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import theknife.ristorante.Ristorante;
 import theknife.utente.*;
+import theknife.eccezioni.InputAnnullatoException;
 import theknife.recensione.Recensione;
 
 public class MenuHandler {
@@ -21,52 +22,65 @@ public class MenuHandler {
     private static final String RISTORANTI_CSV = "data/Ristoranti.csv";
     private static final String RECENSIONI_CSV = "data/Recensioni.csv";
 
-    private Scanner sc;
-	private DataContext data;
+    private Scanner sc = new Scanner(System.in);
+	private DataContext data = new DataContext();
 	private UtenteService utenteService;
 	private RistoranteService ristoranteService;
     private RecensioneService recensioneService;
-    private GeoService geoService;
+    private GeoService geoService = new GeoService();
 
     public MenuHandler () {
-    	sc = new Scanner(System.in);
         // Carica tutto in RAM
         data.loadAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
 
         // Inizializza i service
         utenteService = new UtenteService(data);
-        ristoranteService = new RistoranteService(data);
+        ristoranteService = new RistoranteService(data, geoService);
         recensioneService = new RecensioneService(data);
-        geoService = new GeoService();
     }
 
     public void avvia () {
-        boolean continua = true;
-        while (continua) {
-            System.out.println("\n--------- MENU PRINCIPALE ---------");
-            System.out.println("1) Registrazione");
-            System.out.println("2) Login");
-            System.out.println("3) Continua come ospite");
-            System.out.println("4) Esci");
-            System.out.print("Scelta: ");
-            int scelta = Integer.parseInt(sc.nextLine());
-
-            switch (scelta) {
-			case 1: registrazione();
-			case 2: login();
-			case 3: menuOspite();
-			case 4: {
-				continua = false;
-				data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
-                    System.out.println("Chiusura programma in corso.");
-                    continua = false;
-			}
-			default: System.out.println("Scelta non valida.");
-			}
-        }
+    	try {
+	        boolean continua = true;
+	        while (continua) {
+	            System.out.println("\n--------- MENU PRINCIPALE ---------");
+	            System.out.println("1) Registrazione");
+	            System.out.println("2) Login");
+	            System.out.println("3) Continua come ospite");
+	            System.out.println("4) Esci");
+	            System.out.print("Scelta: ");
+	            int scelta = leggiInt();
+	
+	            switch (scelta) {
+				case 1 -> registrazione();
+				case 2 -> login();
+				case 3 -> menuOspite();
+				case 4 -> {
+					continua = false;
+					System.out.println("Chiusura programma in corso.");
+				}
+				default -> System.out.println("Scelta non valida.");
+				}
+	        }
+    	} // Gestione annullamento operazioni
+        catch (InputAnnullatoException e) {
+            System.out.println("Operazione annullata, ritorno al menu principale.");
+        } // Gestione altri errori
+        catch (Exception e) {
+            System.err.println("Errore imprevisto: " + e.getMessage());
+            e.printStackTrace();
+    	} finally {
+    		try {
+                data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
+                geoService.shutdown();
+                System.out.println("Dati salvati e risorse rilasciate.");
+            } catch (Exception e) {
+                System.err.println("Errore durante il salvataggio: " + e.getMessage());
+            }
+    	}
     }
 
-    // ================== OSPITE ==================
+    // OSPITE
     private void menuOspite () {
         boolean continua = true;
         while (continua) {
@@ -76,19 +90,19 @@ public class MenuHandler {
             System.out.println("3) Visualizza le recensioni di un ristorante");
             System.out.println("4) Torna indietro");
             System.out.print("Scelta: ");
-            int scelta = Integer.parseInt(sc.nextLine());
+            int scelta = leggiInt();
 
             switch (scelta) {
-                case 1: stampaElencoRistoranti(data.getRistoranti());
-                case 2: cercaRistorantiConFiltri();
-                case 3: visualizzaRecensioniRistorante();
-                case 4: continua = false;
-                default: System.out.println("Scelta non valida.");
+                case 1 -> stampaElencoRistoranti(data.getRistoranti());
+                case 2 -> cercaRistorantiConFiltri();
+                case 3 -> visualizzaRecensioniRistorante();
+                case 4 -> continua = false;
+                default -> System.out.println("Scelta non valida.");
             }
         }
     }
 
-    // ================== REGISTRAZIONE ==================
+    // REGISTRAZIONE
     private void registrazione () {
         System.out.println("\n--- REGISTRAZIONE ---");
         System.out.print("Nome: ");
@@ -144,7 +158,7 @@ public class MenuHandler {
         }
     }
 
-    // ================== CLIENTE ==================
+    // MENU CLIENTE
     private void menuCliente (Utente utente) {
         boolean continua = true;
         while (continua) {
@@ -154,16 +168,16 @@ public class MenuHandler {
             System.out.println("3) Rimuovi preferito");
             System.out.println("4) Cerca ristoranti");
             System.out.println("5) Aggiungi recensione");
-            System.out.println("6) Visualizza recensioni di un ristorante");
+            System.out.println("6) Visualizza le recensioni di un ristorante");
             System.out.println("7) Logout");
             System.out.print("Scelta: ");
-            int s = leggiInt();
+            int scelta = leggiInt();
 
-            switch (s) {
+            switch (scelta) {
                 case 1 -> utenteService.visualizzaPreferiti(utente.getUsername());
 
                 case 2 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r != null) {
                         boolean ok = ristoranteService.aggiungiPreferito(utente, r);
                         System.out.println(ok ? "Aggiunto ai preferiti." : "Non aggiunto.");
@@ -171,7 +185,7 @@ public class MenuHandler {
                 }
 
                 case 3 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r != null) {
                         boolean ok = ristoranteService.rimuoviPreferito(utente, r);
                         System.out.println(ok ? "Rimosso dai preferiti." : "Non rimosso.");
@@ -181,7 +195,7 @@ public class MenuHandler {
                 case 4 -> cercaRistorantiConFiltri();
 
                 case 5 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r == null) break;
                     System.out.print("Stelle (1-5): ");
                     int stelle = leggiInt();
@@ -204,25 +218,25 @@ public class MenuHandler {
         }
     }
 
-    // ================== RISTORATORE ==================
-    private void menuRistoratore(Utente ristoratore) {
+    // MENU RISTORATORE
+    private void menuRistoratore (Utente ristoratore) {
         boolean continua = true;
         while (continua) {
             System.out.println("\n------ MENU RISTORATORE ------");
             System.out.println("1) Visualizza ristoranti gestiti");
             System.out.println("2) Aggiungi ristorante gestito (dal catalogo)");
             System.out.println("3) Rimuovi ristorante gestito");
-            System.out.println("4) Visualizza recensioni dei miei ristoranti");
+            System.out.println("4) Visualizza le recensioni dei miei ristoranti");
             System.out.println("5) Rispondi a una recensione");
             System.out.println("6) Logout");
             System.out.print("Scelta: ");
-            int s = leggiInt();
+            int scelta = leggiInt();
 
-            switch (s) {
+            switch (scelta) {
                 case 1 -> utenteService.visualizzaRistorantiGestiti(ristoratore.getUsername());
 
                 case 2 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r != null) {
                         boolean ok = utenteService.aggiungiRistoranteGestito(ristoratore.getUsername(), r);
                         System.out.println(ok ? "Aggiunto alla gestione." : "Non aggiunto.");
@@ -230,7 +244,7 @@ public class MenuHandler {
                 }
 
                 case 3 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r != null) {
                         boolean ok = utenteService.rimuoviRistoranteGestito(ristoratore.getUsername(), r);
                         System.out.println(ok ? "Rimosso dalla gestione." : "Non rimosso.");
@@ -240,7 +254,7 @@ public class MenuHandler {
                 case 4 -> ristoranteService.visualizzaRecensioniRistoratore(ristoratore);
 
                 case 5 -> {
-                    Ristorante r = chiediRistoranteByNomeLoc();
+                    Ristorante r = chiediRistorante();
                     if (r == null) break;
                     System.out.print("Username autore recensione: ");
                     String autore = sc.nextLine().trim();
@@ -266,8 +280,17 @@ public class MenuHandler {
         }
     }
 
-    // ================== UTIL DI I/O ==================
-    private int leggiInt() {
+    // UTIL DI I/O
+    private String leggiStringa (String messaggio) {
+    	System.out.print(messaggio);
+        String input = sc.nextLine().trim();
+        if (input.equalsIgnoreCase("annulla")) {
+            throw new InputAnnullatoException();
+        }
+        return input.isEmpty() ? null : input;
+    }
+    
+    private int leggiInt () {
         while (true) {
             String s = sc.nextLine().trim();
             try {
@@ -278,18 +301,18 @@ public class MenuHandler {
         }
     }
 
-    private Ruolo leggiRuolo() {
+    private Ruolo leggiRuolo () {
         while (true) {
             String s = sc.nextLine().trim().toUpperCase();
             try {
                 return Ruolo.valueOf(s);
-            } catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException e) {
                 System.out.print("Valore non valido. Scrivi CLIENTE o RISTORATORE: ");
             }
         }
     }
 
-    private void stampaElencoRistoranti(List<Ristorante> lista) {
+    private void stampaElencoRistoranti (List<Ristorante> lista) {
         if (lista.isEmpty()) {
             System.out.println("Nessun ristorante.");
             return;
@@ -300,52 +323,85 @@ public class MenuHandler {
         }
     }
 
-    private void cercaRistorantiConFiltri() {
-        System.out.println("\n--- Ricerca ristoranti ---");
-        System.out.print("Cucina (invio per nessun filtro): ");
-        String cucina = vuotoNull(sc.nextLine());
-        System.out.print("Location (invio per nessun filtro): ");
-        String location = vuotoNull(sc.nextLine());
-        System.out.print("Fascia prezzo (\"minore di 30€\" / \"tra 20€ e 50€\" / \"maggiore di 50€\") oppure invio: ");
-        String fascia = vuotoNull(sc.nextLine());
-        System.out.print("Delivery? (true/false oppure invio): ");
-        String del = sc.nextLine().trim();
-        Boolean delivery = del.isEmpty() ? null : Boolean.parseBoolean(del);
-        System.out.print("Prenotazione online? (true/false oppure invio): ");
-        String pr = sc.nextLine().trim();
-        Boolean pren = pr.isEmpty() ? null : Boolean.parseBoolean(pr);
-        System.out.print("Min stelle (1-5 oppure invio): ");
-        String ms = sc.nextLine().trim();
-        Double minStelle = ms.isEmpty() ? null : Double.parseDouble(ms);
-
-        List<Ristorante> risultati = ristoranteService.cercaRistorante(
-                cucina, location, fascia, delivery, pren, minStelle
-        );
-        if (risultati.isEmpty()) {
-            System.out.println("Nessun risultato.");
-        } else {
-            System.out.println("Risultati:");
-            stampaElencoRistoranti(risultati);
+    private void cercaRistorantiConFiltri () {
+    	try {
+	        System.out.println("\n--- Ricerca ristoranti ---");
+	        System.out.println("(Digita 'annulla' in qualsiasi momento per tornare indietro)");
+	        String cucina = leggiStringa("Cucina (invio per nessun filtro): ");
+	        String location = leggiStringa("Località (invio per nessun filtro): ");
+	        String fascia = leggiFasciaPrezzo();
+	        Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio): ");
+	        Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio): ");
+	        Double minStelle = leggiMinStelle();
+	
+	        List<Ristorante> risultati = ristoranteService.cercaRistorante(
+	                cucina, location, fascia, delivery, prenotazione, minStelle
+	        );
+	        if (risultati.isEmpty()) {
+	            System.out.println("Nessun risultato.");
+	        } else {
+	            System.out.println("Risultati:");
+	            stampaElencoRistoranti(risultati);
+	        }
+    	} catch (InputAnnullatoException e) {
+    		System.out.println("Ricerca annullata.");
+            return; // Torna al menu precedente
         }
     }
 
-    private void visualizzaRecensioniRistorante() {
-        Ristorante r = chiediRistoranteByNomeLoc();
+    private void visualizzaRecensioniRistorante () {
+        Ristorante r = chiediRistorante();
         if (r != null) ristoranteService.visualizzaRecensioni(r);
     }
 
-    private Ristorante chiediRistoranteByNomeLoc() {
+    private Ristorante chiediRistorante () {
         System.out.print("Nome ristorante: ");
         String nome = sc.nextLine().trim();
-        System.out.print("Location (es. \"Faloppio, Italia\"): ");
+        System.out.print("Località (es. \"Milano, Italia\"): ");
         String loc = sc.nextLine().trim();
         Ristorante r = data.findRistorante(nome, loc);
-        if (r == null) System.out.println("Ristorante non trovato (nome+location devono combaciare).");
+        if (r == null) System.out.println("Ristorante non trovato (nome e località devono combaciare).");
         return r;
     }
-
-    private String vuotoNull(String s) {
-        s = s.trim();
-        return s.isEmpty() ? null : s;
+    private String leggiFasciaPrezzo () {
+        System.out.println("Fascia di prezzo:");
+        System.out.println("1) Economico (< 20€)");
+        System.out.println("2) Medio (20-50€)");
+        System.out.println("3) Costoso (> 50€)");
+        System.out.println("4) Qualsiasi (invio)");
+        System.out.print("Scelta: ");
+        
+        String scelta = sc.nextLine().trim();
+        return switch (scelta) {
+            case "1" -> "minore di 20€";
+            case "2" -> "tra 20€ e 50€";
+            case "3" -> "maggiore di 50€";
+            default -> null;
+        };
+    }
+    private Boolean leggiSiNo (String messaggio) {
+        System.out.print(messaggio);
+        String input = sc.nextLine().trim().toLowerCase();
+        if (input.isEmpty()) return null;
+        if (input.equals("s") || input.equals("si") || input.equals("y") || input.equals("yes")) return true;
+        if (input.equals("n") || input.equals("no")) return false;
+        System.out.println("Input non valido.");
+        return null;
+    }
+    private Double leggiMinStelle () {
+        System.out.print("Voto minimo (1-5, invio per ignorare): ");
+        String input = sc.nextLine().trim();
+        if (input.isEmpty()) return null;
+        try {
+            double stelle = Double.parseDouble(input);
+            if (stelle < 1 || stelle > 5) {
+                System.out.println("Deve essere tra 1 e 5, uso default.");
+                return null;
+            }
+            return stelle;
+        } catch (NumberFormatException e) {
+            System.out.println("Numero non valido, uso default.");
+            return null;
+        }
     }
 }
