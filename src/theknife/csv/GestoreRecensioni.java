@@ -18,54 +18,79 @@ import java.util.ArrayList;
 
 public class GestoreRecensioni extends GestoreCSV<Recensione> {
 
-    @Override
-    public void caricaDaCSV(String filePath) {
-        elementi = new ArrayList<>();
+	@Override
+	public void caricaDaCSV(String filePath) {
+	    elementi = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            String[] c;
-            boolean header = true;
+	    try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+	        String[] c;
+	        boolean header = true;
 
-            while ((c = reader.readNext()) != null) {
-                if (header) {
-                    header = false;
-                    continue;
-                }
+	        while ((c = reader.readNext()) != null) {
+	            if (header) { header = false; continue; }
+	            if (c == null || c.length < 4) continue; // min: user, nome, ..., stelle,...
 
-                if (c.length < 7) {
-                    System.err.println("Riga recensioni ignorata: servono 7 colonne, trovate " + c.length);
-                    continue;
-                }
-                for (int i = 0; i < c.length; i++) {
-                    c[i] = c[i].trim();
-                }
+	            for (int i = 0; i < c.length; i++) c[i] = (c[i] == null) ? "" : c[i].trim();
 
-                String username = c[0];
-                String nomeRistorante = c[1];
-                String location = c[2];
+	            String username = c[0];
+	            String nomeRist = c[1];
 
-                int stelle;
-                try {
-                    stelle = Integer.parseInt(c[3]);
-                } catch (NumberFormatException ex) {
-                    System.err.println("Riga recensione ignorata: stelle non numeriche (" + c[3] + ")");
-                    continue;
-                }
+	            // --- 1) individua DATA con regex gg/MM/aaaa ---
+	            int idxData = -1;
+	            java.util.regex.Pattern pData = java.util.regex.Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$");
+	            for (int i = c.length - 1; i >= 2; i--) {
+	                if (pData.matcher(c[i]).matches()) { idxData = i; break; }
+	            }
 
-                String commento = c[4];
-                LocalDate data = GestoreDate.parseNullable(c[5]);
-                String risposta = c[6];
+	            java.time.LocalDate data = null;
+	            if (idxData != -1) {
+	                try {
+	                    data = theknife.utente.GestoreDate.parseNullable(c[idxData]); // usa il tuo GestoreDate
+	                } catch (Exception ex) {
+	                    System.err.println("Data non valida '" + c[idxData] + "', la ignoro.");
+	                    data = null;
+	                }
+	            }
 
-                Recensione r = new Recensione(username, nomeRistorante, location, stelle, commento, data, risposta);
-                elementi.add(r);
-            }
+	            // --- 2) individua STELLE (1..5) prima della data (o fine riga se data assente) ---
+	            int idxStelle = -1, stelle = -1;
+	            int stop = (idxData == -1 ? c.length - 1 : idxData - 1);
+	            for (int i = stop; i >= 2; i--) {
+	                try {
+	                    int s = Integer.parseInt(c[i]);
+	                    if (s >= 1 && s <= 5) { idxStelle = i; stelle = s; break; }
+	                } catch (NumberFormatException ignored) { }
+	            }
+	            if (idxStelle == -1) {
+	                System.err.println("Riga recensione ignorata: stelle non trovate");
+	                continue;
+	            }
 
-        } catch (IOException e) {
-            System.err.println("Errore di I/O nella lettura del file recensioni: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Errore nella lettura/parsing recensioni: " + e.getMessage());
-        }
-    }
+	            // --- 3) LOCATION = join colonne [2 .. idxStelle-1] (ricompone "Torino, Italia") ---
+	            String location = (idxStelle > 2)
+	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, 2, idxStelle))
+	                    : "";
+
+	            // --- 4) COMMENTO = join [idxStelle+1 .. idxData-1] oppure fino a fine riga se data assente ---
+	            int commentEndExclusive = (idxData == -1 ? c.length : idxData);
+	            String commento = (idxStelle + 1 < commentEndExclusive)
+	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, idxStelle + 1, commentEndExclusive))
+	                    : "";
+
+	            // --- 5) RISPOSTA = tutto dopo la data (se presente) ---
+	            String risposta = (idxData != -1 && idxData + 1 < c.length)
+	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, idxData + 1, c.length))
+	                    : "";
+
+	            elementi.add(new theknife.recensione.Recensione(username, nomeRist, location, stelle, commento, data, risposta));
+	        }
+
+	    } catch (IOException e) {
+	        System.err.println("Errore di I/O nella lettura del file recensioni: " + e.getMessage());
+	    } catch (Exception e) {
+	        System.err.println("Errore nella lettura/parsing recensioni: " + e.getMessage());
+	    }
+	}
 
     @Override
     public void salvaSuCSV(String filePath) {
