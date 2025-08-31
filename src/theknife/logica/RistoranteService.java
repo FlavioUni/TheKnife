@@ -16,9 +16,11 @@ import java.util.List;
 public class RistoranteService {
 
     private final DataContext dataContext;
+    private final GeoService geoService; 
 
-    public RistoranteService(DataContext dataContext) {
+    public RistoranteService(DataContext dataContext, GeoService geoService) {
         this.dataContext = dataContext;
+        this.geoService = geoService;
     }
 
     // ===== UTENTE NON REGISTRATO =====
@@ -180,7 +182,7 @@ public class RistoranteService {
         }
         nuovo.setProprietario(ristoratore.getUsername());
         boolean ok = dataContext.addRistorante(nuovo);
-        if (ok) ristoratore.aggiungiRistoranteGestito(nuovo); 
+        if (ok) ristoratore.aggiungiRistoranteGestito(nuovo);
         return ok;
     }
 
@@ -227,6 +229,13 @@ public class RistoranteService {
         }
     }
 
+    // ===== GEO / VICINO A ME =====
+
+    /** Ricerca ristoranti entro un raggio (km) da un indirizzo usando GeoService. */
+    public List<Ristorante> cercaVicinoA(String indirizzo, double distanzaKm) {
+        return geoService.filtraPerVicinoA(indirizzo, distanzaKm, dataContext.getRistoranti());
+    }
+
     // ===== AUSILIARI =====
 
     public List<Ristorante> getRistorantiByProprietario(String usernameProprietario) {
@@ -237,10 +246,6 @@ public class RistoranteService {
             }
         }
         return risultati;
-    }
-
-    public List<Ristorante> getRistorantiVicini(String location) {
-        return cercaRistorante(null, location, null, null, null, null);
     }
 
     public boolean existsRistorante(String nome, String location) {
