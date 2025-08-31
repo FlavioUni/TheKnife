@@ -3,7 +3,6 @@ Ciani Flavio Angelo, 761581, VA
 Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
-
 package theknife.logica;
 
 import java.time.LocalDate;
@@ -14,28 +13,30 @@ import theknife.utente.Ruolo;
 import theknife.utente.Utente;
 
 public class UtenteService {
-    private List<Utente> utenti;
 
-    public UtenteService (List<Utente> utenti) {
-        this.utenti = utenti;
+    private final DataContext ctx;
+
+    public UtenteService(DataContext ctx) {
+        this.ctx = ctx;
     }
 
-    public List<Utente> getUtenti () {
-        return utenti;
+    public List<Utente> getUtenti() {
+        return ctx.getUtenti();
     }
 
-    public Utente trovaUtente (String username) {
-        for (Utente u : utenti)
-            if (u.getUsername().equalsIgnoreCase(username))
-                return u;
-        return null;
+    public Utente trovaUtente(String username) {
+        return ctx.findUtente(username);
     }
 
-    private boolean controlloPassword (String password) {
+    private boolean controlloPassword(String password) {
         return password != null && password.length() >= 6 && password.length() <= 12;
     }
 
-    public boolean registrazione (Utente nuovo) {
+    public boolean registrazione(Utente nuovo) {
+        if (nuovo == null) {
+            System.out.println("Dati utente non validi.");
+            return false;
+        }
         if (trovaUtente(nuovo.getUsername()) != null) {
             System.out.println("Username non disponibile.");
             return false;
@@ -44,17 +45,23 @@ public class UtenteService {
             System.out.println("La password deve contenere tra i 6 e i 12 caratteri.");
             return false;
         }
+
         Utente hashato = new Utente(
-            nuovo.getNome(), nuovo.getCognome(), nuovo.getUsername(),
-            Util.hashPassword(nuovo.getPassword()),
-            nuovo.getDomicilio(), nuovo.getData(), nuovo.getRuolo()
+                nuovo.getNome(),
+                nuovo.getCognome(),
+                nuovo.getUsername(),
+                Util.hashPassword(nuovo.getPassword()),
+                nuovo.getDomicilio(),
+                nuovo.getData(),
+                nuovo.getRuolo()
         );
-        utenti.add(hashato);
-        System.out.println("Registrazione avvenuta con successo.");
-        return true;
+
+        boolean ok = ctx.addUtente(hashato);  // aggiorna anche gli indici
+        if (ok) System.out.println("Registrazione avvenuta con successo.");
+        return ok;
     }
 
-    public Utente login (String username, String password) {
+    public Utente login(String username, String password) {
         Utente u = trovaUtente(username);
         if (u != null && u.getPassword().equals(Util.hashPassword(password))) {
             System.out.println("Login avvenuto con successo.");
@@ -63,38 +70,34 @@ public class UtenteService {
         System.out.println("Credenziali errate.");
         return null;
     }
-    
-    public Utente registraGuest (String nome, String cognome, String username, String password,
-            String domicilio, LocalDate data, Ruolo ruolo) {
-    	Utente nuovo = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
-    	if (registrazione(nuovo))
-    		return trovaUtente(username);
-    	return null;
+
+    public Utente registraGuest(String nome, String cognome, String username, String password,
+                                String domicilio, LocalDate data, Ruolo ruolo) {
+        Utente nuovo = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
+        return registrazione(nuovo) ? trovaUtente(username) : null;
     }
 
-    public boolean aggiungiPreferito (String username, Ristorante ristorante) {
+    // --- Preferiti ---
+
+    public boolean aggiungiPreferito(String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
-        if (u != null)
-            return u.aggiungiPreferito(ristorante);
-        return false;
+        return (u != null) && u.aggiungiPreferito(ristorante);
     }
 
-    public boolean rimuoviPreferito (String username, Ristorante ristorante) {
+    public boolean rimuoviPreferito(String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
-        if (u != null)
-            return u.rimuoviPreferito(ristorante);
-        return false;
+        return (u != null) && u.rimuoviPreferito(ristorante);
     }
 
-    public void visualizzaPreferiti (String username) {
+    public void visualizzaPreferiti(String username) {
         Utente u = trovaUtente(username);
-        if (u != null)
-            u.visualizzaPreferiti();
-        else
-            System.out.println("Utente non trovato nella sezione clienti.");
+        if (u != null) u.visualizzaPreferiti();
+        else System.out.println("Utente non trovato nella sezione clienti.");
     }
 
-    public boolean aggiungiRistoranteGestito (String username, Ristorante ristorante) {
+    // --- Ristoranti gestiti ---
+
+    public boolean aggiungiRistoranteGestito(String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             return u.aggiungiRistoranteGestito(ristorante);
@@ -102,7 +105,7 @@ public class UtenteService {
         return false;
     }
 
-    public boolean rimuoviRistoranteGestito (String username, Ristorante ristorante) {
+    public boolean rimuoviRistoranteGestito(String username, Ristorante ristorante) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             return u.rimuoviRistoranteGestito(ristorante);
@@ -110,7 +113,7 @@ public class UtenteService {
         return false;
     }
 
-    public void visualizzaRistorantiGestiti (String username) {
+    public void visualizzaRistorantiGestiti(String username) {
         Utente u = trovaUtente(username);
         if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
             u.visualizzaRistorantiGestiti();

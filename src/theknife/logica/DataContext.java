@@ -155,6 +155,32 @@ public class DataContext {
 	    return true;
 	}
 	
+	// rimozione recensione (allinea RAM + indici)
+	public boolean removeRecensione(Recensione rec) {
+	    if (rec == null) return false;
+
+	    String key = ristoKey(rec.getNomeRistorante(), rec.getLocationRistorante());
+
+	    // rimuovi dalla lista globale
+	    boolean removed = recensioni.remove(rec);
+
+	    // rimuovi dall'oggetto Ristorante
+	    Ristorante r = ristorantePerKey.get(key);
+	    if (r != null) {
+	        r.getRecensioni().remove(rec);
+	    }
+
+	    // rimuovi dall'indice "recensioniPerRistoKey"
+	    List<Recensione> lista = recensioniPerRistoKey.get(key);
+	    if (lista != null) {
+	        lista.remove(rec);
+	        if (lista.isEmpty()) {
+	            recensioniPerRistoKey.remove(key); // opzionale
+	        }
+	    }
+	    return removed;
+	}
+	
 	// aggiunta utente
 	public boolean addUtente(Utente u) {
 		if (u == null) return false;

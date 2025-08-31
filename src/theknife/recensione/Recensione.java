@@ -34,9 +34,9 @@ public class Recensione {
         this.locationRistorante = (locationRistorante == null) ? "" : locationRistorante;
         checkStelle(stelle);
         this.stelle = stelle;
-        this.commento = commento;
+        this.commento = (commento == null) ? "" : commento.trim();
         this.data = LocalDate.now();
-        this.risposta = "";
+        this.risposta = (risposta == null) ? "" : risposta.trim();
     }
 
     public Recensione(String username, String nomeRistorante, String locationRistorante,
@@ -46,9 +46,9 @@ public class Recensione {
         this.locationRistorante = (locationRistorante == null) ? "" : locationRistorante;
         checkStelle(stelle);
         this.stelle = stelle;
-        this.commento = commento;
-        this.data = data;
-        this.risposta = (risposta == null) ? "" : risposta;
+        this.commento = (commento == null) ? "" : commento.trim();
+        this.data = LocalDate.now();
+        this.risposta = (risposta == null) ? "" : risposta.trim();
     }
 
     // GETTER/SETTER
@@ -60,7 +60,7 @@ public class Recensione {
     public void setStelle(int stelle) { checkStelle(stelle); this.stelle = stelle; }
 
     public String getDescrizione() { return commento; }
-    public void setDescrizione(String descrizione) { this.commento = descrizione; }
+    public void setDescrizione(String descrizione) { this.commento = (descrizione == null) ? "" : descrizione; }
 
     public LocalDate getData() { return data; }
     public String getRisposta() { return risposta; }
