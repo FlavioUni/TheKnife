@@ -1,4 +1,12 @@
 bin/
+
+# --- Spazzatura di OS/IDE ---
+.DS_Store
+
+# --- Dipendenze: ignoriamo tutte le .jar, tranne quelle nella cartella lib/ ---
+*.jar
+!lib/*.jar
+
 # File di configurazione con chiavi API
 data/config.properties
 

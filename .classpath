@@ -15,6 +15,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/jopencage-1.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-simple-1.7.30.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Users/flosh/Desktop/Laboratorio A/TheKnife/lib/opencsv-3.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opencsv-3.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
