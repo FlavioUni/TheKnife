@@ -492,31 +492,57 @@ public class MenuHandler {
         Boolean delivery = leggiSiNo("Delivery? (s/n/invio): ");
         Boolean pren     = leggiSiNo("Prenotazione online? (s/n/invio): ");
 
-        // Fallback booleani
         boolean hasDelivery = Boolean.TRUE.equals(delivery);
         boolean hasPren     = Boolean.TRUE.equals(pren);
 
-     // === CREA L’OGGETTO usando il costruttore reale (13 argomenti) ===
-        double lon = 0.0;            // se non le gestisci, metti 0.0
+        // costruttore reale (nel tuo Ristorante l'ordine è: longitudine, latitudine)
+        double lon = 0.0;
         double lat = 0.0;
-        String premi = "";           // default
-        String servizi = "";         // default
+        String premi = "";
+        String servizi = "";
 
-        return new Ristorante(
+        Ristorante r = new Ristorante(
             nome,
             indirizzo != null ? indirizzo : "",
             location,
             prezzo != null ? prezzo : "",
             cucina != null ? cucina : "",
-            lon,
-            lat,
+            lon,               // longitudine
+            lat,               // latitudine
             telefono != null ? telefono : "",
             website != null ? website : "",
             premi,
             servizi,
-            hasPren,       // prenotazioneOnline
-            hasDelivery    // delivery
+            hasPren,           // prenotazioneOnline
+            hasDelivery        // delivery
         );
+
+        // === Geocoding: prova "indirizzo + location", poi "nome + location", poi solo "location"
+        try {
+            String q1 = ((indirizzo == null || indirizzo.isBlank()) ? "" : indirizzo + ", ") + location;
+            double[] coords = geoService.geocode(q1);
+
+            if (coords == null) {
+                String q2 = nome + ", " + location;
+                coords = geoService.geocode(q2);
+            }
+            if (coords == null) {
+                coords = geoService.geocode(location);
+            }
+
+            if (coords != null) {
+                // geoService.geocode ritorna {lat, lon}
+                r.setLatitudine(coords[0]);
+                r.setLongitudine(coords[1]);
+            } else {
+                System.out.println("[Geo] Coordinate non trovate (lasciate a 0,0).");
+            }
+        } catch (Exception e) {
+            System.out.println("[Geo] Errore geocoding: " + e.getMessage());
+            // lascio 0,0
+        }
+
+        return r;
     }
     
     /** Chiede una stringa non vuota; ripete finché non viene fornita. */

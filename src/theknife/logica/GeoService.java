@@ -8,169 +8,163 @@ import com.byteowls.jopencage.JOpenCageGeocoder;
 import com.byteowls.jopencage.model.JOpenCageForwardRequest;
 import com.byteowls.jopencage.model.JOpenCageResponse;
 import com.byteowls.jopencage.model.JOpenCageResult;
-
 import theknife.ristorante.Ristorante;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 
-/**
- * Servizio di geolocalizzazione e ricerca ristoranti.
- * Usa JOpenCage per geocoding e caching locale per efficienza.
- */
-
+/** Servizio di geolocalizzazione (JOpenCage) + cache locale. */
 public class GeoService {
-	private final String apiKey;
-	private Map<String, double[]> geocodeCache; // Cache per indirizzi già geocodificati
-    private final Map<String, String> cittaNormalizzataCache; // Cache per città normalizzate
+    private final String apiKey;
+    private Map<String, double[]> geocodeCache = new HashMap<>();
     private static final String CACHE_FILE = "data/geocache.ser";
 
-    public GeoService () {
-    	this.geocodeCache = new HashMap<>();
-        this.cittaNormalizzataCache = new HashMap<>();
-        // Leggo dal file config.properties
-        Properties props = new Properties();
-        String key = null;
+    public GeoService() {
+        this.apiKey = loadApiKey();
+        loadCacheFromFile();
+    }
+
+    // ===== API KEY =====
+    private String loadApiKey() {
+        // 1) config.properties
         try (FileInputStream fis = new FileInputStream("data/config.properties")) {
-            props.load(fis);
-            key = props.getProperty("JOPENCAGE_API_KEY");
-        } catch (IOException e) {
-            System.err.println("[GeoService] Nessun config.properties trovato, provo variabile d'ambiente...");
+            Properties p = new Properties();
+            p.load(fis);
+            String k = p.getProperty("JOPENCAGE_API_KEY");
+            if (k != null && !k.isBlank()) return k.trim();
+        } catch (IOException ignore) {
+            System.err.println("[GeoService] Nessun config.properties, provo variabile d'ambiente…");
         }
-
-        if (key == null || key.isEmpty()) {
-            key = System.getenv("JOPENCAGE_API_KEY");
+        // 2) environment
+        String env = System.getenv("JOPENCAGE_API_KEY");
+        if (env == null || env.isBlank()) {
+            System.err.println("[GeoService] API Key mancante. Geolocalizzazione limitata.");
+            return null;
         }
-
-        if (key == null || key.isEmpty()) {
-            System.err.println("[GeoService] API Key mancante. Geolocalizzazione disabilitata.");
-        }
-        this.apiKey = key;
-        loadCacheFromFile(); // Carica cache esistente all'avvio
+        return env.trim();
     }
-    
+
+    // ===== CACHE =====
     @SuppressWarnings("unchecked")
-	private void loadCacheFromFile() {
+    private void loadCacheFromFile() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(CACHE_FILE))) {
-            geocodeCache = (Map<String, double[]>) ois.readObject();
-        } catch (Exception e) {
-            geocodeCache = new HashMap<>(); // Cache vuota se il file non esiste
+            Object obj = ois.readObject();
+            if (obj instanceof Map<?, ?> map) {
+                this.geocodeCache = (Map<String, double[]>) map;
+            }
+        } catch (Exception ignore) {
+            this.geocodeCache = new HashMap<>();
         }
     }
-    
-    public void shutdown() {
-        saveCacheToFile();
-    }
-    
+
+    public void shutdown() { saveCacheToFile(); }
+
     private void saveCacheToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CACHE_FILE))) {
             oos.writeObject(geocodeCache);
         } catch (Exception e) {
-            System.err.println("Errore nel salvare la cache: " + e.getMessage());
+            System.err.println("[GeoService] Errore salvataggio cache: " + e.getMessage());
         }
     }
-    
-    // Metodo riutilizzabile: converte indirizzo in coordinate (con caching)
-    public double[] geocode (String indirizzo) {
-    	if (indirizzo == null || indirizzo.trim().isEmpty()) {
-            return null;
-        }
-    	String indirizzoNormalizzato = indirizzo.trim().toLowerCase();
-    	// Controlla se abbiamo già questo indirizzo in cache
-    	if (geocodeCache.containsKey(indirizzoNormalizzato)) {
-            System.out.println("[GeoService] Cache hit per: " + indirizzo);
-            return geocodeCache.get(indirizzoNormalizzato);
-        }
-    	if (apiKey == null) {
-            return null;
-        }
-        try {
-            JOpenCageGeocoder geocoder = new JOpenCageGeocoder(apiKey);
-            JOpenCageForwardRequest request = new JOpenCageForwardRequest(indirizzo);
-            request.setLimit(1);
-            JOpenCageResponse response = geocoder.forward(request);
 
-            if (!response.getResults().isEmpty()) {
-                JOpenCageResult result = response.getResults().get(0);
-                double[] coordinates = new double[]{result.getGeometry().getLat(), result.getGeometry().getLng()};
-             // Salva in cache per future richieste
-                geocodeCache.put(indirizzoNormalizzato, coordinates);
-                System.out.println("[GeoService] Geocodificato e cached: " + indirizzo);
-                
-                return coordinates;
+    // ===== SUGGERIMENTI INDIRIZZI (per scelta utente) =====
+    /** Restituisce fino a 'limit' indirizzi formattati suggeriti per l'input. */
+    public List<String> suggerisciIndirizzi(String input, int limit) {
+        List<String> out = new ArrayList<>();
+        if (input == null || input.isBlank() || apiKey == null) return out;
+        try {
+            JOpenCageGeocoder g = new JOpenCageGeocoder(apiKey);
+            JOpenCageForwardRequest req = new JOpenCageForwardRequest(input);
+            req.setLimit(Math.max(1, Math.min(limit, 10)));
+            req.setNoAnnotations(true);
+            req.setLanguage("it");
+            JOpenCageResponse resp = g.forward(req);
+
+            // filtra duplicati e risultati troppo “generici”
+            List<String> seen = new ArrayList<>();
+            for (JOpenCageResult r : resp.getResults()) {
+                String formatted = r.getFormatted();
+                if (formatted == null || formatted.isBlank()) continue;
+                if (!formatted.matches(".*\\d+.*") && formatted.split(",").length <= 3) continue; // solo città/regione → skip
+
+                boolean dup = false;
+                for (String s : seen) {
+                    if (s.contains(formatted) || formatted.contains(s)) { dup = true; break; }
+                }
+                if (!dup) {
+                    seen.add(formatted);
+                    out.add(formatted);
+                }
+            }
+            out.sort(Comparator.comparingInt(String::length)); // più specifici prima
+        } catch (Exception e) {
+            System.err.println("[GeoService] suggerisciIndirizzi: " + e.getMessage());
+        }
+        return out;
+    }
+
+    // ===== GEOCODING (con cache) =====
+    /** Converte un indirizzo in {lat, lon}. Usa cache locale. */
+    public double[] geocode(String indirizzo) {
+        if (indirizzo == null || indirizzo.isBlank()) return null;
+        String key = indirizzo.trim().toLowerCase();
+        double[] cached = geocodeCache.get(key);
+        if (cached != null) return cached;
+        if (apiKey == null) return null;
+
+        try {
+            JOpenCageGeocoder g = new JOpenCageGeocoder(apiKey);
+            JOpenCageForwardRequest req = new JOpenCageForwardRequest(indirizzo);
+            req.setLimit(1);
+            req.setNoAnnotations(true);
+            req.setLanguage("it");
+            JOpenCageResponse resp = g.forward(req);
+            if (!resp.getResults().isEmpty()) {
+                JOpenCageResult r = resp.getResults().get(0);
+                double[] coords = new double[]{ r.getGeometry().getLat(), r.getGeometry().getLng() };
+                geocodeCache.put(key, coords);
+                return coords;
             }
         } catch (Exception e) {
-        	System.err.println("[GeoService] Errore durante geocoding: " + e.getMessage());
+            System.err.println("[GeoService] geocode error: " + e.getMessage());
         }
         return null;
     }
-    
- // Metodo riutilizzabile: normalizza la città (con caching)
-    public String normalizzaCitta (String citta) {
-    	if (citta == null || citta.trim().isEmpty())
-            return null;
-    	String cittaInput = citta.trim().toLowerCase();
-    	// Controlla cache
-        if (cittaNormalizzataCache.containsKey(cittaInput))
-        	return cittaNormalizzataCache.get(cittaInput);
-        // Normalizzazione e salvataggio in cache
-        String normalizzata = cittaInput;
-        cittaNormalizzataCache.put(cittaInput, normalizzata);
-        return normalizzata;
-    }
-    
-    // Filtra i ristoranti entro una certa distanza da un indirizzo utente.
-    public List<Ristorante> filtraPerVicinoA (String indirizzoUtente, double distanzaMaxKm, List<Ristorante> listaRistoranti) {
-        List<Ristorante> filtrati = new ArrayList<>();
-        if (apiKey == null) {
-        	System.out.println("[GeoService] API key mancante: geolocalizzazione disabilitata.");
-        	return filtrati; // Ritorno vuoto se non ho la chiave
-        }
 
-        double[] coordUtente = geocode(indirizzoUtente);
-        if (coordUtente == null) {
-            System.out.println("[GeoService] Impossibile geocodificare: " + indirizzoUtente);
-            return filtrati;
+    // ===== VICINO A… =====
+    /** Filtra ristoranti entro 'distanzaMaxKm' dall'indirizzo dato. */
+    public List<Ristorante> filtraPerVicinoA(String indirizzoUtente, double distanzaMaxKm, List<Ristorante> lista) {
+        List<Ristorante> out = new ArrayList<>();
+        if (lista == null || lista.isEmpty()) return out;
+        double[] coord = geocode(indirizzoUtente);
+        if (coord == null) {
+            System.out.println("[GeoService] Non riesco a geocodificare: " + indirizzoUtente);
+            return out;
         }
-
-        double latUtente = coordUtente[0];
-        double lonUtente = coordUtente[1];
-
-        for (Ristorante r : listaRistoranti) {
-            double distanza = calcolaDistanza(latUtente, lonUtente, r.getLatitudine(), r.getLongitudine());
-            if (distanza <= distanzaMaxKm) {
-                filtrati.add(r);
-            }
+        double latU = coord[0], lonU = coord[1];
+        for (Ristorante r : lista) {
+            double latR = r.getLatitudine();
+            double lonR = r.getLongitudine();
+            if (latR == 0.0 && lonR == 0.0) continue; // ignora ristoranti senza coordinate
+            double d = calcolaDistanza(latU, lonU, latR, lonR);
+            if (d <= distanzaMaxKm) out.add(r);
         }
-        return filtrati;
+        return out;
     }
-    // Calcola la distanza (in km) tra due coordinate geografiche usando Haversine.
-    public double calcolaDistanza (double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // raggio terrestre in km
-        double latDist = Math.toRadians(lat2 - lat1);
-        double lonDist = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDist / 2) * Math.sin(latDist / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDist / 2) * Math.sin(lonDist / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+
+    /** Distanza Haversine in km. */
+    public static double calcolaDistanza(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1), dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon/2)*Math.sin(dLon/2);
+        return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
-    // Metodo per pulire la cache
-    public void clearCache() {
-        geocodeCache.clear();
-        cittaNormalizzataCache.clear();
-    }
-    
-    // Metodo per vedere le dimensioni della cache
-    public int getCacheSize() {
-        return geocodeCache.size();
-    }
+
+    /** Pulisce le cache in RAM. */
+    public void clearCache() { geocodeCache.clear(); }
+
+    /** Dimensione cache indirizzi → coordinate. */
+    public int getCacheSize() { return geocodeCache.size(); }
 }

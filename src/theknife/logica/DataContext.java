@@ -1,3 +1,7 @@
+/*Ciani Flavio Angelo, 761581, VA
+Scolaro Gabriele, 760123, VA
+Gasparini Lorenzo, 759929, VA
+*/
 package theknife.logica;
 
 import theknife.csv.GestoreRecensioni;
@@ -7,6 +11,7 @@ import theknife.csv.GestoreUtenti;
 import theknife.recensione.Recensione;
 import theknife.ristorante.Ristorante;
 import theknife.utente.Utente;
+import theknife.utente.Ruolo;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -15,53 +20,54 @@ import java.util.HashMap;
 
 public class DataContext {
 	
-	//campi
+	// ======= GESTORI CSV =======
 	private final GestoreUtenti gestoreUtenti = new GestoreUtenti();
 	private final GestoreRistoranti gestoreRistoranti = new GestoreRistoranti();
 	private final GestoreRecensioni gestoreRecensioni = new GestoreRecensioni();
 	
+	// ======= LISTE IN RAM =======
 	private List<Utente> utenti;
 	private List<Ristorante> ristoranti;
 	private List<Recensione> recensioni;
 	
-	// indici/dizionari per ricerche rapide
+	// ======= INDICI RAPIDI =======
 	private Map<String, Utente> utentiPerUsername;
 	private Map<String, Ristorante> ristorantePerKey;
 	private Map<String, List<Recensione>> recensioniPerRistoKey;
 
-	//normalizza stringhe
+	// ------- normalizza stringhe -------
 	private String norm(String s) {
-		if(s == null)
-			return "";
-		String t = s.trim().replaceAll("\\s+"," ");
+		if (s == null) return "";
+		String t = s.trim().replaceAll("\\s+", " ");
 		return t.toLowerCase();
 	}
 	
-	//key ristorante (nome | location normalizzati)
+	// ------- key ristorante (nome|location) -------
 	private String ristoKey(String nome, String location) {
 		return norm(nome) + "|" + norm(location);
 	}
 	
+	// ======= LOAD TUTTO =======
 	public void loadAll(String utentiCsv, String ristorantiCsv, String recensioniCsv) {
-	    // leggi i file
+	    // 1) leggi i file
 	    gestoreUtenti.caricaDaCSV(utentiCsv);
 	    gestoreRistoranti.caricaDaCSV(ristorantiCsv);
 	    gestoreRecensioni.caricaDaCSV(recensioniCsv);
 
-	    // prende le liste vive dai gestori
+	    // 2) prendi le liste vive dai gestori
 	    utenti = gestoreUtenti.getElementi();
 	    ristoranti = gestoreRistoranti.getElementi();
 	    recensioni = gestoreRecensioni.getElementi();
 
-	    // evita liste null
+	    // 3) evita liste null
 	    if (utenti == null) utenti = new ArrayList<>();
 	    if (ristoranti == null) ristoranti = new ArrayList<>();
 	    if (recensioni == null) recensioni = new ArrayList<>();
 
-	    // prepara indici e collega
+	    // 4) prepara indici e collega dati
 	    buildIndici();
 	    recensioniRistorante();
-	    linkAssocUtenti();
+	    linkAssocUtenti();   // importa preferiti/gestiti da assocKeysRaw -> liste vere
 	}
 	
 	private void buildIndici() {
@@ -100,27 +106,28 @@ public class DataContext {
 	
 	private void recensioniRistorante() {
 		int orfane = 0;
-		for (Ristorante r : ristoranti) {
-		    r.getRecensioni().clear();  // svuota le liste recensioni di tutti i ristoranti
-		}
-		for(Recensione rec : recensioni) {
+		// svuota le liste recensioni in ogni ristorante
+		for (Ristorante r : ristoranti) r.getRecensioni().clear();
+		
+		// ricollega ogni recensione al suo ristorante
+		for (Recensione rec : recensioni) {
 			String key = ristoKey(rec.getNomeRistorante(), rec.getLocationRistorante());
-			Ristorante r = ristorantePerKey.get(key); //cerco nell'hashmap il ristorante r tramite la key
-			if (r != null) 
+			Ristorante r = ristorantePerKey.get(key);
+			if (r != null) {
 				r.aggiungiRecensione(rec);
-			else
+			} else {
 				orfane++;
+			}
 		}
-		//if (orfane > 0)
-			//System.err.println("Recensioni orfane: " + orfane);
+		// if (orfane > 0) System.err.println("Recensioni orfane: " + orfane);
 	}
 	
-	// metodi getter
-	public List<Utente> getUtenti() {return utenti;}
-	public List<Ristorante> getRistoranti() {return ristoranti;}
-	public List<Recensione> getRecensioni() {return recensioni;}
+	// ======= GETTER =======
+	public List<Utente> getUtenti() { return utenti; }
+	public List<Ristorante> getRistoranti() { return ristoranti; }
+	public List<Recensione> getRecensioni() { return recensioni; }
 	
-	// ricerche rapide
+	// ======= RICERCHE =======
 	public Utente findUtente(String username) {
 	    if (username == null) return null;
 	    return utentiPerUsername.get(username.trim().toLowerCase());
@@ -130,7 +137,7 @@ public class DataContext {
 	    return ristorantePerKey.get(ristoKey(nome, location));
 	}
 	
-	// aggiunta recensione
+	// ======= RECENSIONI: ADD/REMOVE =======
 	public boolean addRecensione(Recensione rec) {
 	    if (rec == null) return false;
 
@@ -155,7 +162,6 @@ public class DataContext {
 	    return true;
 	}
 	
-	// rimozione recensione (allinea RAM + indici)
 	public boolean removeRecensione(Recensione rec) {
 	    if (rec == null) return false;
 
@@ -166,22 +172,18 @@ public class DataContext {
 
 	    // rimuovi dall'oggetto Ristorante
 	    Ristorante r = ristorantePerKey.get(key);
-	    if (r != null) {
-	        r.getRecensioni().remove(rec);
-	    }
+	    if (r != null) r.getRecensioni().remove(rec);
 
 	    // rimuovi dall'indice "recensioniPerRistoKey"
 	    List<Recensione> lista = recensioniPerRistoKey.get(key);
 	    if (lista != null) {
 	        lista.remove(rec);
-	        if (lista.isEmpty()) {
-	            recensioniPerRistoKey.remove(key); // opzionale
-	        }
+	        if (lista.isEmpty()) recensioniPerRistoKey.remove(key);
 	    }
 	    return removed;
 	}
 	
-	// aggiunta utente
+	// ======= UTENTI/RISTORANTI: ADD =======
 	public boolean addUtente(Utente u) {
 		if (u == null) return false;
 
@@ -191,8 +193,7 @@ public class DataContext {
 			return false;
 		}
 
-		if (utentiPerUsername == null) 
-			buildIndici(); 
+		if (utentiPerUsername == null) buildIndici(); 
 		if (utentiPerUsername.containsKey(user)) {
 			System.err.println("Utente già esistente: " + user);
 			return false;
@@ -203,63 +204,97 @@ public class DataContext {
 		return true;
 	}
 	
-	// aggiunta ristorante 
+	public boolean addRistorante(Ristorante r) {
+		if (r == null) return false;
 
-public boolean addRistorante(Ristorante r) {
-	if (r == null) return false;
-
-	String key = ristoKey(r.getNome(), r.getLocation());
-	if (key.equals("|")) {
-		System.err.println("Impossibile aggiungere ristorante: nome/location mancanti.");
-		return false;
-	}
-
-	if (ristorantePerKey == null) 
-		buildIndici();
-	if (ristorantePerKey.containsKey(key)) {
-		System.err.println("Ristorante già presente: " + r.getNome() + " | " + r.getLocation());
-		return false;
-	}
-
-	ristoranti.add(r);
-	ristorantePerKey.put(key, r);
-
-	if (recensioniPerRistoKey != null) {
-		List<Recensione> pendenti = recensioniPerRistoKey.get(key);
-		if (pendenti != null) {
-			for (Recensione rec : pendenti) r.aggiungiRecensione(rec);
+		String key = ristoKey(r.getNome(), r.getLocation());
+		if (key.equals("|")) {
+			System.err.println("Impossibile aggiungere ristorante: nome/location mancanti.");
+			return false;
 		}
+
+		if (ristorantePerKey == null) buildIndici();
+		if (ristorantePerKey.containsKey(key)) {
+			System.err.println("Ristorante già presente: " + r.getNome() + " | " + r.getLocation());
+			return false;
+		}
+
+		ristoranti.add(r);
+		ristorantePerKey.put(key, r);
+
+		// collega eventuali recensioni già caricate con stessa chiave
+		if (recensioniPerRistoKey != null) {
+			List<Recensione> pendenti = recensioniPerRistoKey.get(key);
+			if (pendenti != null) {
+				for (Recensione rec : pendenti) r.aggiungiRecensione(rec);
+			}
+		}
+		return true;
 	}
-	return true;
-}
 
-private void linkAssocUtenti() {
-    for (Utente u : utenti) {
-        String raw = u.getAssocKeysRaw();
-        if (raw == null || raw.trim().isEmpty()) continue;
+	// ======= IMPORT ASSOCIAZIONI (CSV -> liste) =======
+	private void linkAssocUtenti() {
+	    for (Utente u : utenti) {
+	        String raw = u.getAssocKeysRaw();
+	        if (raw == null || raw.trim().isEmpty()) continue;
 
-        String[] tokens = raw.split(";");
-        for (String tok : tokens) {
-            tok = tok.trim();
-            if (tok.isEmpty()) continue;
+	        String[] tokens = raw.split(";");
+	        for (String tok : tokens) {
+	            tok = tok.trim();
+	            if (tok.isEmpty()) continue;
 
-            String[] parts = tok.split("\\|", 2); // split una sola volta
-            String nome = parts[0];
-            String loc  = (parts.length > 1) ? parts[1] : "";
+	            String[] parts = tok.split("\\|", 2); // split una sola volta
+	            String nome = parts[0];
+	            String loc  = (parts.length > 1) ? parts[1] : "";
 
-            Ristorante r = findRistorante(nome, loc);
-            if (r == null) {
-                System.err.println("Associazione utente non risolta: " + tok);
-                continue;
-            }
+	            Ristorante r = findRistorante(nome, loc);
+	            if (r == null) {
+	                System.err.println("Associazione utente non risolta: " + tok);
+	                continue;
+	            }
 
-            u.aggiungiAssoc(r);
-            u.setAssocKeysRaw("");
-        }
-    }
-}
+	            // aggiunge alla lista coerente col ruolo (preferiti/gestiti)
+	            u.aggiungiAssoc(r);
+	        }
+	        // azzera SOLO alla fine, dopo aver importato tutte le associazioni
+	        u.setAssocKeysRaw("");
+	    }
+	}
+
+	// ======= EXPORT ASSOCIAZIONI (liste -> CSV) =======
+	private String buildAssocKeysRaw(Utente u) {
+	    // Prende la lista coerente col ruolo
+	    List<Ristorante> src;
+	    try {
+	        src = (u.getRuolo() == Ruolo.CLIENTE)
+	                ? u.getRistorantiPreferiti()
+	                : u.getRistorantiGestiti();
+	    } catch (Throwable t) {
+	        src = new ArrayList<>();
+	    }
+
+	    List<String> tokens = new ArrayList<>();
+	    if (src != null) {
+	        for (Ristorante r : src) {
+	            if (r == null) continue;
+	            String nome = (r.getNome() == null) ? "" : r.getNome().trim();
+	            String loc  = (r.getLocation() == null) ? "" : r.getLocation().trim();
+	            if (!nome.isEmpty() || !loc.isEmpty()) {
+	                tokens.add(nome + "|" + loc);
+	            }
+	        }
+	    }
+	    return String.join(";", tokens);
+	}
 	
+	// ======= SAVE TUTTO =======
 	public void saveAll(String utentiCsv, String ristorantiCsv, String recensioniCsv) {
+	    // 1) Prima di salvare, ricostruisci la stringa compatta dalle liste vere
+	    for (Utente u : utenti) {
+	        u.setAssocKeysRaw(buildAssocKeysRaw(u));
+	    }
+
+	    // 2) Salva i CSV
 	    gestoreUtenti.salvaSuCSV(utentiCsv);
 	    gestoreRistoranti.salvaSuCSV(ristorantiCsv);
 	    gestoreRecensioni.salvaSuCSV(recensioniCsv);

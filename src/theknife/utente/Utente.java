@@ -49,7 +49,7 @@ public class Utente
 		this.ristorantiGestiti = new ArrayList<>();
 	}
 	
-	// metodi getter e setter
+	// GETTER
 	public String getNome () {return nome;}	
 	public String getCognome () {return cognome;}	
 	public String getUsername () {return username;}	
@@ -60,6 +60,7 @@ public class Utente
 	public List<Ristorante> getRistorantiPreferiti () {return ristorantiPreferiti;}	
 	public List<Ristorante> getRistorantiGestiti () {return ristorantiGestiti;}
 	
+	// SETTER
 	public void setNome (String x) {this.nome = x;}	
 	public void setCognome (String x) {this.cognome = x;}
 
