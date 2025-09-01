@@ -6,7 +6,6 @@ Gasparini Lorenzo, 759929, VA
 package theknife.logica;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -104,7 +103,7 @@ public class MenuHandler {
         }
     }
 
-    // REGISTRAZIONE
+ // REGISTRAZIONE
     private void registrazione () {
         System.out.println("\n--- REGISTRAZIONE ---");
         System.out.print("Nome: ");
@@ -114,10 +113,10 @@ public class MenuHandler {
         String cognome = sc.nextLine().trim();
 
         System.out.print("Username: ");
-        String username = sc.nextLine().trim();
+        String username = leggiUsernameDisponibile();
 
         System.out.print("Password: ");
-        String password = sc.nextLine();
+        String password = leggiPasswordValida();
 
         System.out.print("Domicilio: ");
         String domicilio = sc.nextLine().trim();
@@ -126,11 +125,11 @@ public class MenuHandler {
         String dataInput = sc.nextLine().trim();
         LocalDate dataNascita = null;
         if (!dataInput.isEmpty()) {
-        	try {
-        	    dataNascita = GestoreDate.parse(dataInput);
-        	} catch (IllegalArgumentException e) { 
-        	    System.out.println("Formato della data non valido, ignoro la data.");
-        	}
+            try {
+                dataNascita = GestoreDate.parse(dataInput);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Formato della data non valido, ignoro la data.");
+            }
         }
 
         System.out.print("Ruolo (CLIENTE/RISTORATORE): ");
@@ -138,7 +137,9 @@ public class MenuHandler {
 
         Utente nuovo = new Utente(nome, cognome, username, password, domicilio, dataNascita, ruolo);
         boolean ok = utenteService.registrazione(nuovo);
-        if (ok) System.out.println("Registrazione completata.");
+
+        // <-- qui la riga che volevi -->
+        System.out.println(ok ? "Registrazione completata." : "Registrazione NON riuscita.");
     }
     // LOGIN
     private void login () {
@@ -219,60 +220,69 @@ public class MenuHandler {
     private void menuRistoratore (Utente ristoratore) {
         boolean continua = true;
         while (continua) {
-            System.out.println("\n------ MENU RISTORATORE ------");
-            System.out.println("1) Visualizza ristoranti gestiti");
-            System.out.println("2) Aggiungi ristorante gestito (dal catalogo)");
-            System.out.println("3) Rimuovi ristorante gestito");
-            System.out.println("4) Visualizza le recensioni dei miei ristoranti");
-            System.out.println("5) Rispondi a una recensione");
-            System.out.println("6) Logout");
-            System.out.print("Scelta: ");
+        	System.out.println("\n------ MENU RISTORATORE ------");
+        	System.out.println("1) Visualizza ristoranti gestiti");
+        	System.out.println("2) Aggiungi NUOVO ristorante al catalogo (e alla tua gestione)");
+        	System.out.println("3) Aggiungi ristorante esistente dal catalogo alla tua gestione");
+        	System.out.println("4) Rimuovi ristorante gestito");
+        	System.out.println("5) Visualizza le recensioni dei miei ristoranti");
+        	System.out.println("6) Rispondi a una recensione");
+        	System.out.println("7) Logout");
+        	System.out.print("Scelta: ");
             int scelta = leggiInt();
 
             switch (scelta) {
-                case 1 -> utenteService.visualizzaRistorantiGestiti(ristoratore.getUsername());
+            case 1 -> utenteService.visualizzaRistorantiGestiti(ristoratore.getUsername());
 
-                case 2 -> {
-                    Ristorante r = chiediRistorante();
-                    if (r != null) {
-                        boolean ok = utenteService.aggiungiRistoranteGestito(ristoratore.getUsername(), r);
-                        System.out.println(ok ? "Aggiunto alla gestione." : "Non aggiunto.");
-                    }
+            case 2 -> { // NUOVO RISTORANTE NEL CATALOGO
+                Ristorante nuovo = creaRistoranteDaInput();
+                if (nuovo == null) break; // utente ha annullato
+                boolean ok = ristoranteService.aggiungiRistorante(ristoratore, nuovo);
+                System.out.println(ok ? "Ristorante creato e aggiunto alla tua gestione."
+                                      : "Impossibile creare/aggiungere (esiste già nome+location?).");
+            }
+
+            case 3 -> { // collega ristorante ESISTENTE dal catalogo
+                Ristorante r = chiediRistorante();
+                if (r != null) {
+                    boolean ok = utenteService.aggiungiRistoranteGestito(ristoratore.getUsername(), r);
+                    System.out.println(ok ? "Aggiunto alla gestione." : "Non aggiunto.");
                 }
+            }
 
-                case 3 -> {
-                    Ristorante r = chiediRistorante();
-                    if (r != null) {
-                        boolean ok = utenteService.rimuoviRistoranteGestito(ristoratore.getUsername(), r);
-                        System.out.println(ok ? "Rimosso dalla gestione." : "Non rimosso.");
-                    }
+            case 4 -> { // rimuovi dalla gestione
+                Ristorante r = chiediRistorante();
+                if (r != null) {
+                    boolean ok = utenteService.rimuoviRistoranteGestito(ristoratore.getUsername(), r);
+                    System.out.println(ok ? "Rimosso dalla gestione." : "Non rimosso.");
                 }
+            }
 
-                case 4 -> ristoranteService.visualizzaRecensioniRistoratore(ristoratore);
+            case 5 -> ristoranteService.visualizzaRecensioniRistoratore(ristoratore);
 
-                case 5 -> {
-                    Ristorante r = chiediRistorante();
-                    if (r == null) break;
-                    System.out.print("Username autore recensione: ");
-                    String autore = sc.nextLine().trim();
-                    Recensione target = r.trovaRecensioneDiUtente(autore);
-                    if (target == null) {
-                        System.out.println("Recensione non trovata.");
-                        break;
-                    }
-                    System.out.print("Risposta: ");
-                    String resp = sc.nextLine();
-                    try {
-                        recensioneService.rispondiRecensione(ristoratore, r, target, resp);
-                        System.out.println("Risposta inviata.");
-                    } catch (Exception e) {
-                        System.out.println("Errore: " + e.getMessage());
-                    }
+            case 6 -> {
+                Ristorante r = chiediRistorante();
+                if (r == null) break;
+                System.out.print("Username autore recensione: ");
+                String autore = sc.nextLine().trim();
+                Recensione target = r.trovaRecensioneDiUtente(autore);
+                if (target == null) {
+                    System.out.println("Recensione non trovata.");
+                    break;
                 }
+                System.out.print("Risposta: ");
+                String resp = sc.nextLine();
+                try {
+                    recensioneService.rispondiRecensione(ristoratore, r, target, resp);
+                    System.out.println("Risposta inviata.");
+                } catch (Exception e) {
+                    System.out.println("Errore: " + e.getMessage());
+                }
+            }
 
-                case 6 -> continua = false;
+            case 7 -> continua = false;
 
-                default -> System.out.println("Scelta non valida.");
+            default -> System.out.println("Scelta non valida.");
             }
         }
     }
@@ -424,6 +434,97 @@ public class MenuHandler {
         } catch (NumberFormatException e) {
             System.out.println("Numero non valido, uso default.");
             return null;
+        }
+    }
+    
+    /** Chiede uno username non vuoto e disponibile. 'annulla' per interrompere. */
+    private String leggiUsernameDisponibile() {
+        while (true) {
+            String u = sc.nextLine().trim();
+            if ("annulla".equalsIgnoreCase(u)) throw new InputAnnullatoException();
+            if (u.isEmpty()) { System.out.println("Campo obbligatorio."); continue; }
+            if (utenteService.trovaUtente(u) != null) {
+                System.out.println("Username non disponibile. Riprova.");
+                continue;
+            }
+            return u;
+        }
+    }
+    
+    /** Chiede una password valida (6–12 char) con conferma. 
+     *  Digita 'annulla' per interrompere. */
+    private String leggiPasswordValida() {
+        while (true) {           
+            String p = sc.nextLine();
+            if ("annulla".equalsIgnoreCase(p)) throw new InputAnnullatoException();
+
+            if (p.length() < 6 || p.length() > 12) {
+                System.out.println("La password deve contenere tra i 6 e i 12 caratteri.");
+                continue;
+            }
+
+            System.out.print("Conferma password: ");
+            String c = sc.nextLine();
+            if (!p.equals(c)) {
+                System.out.println("Le password non coincidono.");
+                continue;
+            }
+            return p;
+        }
+    }
+    
+    /** Richiede i campi essenziali e crea un nuovo Ristorante.
+     *  Digita 'annulla' in qualunque campo per interrompere.
+     *  Ritorna null se annullato. */
+    private Ristorante creaRistoranteDaInput() {
+        System.out.println("\n--- NUOVO RISTORANTE ---");
+        System.out.println("(Digita 'annulla' in qualsiasi momento per tornare indietro)");
+
+        String nome      = leggiObbligatoria("Nome: ");
+        String location  = leggiObbligatoria("Località (es. \"Milano, Italia\"): ");
+
+        // campi opzionali
+        String indirizzo = leggiStringa("Indirizzo (via e civico) [invio per saltare]: ");
+        String prezzo    = leggiStringa("Prezzo medio (numero o testo, es. \"25\" o \"€€\") [invio]: ");
+        String cucina    = leggiStringa("Tipo di cucina [invio]: ");
+        String telefono  = leggiStringa("Telefono [invio]: ");
+        String website   = leggiStringa("Sito web (URL) [invio]: ");
+        Boolean delivery = leggiSiNo("Delivery? (s/n/invio): ");
+        Boolean pren     = leggiSiNo("Prenotazione online? (s/n/invio): ");
+
+        // Fallback booleani
+        boolean hasDelivery = Boolean.TRUE.equals(delivery);
+        boolean hasPren     = Boolean.TRUE.equals(pren);
+
+     // === CREA L’OGGETTO usando il costruttore reale (13 argomenti) ===
+        double lon = 0.0;            // se non le gestisci, metti 0.0
+        double lat = 0.0;
+        String premi = "";           // default
+        String servizi = "";         // default
+
+        return new Ristorante(
+            nome,
+            indirizzo != null ? indirizzo : "",
+            location,
+            prezzo != null ? prezzo : "",
+            cucina != null ? cucina : "",
+            lon,
+            lat,
+            telefono != null ? telefono : "",
+            website != null ? website : "",
+            premi,
+            servizi,
+            hasPren,       // prenotazioneOnline
+            hasDelivery    // delivery
+        );
+    }
+    
+    /** Chiede una stringa non vuota; ripete finché non viene fornita. */
+    private String leggiObbligatoria(String prompt) {
+        while (true) {
+            String s = leggiStringa(prompt);
+            if (s != null && !s.isBlank()) return s;
+            System.out.println("Campo obbligatorio.");
         }
     }
 }

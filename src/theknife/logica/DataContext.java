@@ -111,8 +111,8 @@ public class DataContext {
 			else
 				orfane++;
 		}
-		if (orfane > 0)
-			System.err.println("Recensioni orfane: " + orfane);
+		//if (orfane > 0)
+			//System.err.println("Recensioni orfane: " + orfane);
 	}
 	
 	// metodi getter
