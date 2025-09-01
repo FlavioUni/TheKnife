@@ -94,35 +94,22 @@ public class RistoranteService {
     // ===== CLIENTE REGISTRATO =====
 
     public boolean aggiungiPreferito(Utente cliente, Ristorante r) {
-        try {
-            return cliente.aggiungiPreferito(r);
-        } catch (Exception e) {
-            System.err.println("Errore nell'aggiunta ai preferiti: " + e.getMessage());
-            return false;
-        }
+        return cliente != null
+            && cliente.getRuolo() == Ruolo.CLIENTE
+            && cliente.aggiungiAssoc(r);
     }
 
     public boolean rimuoviPreferito(Utente cliente, Ristorante r) {
-        try {
-            return cliente.rimuoviPreferito(r);
-        } catch (Exception e) {
-            System.err.println("Errore nella rimozione dai preferiti: " + e.getMessage());
-            return false;
-        }
+        return cliente != null
+            && cliente.getRuolo() == Ruolo.CLIENTE
+            && cliente.rimuoviAssoc(r);
     }
 
     public void visualizzaPreferiti(Utente cliente) {
-        List<Ristorante> preferiti = cliente.getRistorantiPreferiti();
-        if (preferiti.isEmpty()) {
-            System.out.println("Nessun ristorante nei preferiti.");
+        if (cliente != null && cliente.getRuolo() == Ruolo.CLIENTE) {
+            cliente.visualizzaAssoc();
         } else {
-            System.out.println("=== I TUOI RISTORANTI PREFERITI ===");
-            for (int i = 0; i < preferiti.size(); i++) {
-                Ristorante r = preferiti.get(i);
-                Double media = r.mediaStelle();
-                System.out.println((i + 1) + ". " + r.getNome() + " - " + r.getLocation()
-                        + " (" + (media.isNaN() ? "Nessuna valutazione" : String.format("%.1f", media) + "★") + ")");
-            }
+            System.out.println("Nessun ristorante nei preferiti.");
         }
     }
 
@@ -182,7 +169,7 @@ public class RistoranteService {
         }
         nuovo.setProprietario(ristoratore.getUsername());
         boolean ok = dataContext.addRistorante(nuovo);
-        if (ok) ristoratore.aggiungiRistoranteGestito(nuovo);
+        if (ok) ristoratore.aggiungiAssoc(nuovo);  // usa l’API unificata
         return ok;
     }
 

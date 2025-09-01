@@ -254,6 +254,7 @@ private void linkAssocUtenti() {
             }
 
             u.aggiungiAssoc(r);
+            u.setAssocKeysRaw("");
         }
     }
 }
