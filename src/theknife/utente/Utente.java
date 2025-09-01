@@ -63,7 +63,7 @@ public class Utente
 	// SETTER
 	public void setNome (String x) {this.nome = x;}	
 	public void setCognome (String x) {this.cognome = x;}
-
+	public void setPassword(String password) { this.password = password; }
 	/** 
 	 * Aggiunge il ristorante alla lista coerente in base al ruolo (preferiti per CLIENTE, gestiti per RISTORATORE),
 	 * evitando i duplicati

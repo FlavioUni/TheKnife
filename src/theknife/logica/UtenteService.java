@@ -1,124 +1,74 @@
-/*
-Ciani Flavio Angelo, 761581, VA
-Scolaro Gabriele, 760123, VA
-Gasparini Lorenzo, 759929, VA
-*/
 package theknife.logica;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import theknife.ristorante.Ristorante;
-import theknife.utente.Ruolo;
 import theknife.utente.Utente;
+import theknife.utente.Ruolo;
+import theknife.ristorante.Ristorante;
 
 public class UtenteService {
+    private final DataContext data;
 
-    private final DataContext ctx;
+    public UtenteService(DataContext data) { this.data = data; }
 
-    public UtenteService(DataContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public List<Utente> getUtenti() {
-        return ctx.getUtenti();
-    }
-
-    public Utente trovaUtente(String username) {
-        return ctx.findUtente(username);
-    }
-
-    private boolean controlloPassword(String password) {
-        return password != null && password.length() >= 6 && password.length() <= 12;
-    }
+    // Alias usato da MenuHandler
+    public Utente trovaUtente(String username) { return data.findUtente(username); }
+    public Utente find(String username)        { return data.findUtente(username); }
 
     public boolean registrazione(Utente nuovo) {
-        if (nuovo == null) {
-            System.out.println("Dati utente non validi.");
-            return false;
-        }
-        if (trovaUtente(nuovo.getUsername()) != null) {
-            System.out.println("Username non disponibile.");
-            return false;
-        }
-        if (!controlloPassword(nuovo.getPassword())) {
-            System.out.println("La password deve contenere tra i 6 e i 12 caratteri.");
-            return false;
-        }
-
-        Utente hashato = new Utente(
-                nuovo.getNome(),
-                nuovo.getCognome(),
-                nuovo.getUsername(),
-                Util.hashPassword(nuovo.getPassword()),
-                nuovo.getDomicilio(),
-                nuovo.getData(),
-                nuovo.getRuolo()
-        );
-
-        boolean ok = ctx.addUtente(hashato);  // aggiorna anche gli indici
-        if (ok) System.out.println("Registrazione avvenuta con successo.");
-        return ok;
+        if (nuovo == null || nuovo.getPassword() == null) return false;
+        // Hash UNA sola volta prima di salvare
+        nuovo.setPassword(Util.hashPassword(nuovo.getPassword()));
+        return data.addUtente(nuovo);
     }
 
-    public Utente login(String username, String password) {
-        Utente u = trovaUtente(username);
-        if (u != null && u.getPassword().equals(Util.hashPassword(password))) {
-            System.out.println("Login avvenuto con successo.");
+    public Utente login(String username, String passwordPlain) {
+        Utente u = data.findUtente(username);
+        if (u == null) { System.out.println("Credenziali errate."); return null; }
+
+        String salvata   = u.getPassword();
+        String inputHash = Util.hashPassword(passwordPlain == null ? "" : passwordPlain);
+
+        // Caso normale: sul CSV c'è già l'hash
+        if (isSha256Hex(salvata)) {
+            if (!salvata.equals(inputHash)) { System.out.println("Credenziali errate."); return null; }
             return u;
         }
+
+        // Caso migrazione: sul CSV c'era in chiaro
+        if (passwordPlain != null && passwordPlain.equals(salvata)) {
+            u.setPassword(inputHash); // aggiorna in RAM; saveAll() lo scriverà su CSV
+            return u;
+        }
+
         System.out.println("Credenziali errate.");
         return null;
     }
 
-    public Utente registraGuest(String nome, String cognome, String username, String password,
-                                String domicilio, LocalDate data, Ruolo ruolo) {
-        Utente nuovo = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
-        return registrazione(nuovo) ? trovaUtente(username) : null;
+    private boolean isSha256Hex(String s) {
+        return s != null && s.matches("^[0-9a-f]{64}$");
     }
 
-    // --- Preferiti ---
-
-    public boolean aggiungiPreferito(String username, Ristorante ristorante) {
-        Utente u = trovaUtente(username);
-        return (u != null) && u.aggiungiPreferito(ristorante);
-    }
-
-    public boolean rimuoviPreferito(String username, Ristorante ristorante) {
-        Utente u = trovaUtente(username);
-        return (u != null) && u.rimuoviPreferito(ristorante);
-    }
-
+    // ===== API unificate =====
     public void visualizzaPreferiti(String username) {
-        Utente u = trovaUtente(username);
-        if (u != null) u.visualizzaPreferiti();
-        else System.out.println("Utente non trovato nella sezione clienti.");
-    }
-
-    // --- Ristoranti gestiti ---
-
-    public boolean aggiungiRistoranteGestito(String username, Ristorante ristorante) {
-        Utente u = trovaUtente(username);
-        if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
-            return u.aggiungiRistoranteGestito(ristorante);
-        }
-        return false;
-    }
-
-    public boolean rimuoviRistoranteGestito(String username, Ristorante ristorante) {
-        Utente u = trovaUtente(username);
-        if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
-            return u.rimuoviRistoranteGestito(ristorante);
-        }
-        return false;
+        Utente u = data.findUtente(username);
+        if (u == null) return;
+        if (u.getRuolo() != Ruolo.CLIENTE) { System.out.println("Utente non nella sezione clienti."); return; }
+        u.visualizzaAssoc(); // stampa i preferiti
     }
 
     public void visualizzaRistorantiGestiti(String username) {
-        Utente u = trovaUtente(username);
-        if (u != null && u.getRuolo() == Ruolo.RISTORATORE) {
-            u.visualizzaRistorantiGestiti();
-        } else {
-            System.out.println("Utente non trovato nella sezione ristoratori.");
-        }
+        Utente u = data.findUtente(username);
+        if (u == null) return;
+        if (u.getRuolo() != Ruolo.RISTORATORE) { System.out.println("Utente non nella sezione ristoratori."); return; }
+        u.visualizzaAssoc(); // stampa i gestiti
+    }
+
+    public boolean aggiungiRistoranteGestito(String username, Ristorante r) {
+        Utente u = data.findUtente(username);
+        return u != null && u.getRuolo() == Ruolo.RISTORATORE && u.aggiungiAssoc(r);
+    }
+
+    public boolean rimuoviRistoranteGestito(String username, Ristorante r) {
+        Utente u = data.findUtente(username);
+        return u != null && u.getRuolo() == Ruolo.RISTORATORE && u.rimuoviAssoc(r);
     }
 }
