@@ -18,8 +18,22 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class GestoreUtenti extends GestoreCSV<Utente> {
+/**
+ * La classe GestoreUtenti si occupa della gestione della persistenza degli oggetti {@link Utente} da e verso il file CSV.
+ * Estende la classe astratta {@link GestoreCSV} adattandola per il tipo {@code Utente}.
+ * 
+ * @author Lorenzo Gasparini
+ */
 
+public class GestoreUtenti extends GestoreCSV<Utente> {
+	
+	/**
+	 * Carica la lista degli utenti leggendo i dati da un file CSV.
+	 * Il metodo ignora la prima riga (intestazione) e costruisce oggetti {@link Utente} a partire dalle righe successive.
+	 * Gestisce automaticamente la conversione delle date e l'assegnazione del ruolo.
+	 * 
+	 * @param filePath Il percorso del file CSV da cui caricare i dati.
+	 */
     @Override
     public void caricaDaCSV (String filePath) {
         elementi = new ArrayList<>();
@@ -59,7 +73,14 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
             System.err.println("Errore nella lettura/parsing utenti: " + e.getMessage());
         }
     }
-
+    
+    /**
+     * Salva la lista corrente degli utenti nel file CSV di cui &egrave; specificato il percorso.
+     * Crea una riga di intestazione e poi una riga per ogni utente, convertendo i suoi campi in stringhe secondo il formato atteso.
+     * La lista dei ristoranti associati (preferiti o gestiti) viene serializzata in una stringa compatta.
+     * 
+     * @param filePath Il percorso del file CSV su cui salvare i dati.
+     */
     @Override
     public void salvaSuCSV (String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
@@ -85,6 +106,14 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
         }
     }
     
+    /**
+     * Metodo privato per costruire la stringa che rappresenta i ristoranti associati a un utente nel formato compatto per il CSV.
+     * La stringa è formata da una sequenza di elementi caratterizzati da <code>Nome</code> e <code>Location</code>, separati da punto e virgola.
+     * La lista di origine (dei preferiti o dei gestiti) viene scelta in base al ruolo dell'utente.
+     * 
+     * @param u L'utente di cui serializzare la lista di ristoranti (dei preferiti o dei gestiti).
+     * @return La stringa contenente la sequenza di ristoranti preferiti o gestiti, o una stringa vuota se non ce ne sono.
+     */
     private static String buildAssocCell (Utente u) {
         java.util.List<theknife.ristorante.Ristorante> src =
             (u.getRuolo() == theknife.utente.Ruolo.CLIENTE)

@@ -10,7 +10,7 @@ import theknife.logica.UtenteService;
 import theknife.recensione.Recensione;
 
 /**
- * La classe {@code UtenteNonRegistrato} rappresenta un utente anonimo che visita l'applicazione.
+ * La classe UtenteNonRegistrato rappresenta un utente anonimo che visita l'applicazione.
  * <p>
  * Fornisce le funzionalità base consentite senza effettuare l'accesso:
  * <ul>
@@ -61,7 +61,7 @@ public class UtenteNonRegistrato {
      * 
      * @param service Il servizio di gestione utenti a cui delegare l'operazione.
      * @param nuovo L'oggetto {@link Utente} contenente i dati per la registrazione.
-     * @return L'oggetto {@link Utente} registrato se l'operazione ha avuto successo; {@code null} se la registrazione fallisce.
+     * @return L'oggetto {@link Utente} registrato se l'operazione ha avuto successo; null se la registrazione fallisce.
      */
     public Utente registra (UtenteService service, Utente nuovo) {
         if (service.registrazione(nuovo)) {
