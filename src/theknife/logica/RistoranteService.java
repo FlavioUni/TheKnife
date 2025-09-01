@@ -13,17 +13,40 @@ import theknife.utente.Ruolo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * La classe RistoranteService fornisce i servizi principali per la gestione dei ristoranti,
+ * ovvero si occupa di tutte le operazioni che li riguardano. Definisce cosa può fare un utente 
+ * non registrato, un cliente, o un ristoratore con i ristoranti
+ */
+
 public class RistoranteService {
 
     private final DataContext dataContext;
     private final GeoService geoService; 
 
+    /**
+     * Costruttore parametrico della classe RistoranteService
+     * @param dataContext L'oggetto dataContext che prende in ingresso per accedere a tutti i dati di quella classe
+     * @param geoServiceL'oggetto geoService per gestire tutte le operazioni legate alla geocalizzazione dei ristoranti
+     */
+    
     public RistoranteService(DataContext dataContext, GeoService geoService) {
         this.dataContext = dataContext;
         this.geoService = geoService;
     }
 
     // ===== UTENTE NON REGISTRATO =====
+    
+    /**
+     * Avviene la ricerca del ristorante in base a una serie di criteri di filtro che l’utente può specificare (cucina, location, fascia di prezzo, ecc.)
+     * @param cucina
+     * @param location
+     * @param fasciaPrezzo
+     * @param delivery
+     * @param prenotazioneOnline
+     * @param minStelle
+     * @return
+     */
 
     public List<Ristorante> cercaRistorante(String cucina, String location, String fasciaPrezzo,
                                             Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {

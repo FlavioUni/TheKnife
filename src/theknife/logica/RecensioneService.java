@@ -19,9 +19,8 @@ public class RecensioneService {
     private final DataContext dataContext;
 
     /**
-     * COSTRUTTORE parametrico che prende in ingresso un oggetto DataContext per accedere 
-     * a tutti i dati che stanno in quella classe, ovvero a tutti i dati del progetto.
-     * @param dataContext
+     * Costruttore parametrico della classe RecensioneService
+     * @param dataContext L'oggetto dataContext che prende in ingresso per accedere a tutti i dati di quella classe
      */
     public RecensioneService(DataContext dataContext) {
         this.dataContext = dataContext;
