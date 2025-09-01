@@ -23,7 +23,7 @@ public final class GestoreDate {
 	
 	/**
 	 * Il formatter di data unico utilizzato da tutti i metodi della classe.
-	 * Il pattern è "dd/MM/yyyy".
+	 * Il formato &egrave; "dd/MM/yyyy".
 	 */
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
