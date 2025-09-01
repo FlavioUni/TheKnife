@@ -19,12 +19,14 @@ import theknife.recensione.Recensione;
  *  </ul>
  *  </p>
  *  
- *  @author Lorenzo Gasparini
+ * @author Lorenzo Gasparini
+ * @see Utente
+ * @see UtenteService
  */
 
 public class UtenteNonRegistrato {
 	/**
-	 * Stampa l'elenco dei ristoranti disponibili nel sistema.
+	 * Mostra l'elenco dei ristoranti disponibili nel sistema.
 	 * Per ogni ristorante, visualizza il nome e la location.
 	 * 
 	 * @param ristoranti La lista di {@link Ristorante} da visualizzare.
@@ -40,7 +42,7 @@ public class UtenteNonRegistrato {
         }
     }
     /**
-     * Stampa tutte le recensioni associate ad un ristorante specifico.
+     * Mostra tutte le recensioni associate ad un ristorante specifico.
      * Per ogni recensione, visualizza il voto in stelle e il contenuto.
      * 
      * @param ristorante Il {@link Ristorante} di cui visualizzare le recensioni.
@@ -61,7 +63,7 @@ public class UtenteNonRegistrato {
      * 
      * @param service Il servizio di gestione utenti a cui delegare l'operazione.
      * @param nuovo L'oggetto {@link Utente} contenente i dati per la registrazione.
-     * @return L'oggetto {@link Utente} registrato se l'operazione ha avuto successo; null se la registrazione fallisce.
+     * @return L'oggetto {@link Utente} registrato se l'operazione ha avuto successo; {@code null} se la registrazione fallisce.
      */
     public Utente registra (UtenteService service, Utente nuovo) {
         if (service.registrazione(nuovo)) {

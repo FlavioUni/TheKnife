@@ -18,6 +18,7 @@ package theknife.utente;
  * </p>
  * 
  * @author Lorenzo Gasparini
+ * @see Utente
  */
 
 public enum Ruolo {

@@ -20,9 +20,13 @@ import java.util.ArrayList;
 
 /**
  * La classe GestoreUtenti si occupa della gestione della persistenza degli oggetti {@link Utente} da e verso il file CSV.
- * Estende la classe astratta {@link GestoreCSV} adattandola per il tipo {@code Utente}.
+ * Estende la classe astratta {@link GestoreCSV} adattandola per il tipo Utente.
  * 
  * @author Lorenzo Gasparini
+ * @see GestoreCSV
+ * @see Utente
+ * @see Ruolo
+ * @see GestoreDate
  */
 
 public class GestoreUtenti extends GestoreCSV<Utente> {
@@ -107,7 +111,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
     }
     
     /**
-     * Metodo privato per costruire la stringa che rappresenta i ristoranti associati a un utente nel formato compatto per il CSV.
+     * Metodo di utilità privato per costruire la stringa che rappresenta i ristoranti associati a un utente nel formato compatto per il CSV.
      * La stringa è formata da una sequenza di elementi caratterizzati da <code>Nome</code> e <code>Location</code>, separati da punto e virgola.
      * La lista di origine (dei preferiti o dei gestiti) viene scelta in base al ruolo dell'utente.
      * 
