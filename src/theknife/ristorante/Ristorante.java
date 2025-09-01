@@ -13,6 +13,8 @@ import java.util.ArrayList;
  * La classe Ristorante rappresenta un ristorante nel sistema.
  * Un ristorante è caratterizzato da: informazioni base (nome, indirizzo, location), dettagli (cucina, prezzi),
  * coordinate geograficas, contatti, servizi offerti e un insieme di recensioni degli utenti.
+ * 
+ * @author Gabriele Scolaro
  */
 public class Ristorante {
 
