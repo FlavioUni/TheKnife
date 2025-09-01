@@ -13,7 +13,10 @@ import theknife.ristorante.Ristorante;
 
 /**
  * La classe Utente rappresenta un utente del sistema.
- * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) e la lista dei ristoranti preferiti o gestiti.*/
+ * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) e la lista dei ristoranti preferiti o gestiti.
+ * 
+ * @author Lorenzo Gasparini
+*/
 
 public class Utente
 {
