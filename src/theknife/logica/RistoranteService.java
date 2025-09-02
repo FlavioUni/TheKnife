@@ -122,14 +122,6 @@ public class RistoranteService {
             && cliente.rimuoviAssoc(r);
     }
 
-    public void visualizzaPreferiti(Utente cliente) {
-        if (cliente != null && cliente.getRuolo() == Ruolo.CLIENTE) {
-            cliente.visualizzaAssoc();
-        } else {
-            System.out.println("Nessun ristorante nei preferiti.");
-        }
-    }
-
     public boolean aggiungiRecensione(Utente cliente, Ristorante ristorante, int stelle, String descrizione) {
         try {
             if (ristorante.esisteRecensioneDiUtente(cliente.getUsername())) {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+// import java.util.stream.Collectors; // RIMOSSO
 import java.util.Locale;
 
 import theknife.ristorante.Ristorante;
@@ -338,7 +338,12 @@ public class MenuHandler {
             System.out.println("Premi: " + safe(r.getPremi()));
             System.out.println("Maps: " + mapsLink(r));
             System.out.println("---------------------------------");
-            ristoranteService.visualizzaRecensioni(r);
+            System.out.println("Recensioni positive recenti:");
+            for (Recensione rec : r.getRecensioni()) {
+                if (rec.isPositiva() && rec.isRecente()) {
+                    System.out.println("- " + rec.getAutore() + ": " + rec.getStelle() + " stelle - " + rec.getDescrizione());
+                }
+            }
             System.out.println("---------------------------------");
 
             if (!isCliente) {
@@ -414,10 +419,19 @@ public class MenuHandler {
     private void flussoMieRecensioni(Utente utente) {
         pulisciTerminale();
         try {
-            List<Recensione> mie = data.getRecensioni().stream()
-                    .filter(r -> r.getAutore().equalsIgnoreCase(utente.getUsername()))
-                    .sorted(Comparator.comparing(Recensione::getData).reversed())
-                    .collect(Collectors.toList());
+            // --- sostituzione stream con for + sort ---
+            List<Recensione> mie = new ArrayList<>();
+            List<Recensione> tutte = data.getRecensioni();
+            if (tutte != null) {
+                for (Recensione rec : tutte) {
+                    if (rec != null && rec.getAutore() != null &&
+                        rec.getAutore().equalsIgnoreCase(utente.getUsername())) {
+                        mie.add(rec);
+                    }
+                }
+            }
+            mie.sort(Comparator.comparing(Recensione::getData).reversed());
+            // ------------------------------------------
 
             if (mie.isEmpty()) {
                 System.out.println("Non hai ancora pubblicato recensioni.");
@@ -619,9 +633,14 @@ public class MenuHandler {
             System.out.println("\n--- Recensioni di " + scelto.getNome() + " ---");
             for (int i = 0; i < recensioni.size(); i++) {
                 Recensione rec = recensioni.get(i);
-                System.out.printf("%d) %s - %d★ - \"%s\"%n",
-                        i + 1, rec.getAutore(), rec.getStelle(),
-                        rec.getDescrizione().length() > 80 ? rec.getDescrizione().substring(0, 77) + "..." : rec.getDescrizione());
+                boolean evidenzia = rec.isPositiva() && rec.isRecente();
+                System.out.printf("%d) %s - %d stelle - \"%s\" %s\n",
+                        i + 1,
+                        rec.getAutore(),
+                        rec.getStelle(),
+                        rec.getDescrizione().length() > 80 ? rec.getDescrizione().substring(0, 77) + "..." : rec.getDescrizione(),
+                        evidenzia ? "[RECENTE E POSITIVA]" : ""
+                );
             }
             System.out.println((recensioni.size() + 1) + ") Torna indietro");
             System.out.print("Scelta (o * per indietro): ");
@@ -629,13 +648,37 @@ public class MenuHandler {
             if (idx == recensioni.size() + 1) return;
 
             Recensione target = recensioni.get(idx - 1);
-            System.out.print("Risposta (o * per indietro): ");
-            String resp = leggiLineaRaw();
-            try {
-                recensioneService.rispondiRecensione(ristoratore, scelto, target, resp);
-                System.out.println("Risposta inviata.");
-            } catch (Exception e) {
-                System.out.println("Errore: " + e.getMessage());
+            System.out.println("\n--- Recensione selezionata ---");
+            System.out.println("Autore: " + target.getAutore());
+            System.out.println("Voto: " + target.getStelle());
+            System.out.println("Commento: " + target.getDescrizione());
+            System.out.println("Risposta attuale: " + (target.getRisposta().isBlank() ? "(nessuna)" : target.getRisposta()));
+            System.out.println();
+            System.out.println("1) Rispondi alla recensione");
+            System.out.println("2) Elimina risposta");
+            System.out.println("3) Annulla");
+            System.out.print("Scelta: ");
+            int scelta = leggiIntInRange(1, 3);
+
+            switch (scelta) {
+                case 1 -> {
+                    System.out.print("Risposta: ");
+                    String resp = leggiLineaRaw();
+                    try {
+                        recensioneService.rispondiRecensione(ristoratore, scelto, target, resp);
+                        System.out.println("Risposta inviata.");
+                    } catch (Exception e) {
+                        System.out.println("Errore: " + e.getMessage());
+                    }
+                }
+                case 2 -> {
+                    target.eliminaRisposta();
+                    System.out.println("Risposta eliminata.");
+                    data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
+                }
+                case 3 -> {
+                    System.out.println("Operazione annullata.");
+                }
             }
             pausa();
         } catch (InputAnnullatoException e) {
@@ -646,9 +689,17 @@ public class MenuHandler {
     private void flussoPrendiInGestione(Utente ristoratore) {
         pulisciTerminale();
         try {
-            List<Ristorante> nonGestiti = data.getRistoranti().stream()
-                    .filter(r -> !ristoratore.gestisce(r))
-                    .collect(Collectors.toList());
+            // --- sostituzione stream con for ---
+            List<Ristorante> nonGestiti = new ArrayList<>();
+            List<Ristorante> tutti = data.getRistoranti();
+            if (tutti != null) {
+                for (Ristorante r : tutti) {
+                    if (r != null && !ristoratore.gestisce(r)) {
+                        nonGestiti.add(r);
+                    }
+                }
+            }
+            // -----------------------------------
 
             if (nonGestiti.isEmpty()) {
                 System.out.println("Tutti i ristoranti sono già sotto la tua gestione.");
@@ -657,9 +708,17 @@ public class MenuHandler {
             }
 
             String keyword = leggiStringa("Inserisci nome ristorante (o * per indietro): ");
-            List<Ristorante> filtrati = nonGestiti.stream()
-                    .filter(r -> r.getNome().toLowerCase().contains(keyword.toLowerCase()))
-                    .collect(Collectors.toList());
+
+            // --- filtro nome con for ---
+            List<Ristorante> filtrati = new ArrayList<>();
+            String kw = (keyword == null ? "" : keyword.toLowerCase());
+            for (Ristorante r : nonGestiti) {
+                String nome = (r != null ? r.getNome() : null);
+                if (nome != null && nome.toLowerCase().contains(kw)) {
+                    filtrati.add(r);
+                }
+            }
+            // ---------------------------
 
             if (filtrati.isEmpty()) {
                 System.out.println("Nessun ristorante trovato con questo nome.");

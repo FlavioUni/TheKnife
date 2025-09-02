@@ -6,21 +6,24 @@ Gasparini Lorenzo, 759929, VA
 
 package theknife.utente;
 
+import theknife.ristorante.Ristorante;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import theknife.ristorante.Ristorante;
 
 /**
  * La classe Utente rappresenta un utente del sistema.
- * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) e la lista dei ristoranti preferiti o gestiti.
+ * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) e la lista dei ristoranti associati.
  * 
- * @author Lorenzo Gasparini
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
 */
 
 public class Utente
 {
-	// campi
+	// CAMPI
 	private String nome, cognome, username, password, domicilio;
 	private LocalDate data;
 	private Ruolo ruolo;
@@ -28,7 +31,7 @@ public class Utente
 	private List<Ristorante> ristorantiGestiti;
 	
 	/**
-	 * COSTRUTTORE parametrico della classe Utente
+	 * COSTRUTTORE parametrico della classe Utente.
 	 * 
 	 * @param nome Nome dell'utente
 	 * @param cognome Cognome dell'utente
@@ -37,7 +40,7 @@ public class Utente
 	 * @param domicilio Domicilio dell'utente
 	 * @param data Data di nascita dell'utente
 	 * @param ruolo Ruolo dell'utente che può essere {@link theknife.utente.Ruolo#CLIENTE} o {@link theknife.utente.Ruolo#RISTORATORE}
-	 * 		CLIENTE può gestire i suoi preferiti, mentre RISTORATORE gestisce i suoi ristoranti
+	 * 		  CLIENTE può gestire i suoi ristoranti preferiti, mentre RISTORATORE gestisce i suoi ristoranti gestiti
 	 * */
 	public Utente (String nome, String cognome, String username, String password, String domicilio, LocalDate data, Ruolo ruolo)
 	{
@@ -66,13 +69,16 @@ public class Utente
 	// SETTER
 	public void setNome (String x) {this.nome = x;}	
 	public void setCognome (String x) {this.cognome = x;}
-	public void setPassword(String password) { this.password = password; }
+	public void setPassword(String password) {this.password = password;}
+	
+	// METODI
+	
 	/** 
 	 * Aggiunge il ristorante alla lista coerente in base al ruolo (preferiti per CLIENTE, gestiti per RISTORATORE),
 	 * evitando i duplicati.
 	 * 
-	 * @param ristorante Ristorante da aggiungere a preferiti o gestiti.
-	 * @return true se il ristorante viene correttamente aggiunto, altrimenti false se è già presente o se il ruolo non è valido.
+	 * @param ristorante Ristorante da aggiungere a preferiti o gestiti
+	 * @return true se il ristorante viene correttamente aggiunto, altrimenti false se è già presente o se il ruolo non è valido
 	 * */
 	public boolean aggiungiAssoc(Ristorante ristorante) {
 	    if (ruolo == Ruolo.CLIENTE) {
@@ -94,8 +100,8 @@ public class Utente
 	/** 
 	 * Rimuove il ristorante dalla lista coerente in base al ruolo (preferiti per CLIENTE, gestiti per RISTORATORE).
 	 * 
-	 * @param ristorante Ristorante da rimuovere da preferiti o gestiti.
-	 * @return true se il ristorante viene correttamente rimosso, altrimenti false se non è presente o se il ruolo non è valido.
+	 * @param ristorante Ristorante da rimuovere da preferiti o gestiti
+	 * @return true se il ristorante viene correttamente rimosso, altrimenti false se non è presente o se il ruolo non è valido
 	 * */
 	public boolean rimuoviAssoc(Ristorante ristorante) {
 	    if (ruolo == Ruolo.CLIENTE) {
@@ -108,7 +114,7 @@ public class Utente
 
 	/** 
 	 * Stampa a video {@code System.out} l’elenco delle associazioni coerente con il ruolo (preferiti per CLIENTE, gestiti per RISTORATORE).
-	 * In caso di ruolo non valido, stampa a video un messaggio {@code System.err}
+	 * In caso di ruolo non valido, stampa a video un messaggio {@code System.err}.
 	 * */
 	public void visualizzaAssoc() {
 	    if (ruolo == Ruolo.CLIENTE) {
@@ -135,8 +141,8 @@ public class Utente
 	/**
 	 * Controllo di permesso per verificare se l'utente RISTORATORE gestisce il ristorante.
 	 * 
-	 * @param ristorante Ristorante di cui bisogna verificare la gestione.
-	 * @return true se l'utente ha ruolo RISTORATORE e se è presente nella sua lista ristorantiGestiti.
+	 * @param ristorante Ristorante di cui bisogna verificare la gestione
+	 * @return true se l'utente ha ruolo RISTORATORE e se è presente nella sua lista ristorantiGestiti
 	 * */
     public boolean gestisce (Ristorante ristorante) {
         if (ruolo == Ruolo.RISTORATORE) {
@@ -145,34 +151,41 @@ public class Utente
         return false;
     }
 	
- // --- supporto per persistenza preferiti/gestiti --- 
+ // --- SUPPORTO PER SALVATAGGIO/CARICAMENTO ASSOCIAZIONI DA CSV --- 
+    
     /**
-     * String grezza che rappresenta l'associazione tra utente e ristoranti in un formato compatto per la persistenza su CSV.
-     * E' usata solo per l'import/export, nel resto dell’app non usarla: usa le liste vere (preferiti/gestiti), non questa stringa.
-     * */
+     * Stringa grezza che rappresenta le associazioni dell’utente con i ristoranti,
+     * nel formato compatto usato solo per salvataggio e caricamento da CSV.
+     * Contiene gli ID dei ristoranti, separati da punto e virgola.
+     * Non usarla, durante l’esecuzione si usano le liste vere (preferiti / gestiti).
+     */
     private String assocKeysRaw = "";
-    
+
     /**
-     * Restituisce la stringa compatta con le associazioni utente e ristoranti (esclusivamente destinata all'import/export su CSV).
-     * 
-     * @return assocKeyRaw Stringa nel formato {@code "Nome|Location;Nome|Location;..."}
-     * */
+     * Restituisce la stringa compatta con gli ID dei ristoranti associati all’utente,
+     * usata solo per import/export su CSV.
+     *
+     * @return Stringa nel formato {@code "id1;id2;id3;..."}
+     */
     public String getAssocKeysRaw() { return assocKeysRaw; }
-    
+
     /**
-     * Imposta la stringa compatta con le associazioni utente e ristoranti (da usare esclusivamente all'import da CSV).
-     * Se {@code s} è {@code null}, viene impostata come stringa vuota.
-     * 
-     * @param s Stringa nel formato {@code "Nome|Location;Nome|Location;..."}
-     * */
+     * Imposta la stringa compatta con gli ID dei ristoranti associati all’utente,
+     * da usare solo in fase di import da CSV.
+     * Se {@code s} è {@code null}, viene salvata come stringa vuota.
+     *
+     * @param s Stringa nel formato {@code "id1;id2;id3;..."}
+     */
     public void setAssocKeysRaw(String s) { this.assocKeysRaw = (s == null ? "" : s); }
+    
+    // ------------------------------------------------------------------
 	
     /**
      * Restituisce una rappresentazione leggibile dell'utente che include: nome, cognome, username, ruolo, domicilio
      * e data di nascita (vuota se assente).
      * 
-     * @return Stringa formattata con i principali campi dell'utente.
-     * */
+     * @return Stringa formattata con i principali campi dell'utente
+     * */   
     @Override
     public String toString() {
         return String.format(
@@ -187,8 +200,8 @@ public class Utente
      * Criterio: due Utenti sono uguali se hanno lo stesso username (ignorando maiuscole/minuscole) e non sono considerati gli altri campi.
      * Lo username è l'identificativo unico dell'utente.
      * 
-     * @param obj Oggetto con cui confrontare l'Utente.
-     * @return true se obj è un Utente con lo stesso username, altrimenti false.
+     * @param obj Oggetto con cui confrontare l'Utente
+     * @return true se obj è un Utente con lo stesso username, altrimenti false
      * */
 	@Override
 	public boolean equals (Object obj) {
