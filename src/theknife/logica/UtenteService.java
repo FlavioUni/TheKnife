@@ -1,3 +1,9 @@
+/*
+Ciani Flavio Angelo, 761581, VA
+Scolaro Gabriele, 760123, VA
+Gasparini Lorenzo, 759929, VA
+*/
+
 package theknife.logica;
 
 import theknife.utente.Utente;
@@ -6,85 +12,81 @@ import theknife.ristorante.Ristorante;
 
 /**
  * La classe UtenteService fornisce i servizi principali per la gestione degli utenti.
- * Si occupa di operazioni critiche come registrazione, login (con hashing della password) e gestione delle liste di preferiti e ristoranti gestiti.
+ * Permette la registrazione, il login (con hashing della password), e la gestione delle liste
+ * di ristoranti preferiti o gestiti.
  * 
- * @author Lorenzo Gasparini
- * @see DataContext
- * @see Utente
- * @see Ruolo
- * @see Ristorante
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
  */
-
 public class UtenteService {
+    
+    // CAMPI
     private final DataContext data;
     
     /**
-     * Costruttore per UtenteService.
+     * COSTRUTTORE parametrico della classe UtenteService.
      * 
-     * @param data Un'istanza di {@link DataContext} per accedere e modificare i dati degli utenti e dei ristoranti.
+     * @param data Oggetto che contiene tutti i dati dell'applicazione (utenti, ristoranti, recensioni)
      */
-    public UtenteService(DataContext data) { this.data = data; }
+    public UtenteService(DataContext data) {this.data = data;}
 
-    /**
-     * Cerca un utente nel sistema per username.
-     * Metodo utilizzato principalmente da {@link theknife.menu.MenuHandler}.
-     * 
-     * @param username Lo username (identificativo unico) dell'utente da cercare.
-     * @return L'oggetto {@link Utente} corrispondente, o {@code null} se non trovato.
-     */
-    public Utente trovaUtente(String username) { return data.findUtente(username); }
-    /**
-     * Cerca un utente nel sistema per username.
-     * 
-     * @param username Lo username (identificativo unico) dell'utente da cercare.
-     * @return L'oggetto {@link Utente} corrispondente, o {@code null} se non trovato.
-     */
-    public Utente find(String username)        { return data.findUtente(username); }
+    // METODI
     
     /**
-     * Registra un nuovo utente nel sistema.
-     * Effettua l'hashing della password in chiaro prima di registrare l'utente.
-     * La verifica dell'unicità dello username è delegata a {@link DataContext#addUtente(Utente)}
+     * Cerca un utente per username.
      * 
-     * @param nuovo L'oggetto {@link Utente} contenente i dati del nuovo utente.
-     * @return {@code true} se la registrazione ha successo (username unico), {@code false} altrimenti.
+     * @param username Username dell'utente da cercare
+     * @return Utente trovato oppure null se assente
+     */
+    public Utente trovaUtente(String username) {return data.findUtente(username);}
+    
+    /**
+     * Registra un nuovo utente.
+     * La password viene hashata prima del salvataggio (vedi Util).
+     * L’unicità dello username è verificata dal DataContext.
+     * 
+     * @param nuovo Utente da registrare
+     * @return true se la registrazione è avvenuta con successo, false altrimenti
      */
     public boolean registrazione(Utente nuovo) {
-        if (nuovo == null || nuovo.getPassword() == null) return false;
-        // Hash UNA sola volta prima di salvare
+        if (nuovo == null || nuovo.getPassword() == null) 
+        	return false;
         nuovo.setPassword(Util.hashPassword(nuovo.getPassword()));
         return data.addUtente(nuovo);
     }
     
     /**
-     * Autentica un utente nel sistema (login).
-     * Supporta la migrazione da password in chiaro a password hashate.
-     * * <ol>
-     *   <li>Cerca l'utente per username.</li>
-     *   <li>Se la password memorizzata è un hash SHA-256, confronta gli hash.</li>
-     *   <li>Se la password memorizzata è in chiaro, confronta in chiaro e, in caso di successo, aggiorna la password con il suo hash.</li>
-     *   </ol>
-     *   
-     * @param username Lo username dell'utente che tenta il login.
-     * @param passwordPlain La password in chiaro fornita dall'utente.
-     * @return L'oggetto {@link Utente} autenticato se le credenziali sono corrette, {@code null} altrimenti.
+     * Autentica un utente al login.
+     * Supporta la migrazione da password in chiaro a password hashate, nel caso in cui sul CSV
+     * ci siano password in chiaro.
+     * 
+     * @param username Username inserito
+     * @param passwordPlain Password in chiaro inserita (es. "password")
+     * @return Utente autenticato se le credenziali sono corrette, null altrimenti
      */
     public Utente login(String username, String passwordPlain) {
         Utente u = data.findUtente(username);
-        if (u == null) { System.out.println("Credenziali errate."); return null; }
+        if (u == null) { 
+            System.out.println("Credenziali errate."); 
+            return null; 
+        }
 
         String salvata   = u.getPassword();
         String inputHash = Util.hashPassword(passwordPlain == null ? "" : passwordPlain);
 
-        // Caso normale: sul CSV c'è già l'hash
+        // hash salvato nel CSV
         if (isSha256Hex(salvata)) {
-            if (!salvata.equals(inputHash)) { System.out.println("Credenziali errate."); return null; }
+            if (!salvata.equals(inputHash)) { 
+                System.out.println("Credenziali errate."); 
+                return null; 
+            }
             return u;
         }
 
-        // Caso migrazione: sul CSV c'era in chiaro
+        // password in chiaro nel CSV
         if (passwordPlain != null && passwordPlain.equals(salvata)) {
-            u.setPassword(inputHash); // aggiorna in RAM; saveAll() lo scriverà su CSV
+            u.setPassword(inputHash); 
             return u;
         }
 
@@ -93,56 +95,46 @@ public class UtenteService {
     }
     
     /**
-     * Metodo di utilità privato per verificare se una stringa ha il formato di un hash SHA-256 esadecimale.
+     * Controlla se la stringa è lunga 64 caratteri e contiene solo numeri da 0 a 9 e lettere da a a f.
+     * Serve a capire se la password salvata è già un hash SHA-256.
      * 
-     * @param s La stringa da verificare.
-     * @return {@code true} se la stringa è lunga 64 caratteri e contiene solo cifre esadecimali (0-9, a-f), {@code false} altrimenti.
+     * @param s La stringa da controllare
+     * @return true se è nel formato tipico di un hash SHA-256, false altrimenti
      */
     private boolean isSha256Hex(String s) {
         return s != null && s.matches("^[0-9a-f]{64}$");
     }
 
-    // ===== API unificate =====
-    
     /**
-     * Visualizza la lista dei ristoranti preferiti di un cliente.
-     * Mostra l'elenco tramite {@link Utente#visualizzaAssoc()}.
+     * Stampa la lista dei ristoranti preferiti di un cliente.
      * 
-     * @param username Lo username del cliente di cui visualizzare i preferiti.
+     * @param username Username del cliente
      */
     public void visualizzaPreferiti(String username) {
         Utente u = data.findUtente(username);
-        if (u == null) return;
-        if (u.getRuolo() != Ruolo.CLIENTE) { System.out.println("Utente non nella sezione clienti."); return; }
-        u.visualizzaAssoc(); // stampa i preferiti
+        if (u == null) 
+        	return;
+        if (u.getRuolo() != Ruolo.CLIENTE) { 
+            System.out.println("Utente non nella sezione clienti."); 
+            return; 
+        }
+        u.visualizzaAssoc();
     }
     
     /**
-     * Visualizza la lista dei ristoranti gestiti da un ristoratore.
-     * Mostra l'elenco tramite {@link Utente#visualizzaAssoc()}.
+     * Prova ad assegnare un ristorante a un ristoratore.
+     * Se il ristorante è già gestito da un altro ristoratore, blocca l’operazione.
      * 
-     * @param username Lo username del ristoratore di cui visualizzare i ristoranti gestiti.
-     */
-    public void visualizzaRistorantiGestiti(String username) {
-        Utente u = data.findUtente(username);
-        if (u == null) return;
-        if (u.getRuolo() != Ruolo.RISTORATORE) { System.out.println("Utente non nella sezione ristoratori."); return; }
-        u.visualizzaAssoc(); // stampa i gestiti
-    }
-    
-    /**
-     * Aggiunge un ristorante alla lista di quelli gestiti da un ristoratore.
-     * L'operazione viene delegata al metodo {@link Utente#aggiungiAssoc(Ristorante)}.
-     * 
-     * @param username Lo username del ristoratore.
-     * @param r Il ristorante da aggiungere alla lista dei gestiti.
-     * @return {@code true} se l'aggiunta ha successo, {@code false} in caso di errore (utente non trovato, ruolo errato, ristorante già presente).
+     * @param username Username del ristoratore a cui assegnare il ristorante
+     * @param r Ristorante da aggiungere alla sua lista
+     * @return true se aggiunto correttamente; false se l’utente non esiste, ha ruolo sbagliato,
+     *         oppure se il ristorante è già gestito da qualcun altro
      */
     public boolean aggiungiRistoranteGestito(String username, Ristorante r) {
         Utente u = data.findUtente(username);
-        if (u == null || r == null || u.getRuolo() != Ruolo.RISTORATORE) return false;
+        if (u == null || r == null || u.getRuolo() != Ruolo.RISTORATORE) 
+        	return false;
 
-        // Blocco: nessun altro ristoratore deve già gestire questo ristorante
         for (Utente altro : data.getUtenti()) {
             if (!altro.getUsername().equals(username)
                     && altro.getRuolo() == Ruolo.RISTORATORE
@@ -151,17 +143,15 @@ public class UtenteService {
                 return false;
             }
         }
-
         return u.aggiungiAssoc(r);
     }
     
     /**
-     * Rimuove un ristorante dalla lista di quelli gestiti da un ristoratore.
-     * L'operazione viene delegata al metodo {@link Utente#rimuoviAssoc(Ristorante)}.
+     * Rimuove un ristorante dalla lista dei gestiti di un ristoratore.
      * 
-     * @param username Lo username del ristoratore.
-     * @param r Il ristorante da rimuovere dalla lista dei gestiti.
-     * @return {@code true} se la rimozione ha successo, {@code false} in caso di errore (utente non trovato, ruolo errato, ristorante non presente).
+     * @param username Username del ristoratore
+     * @param r Ristorante da rimuovere dalla gestione
+     * @return true se rimosso, altrimenti false
      */
     public boolean rimuoviRistoranteGestito(String username, Ristorante r) {
         Utente u = data.findUtente(username);

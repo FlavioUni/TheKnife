@@ -10,13 +10,17 @@ import theknife.recensione.Recensione;
 import java.util.ArrayList;
 
 /**
- * La classe Ristorante rappresenta un ristorante nel sistema.
- * Un ristorante è caratterizzato da: informazioni base (nome, indirizzo, location), dettagli (cucina, prezzi),
- * coordinate geografiche, contatti, servizi offerti e un insieme di recensioni degli utenti.
+ * La classe Ristorante rappresenta un ristorante del sistema.
+ * Contiene informazioni principali (nome, indirizzo, location), dettagli (cucina, prezzo),
+ * coordinate geografiche, contatti, servizi e l’elenco delle recensioni degli utenti.
+ * 
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
  */
 public class Ristorante {
 
-    // ATTRIBUTI
+    // CAMPI
     private String id;
     private String nome;
     private String indirizzo;
@@ -34,7 +38,22 @@ public class Ristorante {
     private ArrayList<Recensione> listaRecensioni;
 
     /**
-     * Costruttore completo: genera automaticamente un ID univoco.
+     * COSTRUTTORE parametrico della classe Ristorante.
+     * Genera automaticamente un ID univoco (vedi metodo generaIDUnivoco).
+     * 
+     * @param nome Nome del ristorante
+     * @param indirizzo Indirizzo (via e numero civico)
+     * @param location Città o area geografica
+     * @param prezzoMedio Prezzo medio indicativo (es. "€€" oppure "25")
+     * @param cucina Tipologia di cucina
+     * @param longitudine Longitudine in gradi decimali
+     * @param latitudine Latitudine in gradi decimali
+     * @param numeroTelefono Numero di telefono
+     * @param websiteUrl Sito web del ristorante
+     * @param premi Premi o riconoscimenti
+     * @param servizi Elenco servizi offerti (es. "Wi-Fi, Accesso disabili")
+     * @param prenotazioneOnline true se è possibile prenotare online
+     * @param delivery true se è disponibile la consegna a domicilio
      */
     public Ristorante(String nome, String indirizzo, String location, String prezzoMedio, String cucina,
                       double longitudine, double latitudine, String numeroTelefono, String websiteUrl,
@@ -57,88 +76,109 @@ public class Ristorante {
     }
 
     // GETTER
-    public String getId() { return id; }
-    public String getNome() { return nome; }
-    public String getIndirizzo() { return indirizzo; }
-    public String getLocation() { return location; }
-    public String getPrezzoMedio() { return prezzoMedio; }
-    public String getCucina() { return cucina; }
-    public double getLongitudine() { return longitudine; }
-    public double getLatitudine() { return latitudine; }
-    public String getNumeroTelefono() { return numeroTelefono; }
-    public String getWebsiteUrl() { return websiteUrl; }
-    public String getPremi() { return premi; }
-    public String getServizi() { return servizi; }
-    public boolean isPrenotazioneOnline() { return prenotazioneOnline; }
-    public boolean isDelivery() { return delivery; }
-    public ArrayList<Recensione> getRecensioni() { return listaRecensioni; }
-    public Recensione getRecensione(int index) { return listaRecensioni.get(index); }
+    public String getId() {return id;}
+    public String getNome() {return nome;}
+    public String getIndirizzo() {return indirizzo;}
+    public String getLocation() {return location;}
+    public String getPrezzoMedio() {return prezzoMedio;}
+    public String getCucina() {return cucina;}
+    public double getLongitudine() {return longitudine;}
+    public double getLatitudine() {return latitudine;}
+    public String getNumeroTelefono() {return numeroTelefono;}
+    public String getWebsiteUrl() {return websiteUrl;}
+    public String getPremi() {return premi;}
+    public String getServizi() {return servizi;}
+    public boolean isPrenotazioneOnline() {return prenotazioneOnline;}
+    public boolean isDelivery() {return delivery;}
+    public ArrayList<Recensione> getRecensioni() {return listaRecensioni;}
 
     // SETTER
-    public void setId(String id) { this.id = id; }
-    public void setNome(String nome) { this.nome = nome; }
-    public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
-    public void setLocation(String location) { this.location = location; }
-    public void setPrezzoMedio(String prezzo) { this.prezzoMedio = prezzo; }
-    public void setCucina(String cucina) { this.cucina = cucina; }
-    public void setLongitudine(double longitudine) { this.longitudine = longitudine; }
-    public void setLatitudine(double latitudine) { this.latitudine = latitudine; }
-    public void setNumeroTelefono(String numeroTelefono) { this.numeroTelefono = numeroTelefono; }
-    public void setWebsiteUrl(String websiteUrl) { this.websiteUrl = websiteUrl; }
-    public void setPremi(String premi) { this.premi = premi; }
-    public void setServizi(String servizi) { this.servizi = servizi; }
-    public void setPrenotazioneOnline(boolean prenotazioneOnline) { this.prenotazioneOnline = prenotazioneOnline; }
-    public void setDelivery(boolean delivery) { this.delivery = delivery; }
+    public void setId(String id) {this.id = id;}
+    public void setNome(String nome) {this.nome = nome;}
+    public void setIndirizzo(String indirizzo) {this.indirizzo = indirizzo;}
+    public void setLocation(String location) {this.location = location;}
+    public void setPrezzoMedio(String prezzo) {this.prezzoMedio = prezzo;}
+    public void setCucina(String cucina) {this.cucina = cucina;}
+    public void setLongitudine(double longitudine) {this.longitudine = longitudine;}
+    public void setLatitudine(double latitudine) {this.latitudine = latitudine;}
+    public void setNumeroTelefono(String numeroTelefono) {this.numeroTelefono = numeroTelefono;}
+    public void setWebsiteUrl(String websiteUrl) {this.websiteUrl = websiteUrl;}
+    public void setPremi(String premi) {this.premi = premi;}
+    public void setServizi(String servizi) {this.servizi = servizi;}
+    public void setPrenotazioneOnline(boolean prenotazioneOnline) {this.prenotazioneOnline = prenotazioneOnline;}
+    public void setDelivery(boolean delivery) {this.delivery = delivery;}
 
-    // RECENSIONI
+    // METODI
+
+    /**
+     * Aggiunge una recensione alla lista, ignorando i valori null.
+     * 
+     * @param recensione Recensione da aggiungere
+     */
     public void aggiungiRecensione(Recensione recensione) {
         if (recensione != null) listaRecensioni.add(recensione);
     }
 
-    public void rimuoviRecensione(Recensione recensione) {
-        listaRecensioni.remove(recensione);
-    }
-
-    public void rimuoviRecensione(String username, String descrizione) {
-        listaRecensioni.removeIf(r ->
-            r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)
-        );
-    }
-
-    public void modificaRecensione(String username, String descrizione, int nuoveStelle) {
+    /**
+     * Verifica se esiste già una recensione per un dato utente.
+     *
+     * @param username Username dell’autore
+     * @return true se è presente almeno una recensione di quell’utente, altrimenti false
+     */
+    public boolean esisteRecensioneDiUtente(String username) {
         for (Recensione r : listaRecensioni) {
-            if (r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)) {
-                r.setDescrizione(descrizione);
-                r.setStelle(nuoveStelle);
+            if (r.getAutore().equals(username)) {
+                return true;
             }
         }
+        return false;
     }
 
-    public boolean esisteRecensioneDiUtente(String username) {
-        return listaRecensioni.stream()
-                .anyMatch(r -> r.getAutore().equals(username));
-    }
-
+    /**
+     * Restituisce la prima recensione trovata per un dato utente.
+     *
+     * @param username Username dell’autore
+     * @return Recensione dell’utente, oppure null se non trovata
+     */
     public Recensione trovaRecensioneDiUtente(String username) {
-        return listaRecensioni.stream()
-                .filter(r -> r.getAutore().equals(username))
-                .findFirst()
-                .orElse(null);
+        for (Recensione r : listaRecensioni) {
+            if (r.getAutore().equals(username)) {
+                return r;
+            }
+        }
+        return null;
     }
 
+    /**
+     * Calcola la media delle stelle delle recensioni di un ristorante.
+     *
+     * @return Media in formato double oppure NaN se non ci sono recensioni
+     */
     public Double mediaStelle() {
-        if (listaRecensioni.isEmpty()) return Double.NaN;
-        return listaRecensioni.stream().mapToInt(Recensione::getStelle).average().orElse(Double.NaN);
+        if (listaRecensioni.isEmpty()) {
+            return Double.NaN;
+        }
+        int somma = 0;
+        for (Recensione r : listaRecensioni) {
+            somma += r.getStelle();
+        }
+        return (double) somma / listaRecensioni.size();
     }
 
-    public void svuotaRecensioni() {
-        this.listaRecensioni.clear();
-    }
-
+    /**
+     * Genera un ID univoco per il ristorante, utile per associarlo ad un utente.
+     * 
+     * @return Stringa ID nel formato "RXXXXXXXX"
+     */
     private static String generaIDUnivoco() {
         return "R" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
+    /**
+     * Restituisce una rappresentazione leggibile del ristorante con i campi principali.
+     * 
+     * @return Stringa formattata con i dettagli del ristorante
+     */
     @Override
     public String toString() {
         return "Ristorante{" +

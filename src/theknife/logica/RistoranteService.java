@@ -6,7 +6,6 @@ Gasparini Lorenzo, 759929, VA
 package theknife.logica;
 
 import theknife.ristorante.Ristorante;
-import theknife.recensione.Recensione;
 import theknife.utente.Utente;
 import theknife.utente.Ruolo;
 
@@ -14,48 +13,73 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * La classe RistoranteService fornisce i servizi principali per la gestione dei ristoranti,
- * ovvero si occupa di tutte le operazioni che li riguardano. Definisce cosa può fare un utente 
- * non registrato, un cliente, o un ristoratore con i ristoranti
+ * La classe RistoranteService fornisce i servizi principali per la gestione dei ristoranti.
+ * Gestisce le operazioni disponibili per ospiti, clienti e ristoratori.
+ * 
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
  */
-
 public class RistoranteService {
 
+    // CAMPI
     private final DataContext dataContext;
-    private final GeoService geoService; 
+    private final GeoService geoService;
 
+    /**
+     * COSTRUTTORE della classe RistoranteService.
+     * 
+     * @param dataContext Oggetto che contiene tutti i dati dell'applicazione (utenti, ristoranti, recensioni)
+     * @param geoService Servizio per funzioni di geolocalizzazione
+     */
     public RistoranteService(DataContext dataContext, GeoService geoService) {
         this.dataContext = dataContext;
         this.geoService = geoService;
     }
+    
+    // METODI
 
-    // ===== UTENTE NON REGISTRATO =====
+    // ===== OSPITE/CLIENTE =====
 
-    public List<Ristorante> cercaRistorante(String cucina, String location, String fasciaPrezzo,
-                                            Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
+    /**
+     * Cerca ristoranti attraverso filtri di ricerca.
+     * 
+     * @param nome Nome (o parte del nome) del ristorante, oppure null
+     * @param location Città o area geografica, oppure null
+     * @param fasciaPrezzo Prezzo medio indicativo (es. "minore di 20€", "tra 20€ e 50€", "maggiore di 50€"), oppure null
+     * @param cucina Tipologia di cucina, oppure null
+     * @param prenotazioneOnline true se si vuole solo chi permette prenotazioni online, false per escluderli, null per ignorare
+     * @param delivery true se si vuole solo chi offre consegna a domicilio, false per escluderli, null per ignorare
+     * @param minStelle Voto minimo medio richiesto, oppure null
+     * @return Lista filtrata dei ristoranti
+     */
+    public List<Ristorante> cercaRistorantePerFiltri(String nome, String cucina, String location, String fasciaPrezzo,
+                                                     Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
         List<Ristorante> risultati = new ArrayList<>();
         for (Ristorante r : dataContext.getRistoranti()) {
-            if (matchesCriteri(r, cucina, location, fasciaPrezzo, delivery, prenotazioneOnline, minStelle)) {
-                risultati.add(r);
-            }
+            if (nome != null && !r.getNome().toLowerCase().contains(nome.toLowerCase())) 
+                continue;
+            if (!matchesCriteri(r, cucina, location, fasciaPrezzo, delivery, prenotazioneOnline, minStelle)) 
+                continue;
+            risultati.add(r);
         }
         return risultati;
     }
-    
-    public List<Ristorante> cercaRistorantePerFiltri(String nome, String cucina, String location, String fasciaPrezzo,
-            Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
-    	List<Ristorante> risultati = new ArrayList<>();
-    	for (Ristorante r : dataContext.getRistoranti()) {
-    		if (nome != null && !r.getNome().toLowerCase().contains(nome.toLowerCase())) continue;
-    		if (!matchesCriteri(r, cucina, location, fasciaPrezzo, delivery, prenotazioneOnline, minStelle)) continue;
-    		risultati.add(r);
-    	}
-    	return risultati;
-    }
 
+    /**
+     * Verifica se un ristorante rispetta i criteri richiesti dalla ricerca con filtro dell'utente.
+     * 
+     * @param r Ristorante da verificare
+     * @param location Città o area geografica, oppure null
+     * @param fasciaPrezzo Prezzo medio indicativo (es. "minore di 20€", "tra 20€ e 50€", "maggiore di 50€"), oppure null
+     * @param cucina Tipologia di cucina, oppure null
+     * @param prenotazioneOnline true se si vuole solo chi permette prenotazioni online, false per escluderli, null per ignorare
+     * @param delivery true se si vuole solo chi offre consegna a domicilio, false per escluderli, null per ignorare
+     * @param minStelle Voto minimo medio richiesto, oppure null
+     * @return true se il ristorante rispetta i criteri, false altrimenti
+     */
     private boolean matchesCriteri(Ristorante r, String cucina, String location, String fasciaPrezzo,
                                    Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
-
         if (location != null && !r.getLocation().toLowerCase().contains(location.toLowerCase())) return false;
         if (cucina != null && !r.getCucina().toLowerCase().contains(cucina.toLowerCase())) return false;
         if (fasciaPrezzo != null && !matchesFasciaPrezzo(r.getPrezzoMedio(), fasciaPrezzo)) return false;
@@ -69,6 +93,13 @@ public class RistoranteService {
         return true;
     }
 
+    /**
+     * Confronta un prezzo medio con la fascia richiesta.
+     * 
+     * @param prezzoRistorante Prezzo medio del ristorante (stringa)
+     * @param fascia Fascia richiesta (minore di 20€, tra 20€ e 50€, maggiore di 50€)
+     * @return true se il prezzo rientra nella fascia, false altrimenti
+     */
     private boolean matchesFasciaPrezzo(String prezzoRistorante, String fascia) {
         try {
             double prezzo = Double.parseDouble(prezzoRistorante.replace("€", "").trim());
@@ -81,131 +112,68 @@ public class RistoranteService {
         }
     }
 
-    public void visualizzaRistorante(Ristorante r) {
-        System.out.println("=== " + r.getNome() + " ===");
-        System.out.println("Indirizzo: " + r.getIndirizzo());
-        System.out.println("Location: " + r.getLocation());
-        System.out.println("Prezzo medio: " + r.getPrezzoMedio() + "€");
-        System.out.println("Cucina: " + r.getCucina());
-        System.out.println("Telefono: " + r.getNumeroTelefono());
-        System.out.println("Sito web: " + r.getWebsiteUrl());
-        System.out.println("Delivery: " + (r.isDelivery() ? "Sì" : "No"));
-        System.out.println("Prenotazione online: " + (r.isPrenotazioneOnline() ? "Sì" : "No"));
-        Double mediaStelle = r.mediaStelle();
-        System.out.println("Valutazione media: " + (mediaStelle.isNaN() ? "Nessuna valutazione" : String.format("%.1f", mediaStelle) + " stelle"));
-        System.out.println("Numero recensioni: " + r.getRecensioni().size());
-    }
+    // ===== CLIENTE =====
 
-    public void visualizzaRecensioni(Ristorante r) {
-        System.out.println("=== RECENSIONI - " + r.getNome() + " ===");
-        if (r.getRecensioni().isEmpty()) {
-            System.out.println("Nessuna recensione disponibile.");
-        } else {
-            for (Recensione rec : r.getRecensioni()) {
-                System.out.println(rec.visualizzaRecensione());
-                System.out.println("---");
-            }
-        }
-    }
-
-    // ===== CLIENTE REGISTRATO =====
-
+    /**
+     * Aggiunge un ristorante ai preferiti del cliente.
+     * 
+     * @param cliente Utente con ruolo CLIENTE
+     * @param r Ristorante da aggiungere
+     * @return true se aggiunto, false altrimenti
+     */
     public boolean aggiungiPreferito(Utente cliente, Ristorante r) {
         return cliente != null
-            && cliente.getRuolo() == Ruolo.CLIENTE
-            && cliente.aggiungiAssoc(r);
+                && cliente.getRuolo() == Ruolo.CLIENTE
+                && cliente.aggiungiAssoc(r);
     }
 
+    /**
+     * Rimuove un ristorante dai preferiti del cliente.
+     * 
+     * @param cliente Utente con ruolo CLIENTE
+     * @param r Ristorante da rimuovere
+     * @return true se rimosso, false altrimenti
+     */
     public boolean rimuoviPreferito(Utente cliente, Ristorante r) {
         return cliente != null
-            && cliente.getRuolo() == Ruolo.CLIENTE
-            && cliente.rimuoviAssoc(r);
-    }
-
-    public boolean aggiungiRecensione(Utente cliente, Ristorante ristorante, int stelle, String descrizione) {
-        try {
-            if (ristorante.esisteRecensioneDiUtente(cliente.getUsername())) {
-                System.err.println("Hai già recensito questo ristorante.");
-                return false;
-            }
-            Recensione rec = new Recensione(
-            	    cliente.getUsername(),
-            	    ristorante.getId(), 
-            	    stelle,
-            	    descrizione
-            	);
-            return dataContext.addRecensione(rec);
-        } catch (Exception e) {
-            System.err.println("Errore nell'aggiunta della recensione: " + e.getMessage());
-            return false;
-        }
-    }
-
-    public boolean modificaRecensione(Utente cliente, Ristorante ristorante, int stelle, String nuovaDescrizione) {
-        try {
-            Recensione rec = ristorante.trovaRecensioneDiUtente(cliente.getUsername());
-            if (rec == null) return false;
-            rec.modificaRecensione(stelle, nuovaDescrizione);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Errore nella modifica della recensione: " + e.getMessage());
-            return false;
-        }
-    }
-
-    public boolean eliminaRecensione(Utente cliente, Ristorante ristorante) {
-        try {
-            Recensione rec = ristorante.trovaRecensioneDiUtente(cliente.getUsername());
-            if (rec == null) return false;
-            return dataContext.removeRecensione(rec);
-        } catch (Exception e) {
-            System.err.println("Errore nell'eliminazione della recensione: " + e.getMessage());
-            return false;
-        }
+                && cliente.getRuolo() == Ruolo.CLIENTE
+                && cliente.rimuoviAssoc(r);
     }
 
     // ===== RISTORATORE =====
 
+    /**
+     * Aggiunge un nuovo ristorante (solo per ristoratori).
+     * In caso di successo, lo aggiunge anche alla lista gestita dal ristoratore.
+     * 
+     * @param ristoratore Utente con ruolo RISTORATORE
+     * @param nuovo Nuovo ristorante da inserire
+     * @return true se inserito, false altrimenti
+     */
     public boolean aggiungiRistorante(Utente ristoratore, Ristorante nuovo) {
         if (ristoratore.getRuolo() != Ruolo.RISTORATORE) {
             System.err.println("Solo i ristoratori possono aggiungere ristoranti");
             return false;
         }
         boolean ok = dataContext.addRistorante(nuovo);
-        if(ok) {
-        	ristoratore.aggiungiAssoc(nuovo);
+        if (ok) {
+            ristoratore.aggiungiAssoc(nuovo);
         }
         return ok;
     }
 
-    public boolean rispostaRecensione(Utente ristoratore, Ristorante ristorante,
-                                      String autoreRecensione, String risposta) {
-        try {
-            Recensione rec = ristorante.trovaRecensioneDiUtente(autoreRecensione);
-            if (rec == null) return false;
-            if (rec.getRisposta() != null && !rec.getRisposta().isEmpty()) {
-                System.err.println("Hai già risposto a questa recensione");
-                return false;
-            }
-            rec.setRisposta(risposta);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Errore nell'aggiunta della risposta: " + e.getMessage());
-            return false;
-        }
-    }
-
     // ===== GEO / VICINO A ME =====
 
+    /**
+     * Restituisce i ristoranti entro una certa distanza da un indirizzo specificato.
+     * La distanza viene calcolata in chilometri usando le coordinate geografiche.
+     * 
+     * @param indirizzo Indirizzo di partenza
+     * @param distanzaKm Distanza massima in chilometri
+     * @return Lista dei ristoranti entro il raggio specificato
+     */
     public List<Ristorante> cercaVicinoA(String indirizzo, double distanzaKm) {
         return geoService.filtraPerVicinoA(indirizzo, distanzaKm, dataContext.getRistoranti());
     }
 
-    // ===== AUSILIARI =====
-
-    public boolean existsRistorante(String nome, String location) {
-    	return dataContext.getRistoranti().stream()
-    		    .anyMatch(r -> r.getNome().equalsIgnoreCase(nome)
-    		                && r.getLocation().equalsIgnoreCase(location));
-    }
-} 
+}

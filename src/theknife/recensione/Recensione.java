@@ -31,7 +31,7 @@ public class Recensione {
     private String risposta;
 
     /**
-     * COSTRUTTORE parametrico per una nuova recensione con data corrente e senza risposta.
+     * COSTRUTTORE parametrico della classe Recensione.
      * 
      * @param username Nome utente dell'autore della recensione
      * @param idRistorante Identificativo unico del ristorante recensito
@@ -99,7 +99,8 @@ public class Recensione {
      * @throws IllegalArgumentException se le stelle non sono nel range 1-5
      */
     private static void checkStelle(int v) {
-        if (v < 1 || v > 5) throw new IllegalArgumentException("Le stelle devono essere tra 1 e 5.");
+        if (v < 1 || v > 5) 
+        	throw new IllegalArgumentException("Le stelle devono essere tra 1 e 5.");
     }
 
     /**
@@ -111,7 +112,8 @@ public class Recensione {
         String base = "Autore: " + username + " *Stelle*: " + stelle + "\n" +
                       commento + "\n" +
                       "Data: " + GestoreDate.formatOrEmpty(data);
-        if (!risposta.isEmpty()) base += "\nRisposta del ristoratore: " + risposta;
+        if (!risposta.isEmpty()) 
+        	base += "\nRisposta del ristoratore: " + risposta;
         return base;
     }
 

@@ -757,8 +757,8 @@ public class MenuHandler {
             String cucina    = leggiStringa("Tipo di cucina [invio, * per indietro]: ");
             String telefono  = leggiStringa("Telefono [invio, * per indietro]: ");
             String website   = leggiStringa("Sito web (URL) [invio, * per indietro]: ");
-            Boolean delivery = leggiSiNo("Delivery? (s/n/invio, * per indietro): ");
             Boolean pren     = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
+            Boolean delivery = leggiSiNo("Delivery? (s/n/invio, * per indietro): ");
 
             double lat = 0.0, lon = 0.0;
             // Conferma geocoding sul miglior query

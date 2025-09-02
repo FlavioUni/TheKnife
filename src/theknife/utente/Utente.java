@@ -191,8 +191,7 @@ public class Utente
         return String.format(
             "Utente[%s %s, username=%s, ruolo=%s, domicilio=%s, nascita=%s]",
             nome, cognome, username, ruolo, domicilio,
-            theknife.logica.GestoreDate.formatOrEmpty(data)
-        );
+            theknife.logica.GestoreDate.formatOrEmpty(data));
     }
 
     /**
@@ -205,8 +204,10 @@ public class Utente
      * */
 	@Override
 	public boolean equals (Object obj) {
-	    if (this == obj) return true;
-	    if (!(obj instanceof Utente other)) return false;
+	    if (this == obj) 
+	    	return true;
+	    if (!(obj instanceof Utente other)) 
+	    	return false;
 	    return this.username.equalsIgnoreCase(other.username);
 	}
 	
@@ -218,8 +219,6 @@ public class Utente
 	 * */
 	@Override
 	public int hashCode() {
-	    return (username == null)
-	            ? 0
-	            : username.toLowerCase(java.util.Locale.ROOT).hashCode();
+	    return (username == null) ? 0 : username.toLowerCase(java.util.Locale.ROOT).hashCode();
 	}
 }
