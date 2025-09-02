@@ -1,4 +1,4 @@
-"Nome","Cognome","Username","Password","Domicilio","Data","Ruolo","PreferitiOGestiti"
+"Nome","Cognome","Username","Password","Domicilio","Data","Ruolo","Associati"
 "Laura","Mottarelli","laura08","16171c2b6626c985112a5098674d94ed5512a2b2d0d1e256ceadbc540736acbb","Via Cavalier A. Brusa 23a","29/08/2008","RISTORATORE","Sorn|Bangkok, Thailand"
 "Marco","Barlera","barlesbomaniaco","5a300f5f28c2e9b69db74e24fe36c42339067b19f9e47f49a6b9a9e22344950a","Vedano Olona","","CLIENTE",""
 "Flavio","Ciani","flosh04","93f3b8b5f17808fa31bf579d4792c47dc6659aee3d930a51dd0d1067722e0ced","Via Cavallina 57 Faloppio, Italia","18/05/2004","RISTORATORE","La Cascata|Faloppio, Italia"

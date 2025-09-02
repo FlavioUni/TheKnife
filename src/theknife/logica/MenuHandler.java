@@ -337,12 +337,16 @@ public class MenuHandler {
         System.out.println("\n--- Le mie recensioni ---");
         for (int i = 0; i < mie.size(); i++) {
             Recensione rec = mie.get(i);
+            Ristorante r = data.findRistoranteById(rec.getIdRistorante());
+            String nomeR = (r != null) ? r.getNome() : "???";
+            String locR  = (r != null) ? r.getLocation() : "???";
+
             System.out.printf("%d) %s - %s | %d★ | \"%s\"%n",
-                    i + 1,
-                    rec.getNomeRistorante(),
-                    rec.getLocationRistorante(),
-                    rec.getStelle(),
-                    rec.getDescrizione().length() > 60 ? rec.getDescrizione().substring(0, 57) + "..." : rec.getDescrizione());
+                i + 1,
+                nomeR,
+                locR,
+                rec.getStelle(),
+                rec.getDescrizione().length() > 60 ? rec.getDescrizione().substring(0, 57) + "..." : rec.getDescrizione());
         }
         System.out.println((mie.size() + 1) + ") Torna indietro");
         System.out.print("Scelta: ");
@@ -350,7 +354,7 @@ public class MenuHandler {
         if (idx == mie.size() + 1) return;
 
         Recensione daModificare = mie.get(idx - 1);
-        Ristorante r = data.findRistorante(daModificare.getNomeRistorante(), daModificare.getNomeRistorante());
+        Ristorante r = data.findRistoranteById(daModificare.getIdRistorante());
         if (r == null) {
             System.out.println("Ristorante non trovato (recensione orfana).");
             return;

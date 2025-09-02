@@ -29,61 +29,26 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
 
 	        while ((c = reader.readNext()) != null) {
 	            if (header) { header = false; continue; }
-	            if (c == null || c.length < 4) continue; // min: user, nome, ..., stelle,...
+	            if (c == null || c.length < 4) continue; // min: user, idRist, stelle,...
 
 	            for (int i = 0; i < c.length; i++) c[i] = (c[i] == null) ? "" : c[i].trim();
 
 	            String username = c[0];
-	            String nomeRist = c[1];
+	            String idRistorante = c[1];
 
-	            // --- 1) individua DATA con regex gg/MM/aaaa ---
-	            int idxData = -1;
-	            java.util.regex.Pattern pData = java.util.regex.Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$");
-	            for (int i = c.length - 1; i >= 2; i--) {
-	                if (pData.matcher(c[i]).matches()) { idxData = i; break; }
-	            }
-
-	            java.time.LocalDate data = null;
-	            if (idxData != -1) {
-	                try {
-	                    data = theknife.logica.GestoreDate.parseNullable(c[idxData]); // usa il tuo GestoreDate
-	                } catch (Exception ex) {
-	                    System.err.println("Data non valida '" + c[idxData] + "', la ignoro.");
-	                    data = null;
-	                }
-	            }
-
-	            // --- 2) individua STELLE (1..5) prima della data (o fine riga se data assente) ---
-	            int idxStelle = -1, stelle = -1;
-	            int stop = (idxData == -1 ? c.length - 1 : idxData - 1);
-	            for (int i = stop; i >= 2; i--) {
-	                try {
-	                    int s = Integer.parseInt(c[i]);
-	                    if (s >= 1 && s <= 5) { idxStelle = i; stelle = s; break; }
-	                } catch (NumberFormatException ignored) { }
-	            }
-	            if (idxStelle == -1) {
-	                System.err.println("Riga recensione ignorata: stelle non trovate");
+	            int stelle;
+	            try {
+	                stelle = Integer.parseInt(c[2]);
+	            } catch (NumberFormatException e) {
+	                System.err.println("Stelle non valide nella riga: " + String.join(",", c));
 	                continue;
 	            }
 
-	            // --- 3) LOCATION = join colonne [2 .. idxStelle-1] (ricompone "Torino, Italia") ---
-	            String location = (idxStelle > 2)
-	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, 2, idxStelle))
-	                    : "";
+	            String commento = c[3];
+	            LocalDate data = GestoreDate.parseNullable(c[4]);
+	            String risposta = (c.length >= 6) ? c[5] : "";
 
-	            // --- 4) COMMENTO = join [idxStelle+1 .. idxData-1] oppure fino a fine riga se data assente ---
-	            int commentEndExclusive = (idxData == -1 ? c.length : idxData);
-	            String commento = (idxStelle + 1 < commentEndExclusive)
-	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, idxStelle + 1, commentEndExclusive))
-	                    : "";
-
-	            // --- 5) RISPOSTA = tutto dopo la data (se presente) ---
-	            String risposta = (idxData != -1 && idxData + 1 < c.length)
-	                    ? String.join(", ", java.util.Arrays.copyOfRange(c, idxData + 1, c.length))
-	                    : "";
-
-	            elementi.add(new theknife.recensione.Recensione(username, nomeRist, location, stelle, commento, data, risposta));
+	            elementi.add(new Recensione(username, idRistorante, stelle, commento, data, risposta));
 	        }
 
 	    } catch (IOException e) {
@@ -97,15 +62,14 @@ public class GestoreRecensioni extends GestoreCSV<Recensione> {
     public void salvaSuCSV(String filePath) {
         try (CSVWriter w = new CSVWriter(new FileWriter(filePath))) {
             w.writeNext(new String[]{
-                "Username", "NomeRistorante", "LocationRistorante",
+                "Username", "IDRistorante",
                 "Stelle", "Commento", "Data", "Risposta"
             });
 
             for (Recensione r : elementi) {
                 w.writeNext(new String[]{
                     r.getAutore(),
-                    r.getNomeRistorante(),
-                    r.getLocationRistorante(),
+                    r.getIdRistorante(),
                     String.valueOf(r.getStelle()),
                     r.getDescrizione(),
                     GestoreDate.formatOrEmpty(r.getData()),

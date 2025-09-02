@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class Ristorante {
 
     // ATTRIBUTI
+    private String id;
     private String nome;
     private String indirizzo;
     private String location;
@@ -33,24 +34,20 @@ public class Ristorante {
     private boolean prenotazioneOnline;
     private boolean delivery;
     private ArrayList<Recensione> listaRecensioni;
-    private String proprietario;
 
     /**
-     * Costruttore parametrico per creare un nuovo ristorante.
-     * 
-     * @param nome Nome del ristorante
-     * @param indirizzo Indirizzo fisico del ristorante
-     * @param location Area o città di ubicazione
-     * @param prezzo Fascia di prezzo (es. "€€")
-     * @param cucina Tipo di cucina offerta
-     * @param longitudine Coordinata longitudinale per la mappa
-     * @param latitudine Coordinata latitudinale per la mappa
-     * @param numeroTelefono Numero di telefono per contatti
-     * @param websiteUrl Sito web del ristorante
-     * @param premi Premi o riconoscimenti ricevuti
-     * @param servizi Servizi offerti (es. "Wi-Fi, Parcheggio")
-     * @param prenotazioneOnline Indica se è disponibile la prenotazione online
-     * @param delivery Indica se è disponibile il servizio di consegna
+     * Costruttore con ID.
+     */
+    public Ristorante(String id, String nome, String indirizzo, String location, String prezzoMedio, String cucina, double longitudine,
+                     double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi,
+                     boolean prenotazioneOnline, boolean delivery) {
+        this(nome, indirizzo, location, prezzoMedio, cucina, longitudine, latitudine,
+             numeroTelefono, websiteUrl, premi, servizi, prenotazioneOnline, delivery);
+        this.id = generaIDUnivoco();
+    }
+
+    /**
+     * Costruttore senza ID (usato per creazioni temporanee).
      */
     public Ristorante(String nome, String indirizzo, String location, String prezzoMedio, String cucina, double longitudine,
                      double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi,
@@ -72,6 +69,7 @@ public class Ristorante {
     }
 
     // GETTER
+    public String getId() { return id; }
     public String getNome() { return nome; }
     public String getIndirizzo() { return indirizzo; }
     public String getLocation() { return location; }
@@ -87,9 +85,9 @@ public class Ristorante {
     public boolean isDelivery() { return delivery; }
     public ArrayList<Recensione> getRecensioni() { return listaRecensioni; }
     public Recensione getRecensione(int index) { return listaRecensioni.get(index); }
-    public String getProprietario() { return proprietario; }
 
     // SETTER
+    public void setId(String id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
     public void setLocation(String location) { this.location = location; }
@@ -103,30 +101,16 @@ public class Ristorante {
     public void setServizi(String servizi) { this.servizi = servizi; }
     public void setPrenotazioneOnline(boolean prenotazioneOnline) { this.prenotazioneOnline = prenotazioneOnline; }
     public void setDelivery(boolean delivery) { this.delivery = delivery; }
-    public void setProprietario(String proprietario) { this.proprietario = proprietario; }
 
     // RECENSIONI
-    /**
-     * Aggiunge una recensione alla lista del ristorante
-     * @param recensione Recensione da aggiungere (ignora se null)
-     */
     public void aggiungiRecensione(Recensione recensione) {
         if (recensione != null) listaRecensioni.add(recensione);
     }
 
-    /**
-     * Rimuove una recensione specifica dalla lista
-     * @param recensione Recensione da rimuovere
-     */
     public void rimuoviRecensione(Recensione recensione) {
         listaRecensioni.remove(recensione);
     }
 
-    /**
-     * Rimuove una recensione in base ad autore e descrizione
-     * @param username Autore della recensione
-     * @param descrizione Testo della recensione
-     */
     public void rimuoviRecensione(String username, String descrizione) {
         for (int i = listaRecensioni.size() - 1; i >= 0; i--) {
             Recensione r = listaRecensioni.get(i);
@@ -136,12 +120,6 @@ public class Ristorante {
         }
     }
 
-    /**
-     * Modifica una recensione esistente aggiornando stelle e descrizione
-     * @param username Autore della recensione
-     * @param descrizione Nuovo testo della recensione
-     * @param nuoveStelle Nuovo voto in stelle
-     */
     public void modificaRecensione(String username, String descrizione, int nuoveStelle) {
         for (int i = 0; i < listaRecensioni.size(); i++) {
             Recensione r = listaRecensioni.get(i);
@@ -152,11 +130,6 @@ public class Ristorante {
         }
     }
 
-    /**
-     * Verifica se esiste una recensione di un specifico utente
-     * @param username Utente da verificare
-     * @return true se esiste almeno una recensione dell'utente
-     */
     public boolean esisteRecensioneDiUtente(String username) {
         for (Recensione r : listaRecensioni) {
             if (r.getAutore().equals(username)) return true;
@@ -164,11 +137,6 @@ public class Ristorante {
         return false;
     }
 
-    /**
-     * Cerca la recensione di un specifico utente
-     * @param username Utente da cercare
-     * @return La prima recensione trovata dell'utente, o null se non esiste
-     */
     public Recensione trovaRecensioneDiUtente(String username) {
         for (Recensione r : listaRecensioni) {
             if (r.getAutore().equals(username)) return r;
@@ -176,10 +144,6 @@ public class Ristorante {
         return null;
     }
 
-    /**
-     * Calcola la media delle stelle delle recensioni
-     * @return Media delle stelle (0.0 se non ci sono recensioni)
-     */
     public Double mediaStelle() {
         if (listaRecensioni.isEmpty()) return 0.0;
         double somma = 0.0;
@@ -187,19 +151,19 @@ public class Ristorante {
         return somma / listaRecensioni.size();
     }
 
-    /** Rimuove tutte le recensioni dalla lista */
     public void svuotaRecensioni() {
         this.listaRecensioni.clear();
     }
+    
+    private static String generaIDUnivoco() {
+        return "R" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
 
-    /**
-     * Restituisce una rappresentazione testuale del ristorante
-     * @return Stringa con i principali campi del ristorante
-     */
     @Override
     public String toString() {
         return "Ristorante{" +
-               "nome='" + nome + '\'' +
+               "id='" + id + '\'' +
+               ", nome='" + nome + '\'' +
                ", indirizzo='" + indirizzo + '\'' +
                ", location='" + location + '\'' +
                ", prezzo='" + prezzoMedio + '\'' +

@@ -24,29 +24,12 @@ public class RistoranteService {
     private final DataContext dataContext;
     private final GeoService geoService; 
 
-    /**
-     * Costruttore parametrico della classe RistoranteService
-     * @param dataContext L'oggetto dataContext che prende in ingresso per accedere a tutti i dati di quella classe
-     * @param geoServiceL'oggetto geoService per gestire tutte le operazioni legate alla geocalizzazione dei ristoranti
-     */
-    
     public RistoranteService(DataContext dataContext, GeoService geoService) {
         this.dataContext = dataContext;
         this.geoService = geoService;
     }
 
     // ===== UTENTE NON REGISTRATO =====
-    
-    /**
-     * Avviene la ricerca del ristorante in base a una serie di criteri di filtro che l’utente può specificare (cucina, location, fascia di prezzo, ecc.)
-     * @param cucina
-     * @param location
-     * @param fasciaPrezzo
-     * @param delivery
-     * @param prenotazioneOnline
-     * @param minStelle
-     * @return
-     */
 
     public List<Ristorante> cercaRistorante(String cucina, String location, String fasciaPrezzo,
                                             Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
@@ -143,12 +126,11 @@ public class RistoranteService {
                 return false;
             }
             Recensione rec = new Recensione(
-                    cliente.getUsername(),
-                    ristorante.getNome(),
-                    ristorante.getLocation(),
-                    stelle,
-                    descrizione
-            );
+            	    cliente.getUsername(),
+            	    ristorante.getId(), 
+            	    stelle,
+            	    descrizione
+            	);
             return dataContext.addRecensione(rec);
         } catch (Exception e) {
             System.err.println("Errore nell'aggiunta della recensione: " + e.getMessage());
@@ -186,45 +168,19 @@ public class RistoranteService {
             System.err.println("Solo i ristoratori possono aggiungere ristoranti");
             return false;
         }
-        if (dataContext.findRistorante(nuovo.getNome(), nuovo.getLocation()) != null) {
-            System.err.println("Esiste già un ristorante con questo nome e location");
-            return false;
-        }
-        nuovo.setProprietario(ristoratore.getUsername());
-        boolean ok = dataContext.addRistorante(nuovo);
-        if (ok) ristoratore.aggiungiAssoc(nuovo);  // usa l’API unificata
-        return ok;
-    }
-
-    public void visualizzaRiepilogo(Utente ristoratore) {
-        List<Ristorante> gestiti = getRistorantiByProprietario(ristoratore.getUsername());
-        System.out.println("=== RIEPILOGO DEI TUOI RISTORANTI ===");
-        for (Ristorante r : gestiti) {
-            Double media = r.mediaStelle();
-            System.out.println("Ristorante: " + r.getNome());
-            System.out.println("Recensioni: " + r.getRecensioni().size());
-            System.out.println("Valutazione media: " + (media.isNaN() ? "Nessuna valutazione" : String.format("%.1f", media) + "★"));
-            System.out.println("---");
-        }
-    }
-
-    public void visualizzaRecensioniRistoratore(Utente ristoratore) {
-        List<Ristorante> gestiti = getRistorantiByProprietario(ristoratore.getUsername());
-        System.out.println("=== RECENSIONI DEI TUOI RISTORANTI ===");
-        for (Ristorante r : gestiti) {
-            System.out.println("\n--- " + r.getNome() + " ---");
-            visualizzaRecensioni(r);
-        }
+        boolean giàPresente = dataContext.getRistoranti().stream()
+        	    .anyMatch(r -> r.getNome().equalsIgnoreCase(nuovo.getNome())
+        	                && r.getLocation().equalsIgnoreCase(nuovo.getLocation()));
+        	if (giàPresente) {
+        	    System.err.println("Esiste già un ristorante con questo nome e location");
+        	    return false;
+        	}
+        return dataContext.addRistorante(nuovo);
     }
 
     public boolean rispostaRecensione(Utente ristoratore, Ristorante ristorante,
                                       String autoreRecensione, String risposta) {
         try {
-            if (ristorante.getProprietario() == null ||
-                !ristorante.getProprietario().equals(ristoratore.getUsername())) {
-                System.err.println("Non sei il proprietario di questo ristorante");
-                return false;
-            }
             Recensione rec = ristorante.trovaRecensioneDiUtente(autoreRecensione);
             if (rec == null) return false;
             if (rec.getRisposta() != null && !rec.getRisposta().isEmpty()) {
@@ -241,24 +197,15 @@ public class RistoranteService {
 
     // ===== GEO / VICINO A ME =====
 
-    /** Ricerca ristoranti entro un raggio (km) da un indirizzo usando GeoService. */
     public List<Ristorante> cercaVicinoA(String indirizzo, double distanzaKm) {
         return geoService.filtraPerVicinoA(indirizzo, distanzaKm, dataContext.getRistoranti());
     }
 
     // ===== AUSILIARI =====
 
-    public List<Ristorante> getRistorantiByProprietario(String usernameProprietario) {
-        List<Ristorante> risultati = new ArrayList<>();
-        for (Ristorante r : dataContext.getRistoranti()) {
-            if (r.getProprietario() != null && r.getProprietario().equals(usernameProprietario)) {
-                risultati.add(r);
-            }
-        }
-        return risultati;
-    }
-
     public boolean existsRistorante(String nome, String location) {
-        return dataContext.findRistorante(nome, location) != null;
+    	return dataContext.getRistoranti().stream()
+    		    .anyMatch(r -> r.getNome().equalsIgnoreCase(nome)
+    		                && r.getLocation().equalsIgnoreCase(location));
     }
-}
+} 

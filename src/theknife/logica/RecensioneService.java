@@ -45,12 +45,11 @@ public class RecensioneService {
         }
 
         Recensione r = new Recensione(
-                autore.getUsername(),
-                ristorante.getNome(),
-                ristorante.getLocation(),
-                stelle,
-                testo
-        );
+        	    autore.getUsername(),
+        	    ristorante.getId(),   // ID al posto di nome/location
+        	    stelle,
+        	    testo
+        	);
 
         // delega a DataContext che aggiorna liste e indici
         boolean ok = dataContext.addRecensione(r);

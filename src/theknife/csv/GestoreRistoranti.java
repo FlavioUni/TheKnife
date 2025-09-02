@@ -30,7 +30,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                     continue;
                 }
 
-                if (riga.length < 13) {
+                if (riga.length < 14) {
                     System.err.println("Riga ristoranti ignorata: colonne insufficienti (" + riga.length + ")");
                     continue;
                 }
@@ -39,22 +39,23 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                     riga[i] = riga[i].trim();
                 }
 
-                String nome = riga[0];
-                String indirizzo = riga[1];
-                String location = riga[2];
-                String prezzo = riga[3];
-                String cucina = riga[4];
+                String id = riga[0];
+                String nome = riga[1];
+                String indirizzo = riga[2];
+                String location = riga[3];
+                String prezzo = riga[4];
+                String cucina = riga[5];
 
-                double longitudine = parseDouble(riga[5]);
-                double latitudine = parseDouble(riga[6]);
+                double longitudine = parseDouble(riga[6]);
+                double latitudine = parseDouble(riga[7]);
 
-                String telefono = riga[7];
-                String websiteUrl = riga[8];
-                String premi = riga[9];
-                String servizi = riga[10];
+                String telefono = riga[8];
+                String websiteUrl = riga[9];
+                String premi = riga[10];
+                String servizi = riga[11];
 
-                boolean prenotazioneOnline = parseBool(riga[11]);
-                boolean delivery = parseBool(riga[12]);
+                boolean prenotazioneOnline = parseBool(riga[12]);
+                boolean delivery = parseBool(riga[13]);
 
                 Ristorante ristorante = new Ristorante(nome, indirizzo, location, prezzo, cucina, longitudine, latitudine, 
                 		telefono, websiteUrl, premi, servizi, prenotazioneOnline, delivery);
@@ -72,14 +73,15 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
     public void salvaSuCSV(String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[] {
-                "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
+                "ID", "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
                 "Longitudine", "Latitudine", "Telefono", "SitoWeb",
                 "Premio", "Servizi", "PrenotazioneOnline", "Delivery"
             });
 
             for (Ristorante r : elementi) {
                 writer.writeNext(new String[] {
-                    r.getNome(),
+                    r.getId(),
+                	r.getNome(),
                     r.getIndirizzo(),
                     r.getLocation(),
                     r.getPrezzoMedio(),
