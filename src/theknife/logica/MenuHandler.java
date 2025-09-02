@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -275,7 +274,6 @@ public class MenuHandler {
             if (!isCliente) {
                 System.out.println("1) Torna indietro");
                 System.out.print("Scelta: ");
-                int s = leggiInt();
                 return;
             }
 
