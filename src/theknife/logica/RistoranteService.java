@@ -64,7 +64,7 @@ public class RistoranteService {
 
         if (location != null && !r.getLocation().toLowerCase().contains(location.toLowerCase())) return false;
         if (cucina != null && !r.getCucina().toLowerCase().contains(cucina.toLowerCase())) return false;
-        if (fasciaPrezzo != null && !matchesFasciaPrezzo(r.getPrezzo(), fasciaPrezzo)) return false;
+        if (fasciaPrezzo != null && !matchesFasciaPrezzo(r.getPrezzoMedio(), fasciaPrezzo)) return false;
         if (delivery != null && r.isDelivery() != delivery) return false;
         if (prenotazioneOnline != null && r.isPrenotazioneOnline() != prenotazioneOnline) return false;
 
@@ -91,7 +91,7 @@ public class RistoranteService {
         System.out.println("=== " + r.getNome() + " ===");
         System.out.println("Indirizzo: " + r.getIndirizzo());
         System.out.println("Location: " + r.getLocation());
-        System.out.println("Prezzo medio: " + r.getPrezzo() + "€");
+        System.out.println("Prezzo medio: " + r.getPrezzoMedio() + "€");
         System.out.println("Cucina: " + r.getCucina());
         System.out.println("Telefono: " + r.getNumeroTelefono());
         System.out.println("Sito web: " + r.getWebsiteUrl());

@@ -82,7 +82,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                     r.getNome(),
                     r.getIndirizzo(),
                     r.getLocation(),
-                    r.getPrezzo(),
+                    r.getPrezzoMedio(),
                     r.getCucina(),
                     String.valueOf(r.getLongitudine()),
                     String.valueOf(r.getLatitudine()),

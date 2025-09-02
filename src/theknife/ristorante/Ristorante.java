@@ -22,7 +22,7 @@ public class Ristorante {
     private String nome;
     private String indirizzo;
     private String location;
-    private String prezzo;
+    private String prezzoMedio;
     private String cucina;
     private double longitudine;
     private double latitudine;
@@ -52,13 +52,13 @@ public class Ristorante {
      * @param prenotazioneOnline Indica se è disponibile la prenotazione online
      * @param delivery Indica se è disponibile il servizio di consegna
      */
-    public Ristorante(String nome, String indirizzo, String location, String prezzo, String cucina, double longitudine,
+    public Ristorante(String nome, String indirizzo, String location, String prezzoMedio, String cucina, double longitudine,
                      double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi,
                      boolean prenotazioneOnline, boolean delivery) {
         this.nome = nome;
         this.indirizzo = indirizzo;
         this.location = location;
-        this.prezzo = prezzo;
+        this.prezzoMedio = prezzoMedio;
         this.cucina = cucina;
         this.longitudine = longitudine;
         this.latitudine = latitudine;
@@ -75,7 +75,7 @@ public class Ristorante {
     public String getNome() { return nome; }
     public String getIndirizzo() { return indirizzo; }
     public String getLocation() { return location; }
-    public String getPrezzo() { return prezzo; }
+    public String getPrezzoMedio() { return prezzoMedio; }
     public String getCucina() { return cucina; }
     public double getLongitudine() { return longitudine; }
     public double getLatitudine() { return latitudine; }
@@ -93,7 +93,7 @@ public class Ristorante {
     public void setNome(String nome) { this.nome = nome; }
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
     public void setLocation(String location) { this.location = location; }
-    public void setPrezzo(String prezzo) { this.prezzo = prezzo; }
+    public void setPrezzoMedio(String prezzo) { this.prezzoMedio = prezzo; }
     public void setCucina(String cucina) { this.cucina = cucina; }
     public void setLongitudine(double longitudine) { this.longitudine = longitudine; }
     public void setLatitudine(double latitudine) { this.latitudine = latitudine; }
@@ -202,7 +202,7 @@ public class Ristorante {
                "nome='" + nome + '\'' +
                ", indirizzo='" + indirizzo + '\'' +
                ", location='" + location + '\'' +
-               ", prezzo='" + prezzo + '\'' +
+               ", prezzo='" + prezzoMedio + '\'' +
                ", cucina='" + cucina + '\'' +
                ", longitudine=" + longitudine +
                ", latitudine=" + latitudine +
