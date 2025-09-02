@@ -8,6 +8,7 @@ import theknife.logica.MenuHandler;
 
 public class TheKnife {
     public static void main(String[] args) {
-        new MenuHandler().avvia();
+    	System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
+    	new MenuHandler().avvia();
     }
 }

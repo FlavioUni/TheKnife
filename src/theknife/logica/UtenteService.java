@@ -140,7 +140,19 @@ public class UtenteService {
      */
     public boolean aggiungiRistoranteGestito(String username, Ristorante r) {
         Utente u = data.findUtente(username);
-        return u != null && u.getRuolo() == Ruolo.RISTORATORE && u.aggiungiAssoc(r);
+        if (u == null || r == null || u.getRuolo() != Ruolo.RISTORATORE) return false;
+
+        // Blocco: nessun altro ristoratore deve già gestire questo ristorante
+        for (Utente altro : data.getUtenti()) {
+            if (!altro.getUsername().equals(username)
+                    && altro.getRuolo() == Ruolo.RISTORATORE
+                    && altro.gestisce(r)) {
+                System.out.println("❌ Il ristorante è già gestito da: " + altro.getUsername());
+                return false;
+            }
+        }
+
+        return u.aggiungiAssoc(r);
     }
     
     /**
