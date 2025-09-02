@@ -12,9 +12,7 @@ import java.util.ArrayList;
 /**
  * La classe Ristorante rappresenta un ristorante nel sistema.
  * Un ristorante è caratterizzato da: informazioni base (nome, indirizzo, location), dettagli (cucina, prezzi),
- * coordinate geograficas, contatti, servizi offerti e un insieme di recensioni degli utenti.
- * 
- * @author Gabriele Scolaro
+ * coordinate geografiche, contatti, servizi offerti e un insieme di recensioni degli utenti.
  */
 public class Ristorante {
 
@@ -36,22 +34,12 @@ public class Ristorante {
     private ArrayList<Recensione> listaRecensioni;
 
     /**
-     * Costruttore con ID.
+     * Costruttore completo: genera automaticamente un ID univoco.
      */
-    public Ristorante(String id, String nome, String indirizzo, String location, String prezzoMedio, String cucina, double longitudine,
-                     double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi,
-                     boolean prenotazioneOnline, boolean delivery) {
-        this(nome, indirizzo, location, prezzoMedio, cucina, longitudine, latitudine,
-             numeroTelefono, websiteUrl, premi, servizi, prenotazioneOnline, delivery);
+    public Ristorante(String nome, String indirizzo, String location, String prezzoMedio, String cucina,
+                      double longitudine, double latitudine, String numeroTelefono, String websiteUrl,
+                      String premi, String servizi, boolean prenotazioneOnline, boolean delivery) {
         this.id = generaIDUnivoco();
-    }
-
-    /**
-     * Costruttore senza ID (usato per creazioni temporanee).
-     */
-    public Ristorante(String nome, String indirizzo, String location, String prezzoMedio, String cucina, double longitudine,
-                     double latitudine, String numeroTelefono, String websiteUrl, String premi, String servizi,
-                     boolean prenotazioneOnline, boolean delivery) {
         this.nome = nome;
         this.indirizzo = indirizzo;
         this.location = location;
@@ -112,49 +100,41 @@ public class Ristorante {
     }
 
     public void rimuoviRecensione(String username, String descrizione) {
-        for (int i = listaRecensioni.size() - 1; i >= 0; i--) {
-            Recensione r = listaRecensioni.get(i);
-            if (r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)) {
-                listaRecensioni.remove(i);
-            }
-        }
+        listaRecensioni.removeIf(r ->
+            r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)
+        );
     }
 
     public void modificaRecensione(String username, String descrizione, int nuoveStelle) {
-        for (int i = 0; i < listaRecensioni.size(); i++) {
-            Recensione r = listaRecensioni.get(i);
+        for (Recensione r : listaRecensioni) {
             if (r.getAutore().equals(username) && r.getDescrizione().equals(descrizione)) {
-                listaRecensioni.get(i).setDescrizione(descrizione);
-                listaRecensioni.get(i).setStelle(nuoveStelle);
+                r.setDescrizione(descrizione);
+                r.setStelle(nuoveStelle);
             }
         }
     }
 
     public boolean esisteRecensioneDiUtente(String username) {
-        for (Recensione r : listaRecensioni) {
-            if (r.getAutore().equals(username)) return true;
-        }
-        return false;
+        return listaRecensioni.stream()
+                .anyMatch(r -> r.getAutore().equals(username));
     }
 
     public Recensione trovaRecensioneDiUtente(String username) {
-        for (Recensione r : listaRecensioni) {
-            if (r.getAutore().equals(username)) return r;
-        }
-        return null;
+        return listaRecensioni.stream()
+                .filter(r -> r.getAutore().equals(username))
+                .findFirst()
+                .orElse(null);
     }
 
     public Double mediaStelle() {
-        if (listaRecensioni.isEmpty()) return 0.0;
-        double somma = 0.0;
-        for (Recensione r : listaRecensioni) somma += r.getStelle();
-        return somma / listaRecensioni.size();
+        if (listaRecensioni.isEmpty()) return Double.NaN;
+        return listaRecensioni.stream().mapToInt(Recensione::getStelle).average().orElse(Double.NaN);
     }
 
     public void svuotaRecensioni() {
         this.listaRecensioni.clear();
     }
-    
+
     private static String generaIDUnivoco() {
         return "R" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }

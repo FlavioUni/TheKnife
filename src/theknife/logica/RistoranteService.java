@@ -41,6 +41,17 @@ public class RistoranteService {
         }
         return risultati;
     }
+    
+    public List<Ristorante> cercaRistorantePerFiltri(String nome, String cucina, String location, String fasciaPrezzo,
+            Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
+    	List<Ristorante> risultati = new ArrayList<>();
+    	for (Ristorante r : dataContext.getRistoranti()) {
+    		if (nome != null && !r.getNome().toLowerCase().contains(nome.toLowerCase())) continue;
+    		if (!matchesCriteri(r, cucina, location, fasciaPrezzo, delivery, prenotazioneOnline, minStelle)) continue;
+    		risultati.add(r);
+    	}
+    	return risultati;
+    }
 
     private boolean matchesCriteri(Ristorante r, String cucina, String location, String fasciaPrezzo,
                                    Boolean delivery, Boolean prenotazioneOnline, Double minStelle) {
@@ -168,14 +179,11 @@ public class RistoranteService {
             System.err.println("Solo i ristoratori possono aggiungere ristoranti");
             return false;
         }
-        boolean giàPresente = dataContext.getRistoranti().stream()
-        	    .anyMatch(r -> r.getNome().equalsIgnoreCase(nuovo.getNome())
-        	                && r.getLocation().equalsIgnoreCase(nuovo.getLocation()));
-        	if (giàPresente) {
-        	    System.err.println("Esiste già un ristorante con questo nome e location");
-        	    return false;
-        	}
-        return dataContext.addRistorante(nuovo);
+        boolean ok = dataContext.addRistorante(nuovo);
+        if(ok) {
+        	ristoratore.aggiungiAssoc(nuovo);
+        }
+        return ok;
     }
 
     public boolean rispostaRecensione(Utente ristoratore, Ristorante ristorante,

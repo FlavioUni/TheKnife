@@ -103,10 +103,12 @@ public class DataContext {
     }
 
     public boolean addRistorante(Ristorante r) {
-        if (r == null || r.getId() == null || r.getId().isEmpty()) return false;
-        if (ristorantePerId.containsKey(r.getId())) return false;
-        ristoranti.add(r);
+        if (ristorantePerId.containsKey(r.getId())) {
+            System.err.println("ID già presente!");
+            return false;
+        }
         ristorantePerId.put(r.getId(), r);
+        ristoranti.add(r);
         return true;
     }
 

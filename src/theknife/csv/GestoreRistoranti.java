@@ -7,6 +7,10 @@ package theknife.csv;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReaderBuilder;
+
 import theknife.ristorante.Ristorante;
 
 import java.io.FileReader;
@@ -20,7 +24,17 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
     public void caricaDaCSV(String filePath) {
         elementi = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+        try {
+            CSVParser parser = new CSVParserBuilder()
+                    .withSeparator(',')
+                    .withQuoteChar('"')
+                    .withIgnoreQuotations(false)
+                    .build();
+
+            CSVReader reader = new CSVReaderBuilder(new FileReader(filePath))
+                    .withCSVParser(parser)
+                    .build();
+
             String[] riga;
             boolean header = true;
 
@@ -36,10 +50,15 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                 }
 
                 for (int i = 0; i < riga.length; i++) {
-                    riga[i] = riga[i].trim();
+                    riga[i] = riga[i] != null ? riga[i].trim() : "";
                 }
 
                 String id = riga[0];
+                if (id == null || id.isBlank()) {
+                    System.err.println("Ristorante senza ID: " + riga[1]);
+                    continue;
+                }
+
                 String nome = riga[1];
                 String indirizzo = riga[2];
                 String location = riga[3];
@@ -57,11 +76,14 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                 boolean prenotazioneOnline = parseBool(riga[12]);
                 boolean delivery = parseBool(riga[13]);
 
-                Ristorante ristorante = new Ristorante(nome, indirizzo, location, prezzo, cucina, longitudine, latitudine, 
-                		telefono, websiteUrl, premi, servizi, prenotazioneOnline, delivery);
+                Ristorante ristorante = new Ristorante(nome, indirizzo, location, prezzo, cucina,
+                        longitudine, latitudine, telefono, websiteUrl,
+                        premi, servizi, prenotazioneOnline, delivery);
 
+                ristorante.setId(id); // fondamentale per evitare "ristorante senza id"
                 elementi.add(ristorante);
             }
+
         } catch (IOException e) {
             System.err.println("Errore I/O durante la lettura dei ristoranti: " + e.getMessage());
         } catch (Exception e) {
@@ -72,28 +94,28 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
     @Override
     public void salvaSuCSV(String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
-            writer.writeNext(new String[] {
-                "ID", "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
-                "Longitudine", "Latitudine", "Telefono", "SitoWeb",
-                "Premio", "Servizi", "PrenotazioneOnline", "Delivery"
+            writer.writeNext(new String[]{
+                    "ID", "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
+                    "Longitudine", "Latitudine", "Telefono", "SitoWeb",
+                    "Premio", "Servizi", "PrenotazioneOnline", "Delivery"
             });
 
             for (Ristorante r : elementi) {
-                writer.writeNext(new String[] {
-                    r.getId(),
-                	r.getNome(),
-                    r.getIndirizzo(),
-                    r.getLocation(),
-                    r.getPrezzoMedio(),
-                    r.getCucina(),
-                    String.valueOf(r.getLongitudine()),
-                    String.valueOf(r.getLatitudine()),
-                    r.getNumeroTelefono(),
-                    r.getWebsiteUrl(),
-                    r.getPremi(),
-                    r.getServizi(),
-                    r.isPrenotazioneOnline() ? "SI" : "NO",
-                    r.isDelivery() ? "SI" : "NO"
+                writer.writeNext(new String[]{
+                        r.getId(),
+                        r.getNome(),
+                        r.getIndirizzo(),
+                        r.getLocation(),
+                        r.getPrezzoMedio(),
+                        r.getCucina(),
+                        String.valueOf(r.getLongitudine()),
+                        String.valueOf(r.getLatitudine()),
+                        r.getNumeroTelefono(),
+                        r.getWebsiteUrl(),
+                        r.getPremi(),
+                        r.getServizi(),
+                        r.isPrenotazioneOnline() ? "SI" : "NO",
+                        r.isDelivery() ? "SI" : "NO"
                 });
             }
         } catch (IOException e) {

@@ -89,11 +89,10 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
     public void salvaSuCSV (String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[]{
-                "Nome","Cognome","Username","Password","Domicilio","Data","Ruolo","PreferitiOGestiti"
+                "Nome", "Cognome", "Username", "Password", "Domicilio", "Data", "Ruolo", "Associati"
             });
 
             for (Utente u : elementi) {
-            	String preferitiOGestiti = buildAssocCell(u);
                 writer.writeNext(new String[]{
                     u.getNome(),
                     u.getCognome(),
@@ -102,7 +101,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                     u.getDomicilio(),
                     GestoreDate.formatOrEmpty(u.getData()),
                     u.getRuolo().name(),
-                    preferitiOGestiti
+                    u.getAssocKeysRaw() // ✅ Salva solo gli ID
                 });
             }
         } catch (IOException e) {
@@ -110,26 +109,4 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
         }
     }
     
-    /**
-     * Metodo di utilità privato per costruire la stringa che rappresenta i ristoranti associati a un utente nel formato compatto per il CSV.
-     * La stringa è formata da una sequenza di elementi caratterizzati da <code>Nome</code> e <code>Location</code>, separati da punto e virgola.
-     * La lista di origine (dei preferiti o dei gestiti) viene scelta in base al ruolo dell'utente.
-     * 
-     * @param u L'utente di cui serializzare la lista di ristoranti (dei preferiti o dei gestiti).
-     * @return La stringa contenente la sequenza di ristoranti preferiti o gestiti, o una stringa vuota se non ce ne sono.
-     */
-    private static String buildAssocCell (Utente u) {
-        java.util.List<theknife.ristorante.Ristorante> src =
-            (u.getRuolo() == theknife.utente.Ruolo.CLIENTE)
-            ? u.getRistorantiPreferiti()
-            : u.getRistorantiGestiti();
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < src.size(); i++) {
-            theknife.ristorante.Ristorante r = src.get(i);
-            if (i > 0) sb.append(';');
-            sb.append(r.getNome()).append('|').append(r.getLocation());
-        }
-        return sb.toString();
-    }
 }

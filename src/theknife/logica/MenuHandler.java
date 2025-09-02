@@ -187,24 +187,26 @@ public class MenuHandler {
             System.out.println("\n------ RISTORATORE ------");
             System.out.println("1) Inserisci NUOVO ristorante");
             System.out.println("2) I miei ristoranti (modifica/elimina)");
-            System.out.println("3) Recensioni dei miei ristoranti (rispondi)");
-            System.out.println("4) Logout");
+            System.out.println("3) Prendi in gestione ristorante esistente");
+            System.out.println("4) Recensioni dei miei ristoranti (rispondi)");
+            System.out.println("5) Logout");
             System.out.print("Scelta: ");
             int scelta = leggiInt();
 
             switch (scelta) {
-                case 1 -> {
-                    Ristorante nuovo = creaRistoranteConConfermaGeo();
-                    if (nuovo == null) break; // annullato
-                    boolean ok = ristoranteService.aggiungiRistorante(ristoratore, nuovo);
-                    System.out.println(ok ? "Ristorante creato e aggiunto alla tua gestione."
-                                          : "Impossibile creare/aggiungere (esiste già nome+location?).");
-                }
-                case 2 -> flussoGestioneRistoranti(ristoratore);
-                case 3 -> flussoRecensioniGestite(ristoratore);
-                case 4 -> continua = false;
-                default -> System.out.println("Scelta non valida.");
+            case 1 -> {
+                Ristorante nuovo = creaRistoranteConConfermaGeo();
+                if (nuovo == null) break; // annullato
+                boolean ok = ristoranteService.aggiungiRistorante(ristoratore, nuovo);
+                System.out.println(ok ? "Ristorante creato e aggiunto alla tua gestione."
+                                      : "Impossibile creare o aggiungere il ristorante (ID già esistente o altro errore).");
             }
+            case 2 -> flussoGestioneRistoranti(ristoratore);
+            case 3 -> flussoPrendiInGestione(ristoratore);
+            case 4 -> flussoRecensioniGestite(ristoratore);
+            case 5 -> continua = false;
+            default -> System.out.println("Scelta non valida.");
+        }
         }
     }
 
@@ -217,6 +219,8 @@ public class MenuHandler {
         try {
             System.out.println("\n--- Ricerca ristoranti ---");
             System.out.println("(Digita 'annulla' in qualsiasi momento per tornare indietro)");
+
+            String nome = leggiStringa("Nome del ristorante (invio per nessun filtro): ");
             String cucina = leggiStringa("Cucina (invio per nessun filtro): ");
             String location = leggiStringa("Località (invio per nessun filtro): ");
             String fascia = leggiFasciaPrezzo();
@@ -224,13 +228,15 @@ public class MenuHandler {
             Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio): ");
             Double minStelle = leggiMinStelle();
 
-            List<Ristorante> risultati = ristoranteService.cercaRistorante(
-                    cucina, location, fascia, delivery, prenotazione, minStelle
+            List<Ristorante> risultati = ristoranteService.cercaRistorantePerFiltri(
+                    nome, cucina, location, fascia, delivery, prenotazione, minStelle
             );
+
             if (risultati.isEmpty()) {
                 System.out.println("Nessun risultato.");
                 return;
             }
+
             Ristorante scelto = selezionaRistoranteDaLista(risultati);
             if (scelto != null) paginaRistorante(scelto, utenteCorrente);
         } catch (InputAnnullatoException e) {
@@ -508,6 +514,40 @@ public class MenuHandler {
             System.out.println("Errore: " + e.getMessage());
         }
     }
+    
+    private void flussoPrendiInGestione(Utente ristoratore) {
+        List<Ristorante> nonGestiti = data.getRistoranti().stream()
+                .filter(r -> !ristoratore.gestisce(r))
+                .collect(Collectors.toList());
+
+        if (nonGestiti.isEmpty()) {
+            System.out.println("Tutti i ristoranti sono già sotto la tua gestione.");
+            return;
+        }
+
+        System.out.print("Inserisci il nome del ristorante: ");
+        String keyword = sc.nextLine().trim().toLowerCase();
+
+        List<Ristorante> filtrati = nonGestiti.stream()
+                .filter(r -> r.getNome().toLowerCase().contains(keyword))
+                .collect(Collectors.toList());
+
+        if (filtrati.isEmpty()) {
+            System.out.println("Nessun ristorante trovato con questo nome.");
+            return;
+        }
+
+        Ristorante scelto = selezionaRistoranteDaLista(filtrati);
+        if (scelto == null) return;
+
+        System.out.println("Hai selezionato: " + scelto.getNome() + " - " + scelto.getLocation());
+        Boolean conferma = leggiSiNo("Vuoi prendere in gestione questo ristorante? (s/n): ");
+        if (Boolean.TRUE.equals(conferma)) {
+        	boolean ok = utenteService.aggiungiRistoranteGestito(ristoratore.getUsername(), scelto);
+        	System.out.println(ok ? "Ora gestisci questo ristorante." : "Operazione non riuscita.");
+        	if (ok) data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
+        }
+    }
 
     // ===================== CREAZIONE RISTORANTE (con conferma Geo) =====================
     /** Flusso di creazione ristorante con conferma dell'indirizzo tramite geocoding. */
@@ -536,9 +576,17 @@ public class MenuHandler {
                 System.out.println("[Geo] Errore geocoding: " + e.getMessage());
             }
 
-            String display = query + (coords != null ? String.format(" [lat=%.6f lon=%.6f]", coords[0], coords[1]) : " [N/D]");
-            System.out.println("Indirizzo interpretato: " + display);
-            Boolean ok = leggiSiNo("Confermi? (s/n): ");
+            if (coords != null) {
+                lat = coords[0];
+                lon = coords[1];
+                System.out.println("✅ Indirizzo interpretato: " + query);
+                System.out.printf("   ➜ Latitudine: %.6f\n", lat);
+                System.out.printf("   ➜ Longitudine: %.6f\n", lon);
+                System.out.printf("   🌍 Google Maps: https://maps.google.com/?q=%.6f,%.6f\n", lat, lon);
+            } else {
+                System.out.println("❌ Impossibile ottenere coordinate per: " + query);
+            }
+            Boolean ok = leggiSiNo("Confermi questo indirizzo? (s/n): ");
             if (Boolean.TRUE.equals(ok)) {
                 if (coords != null) { lat = coords[0]; lon = coords[1]; }
                 break;
