@@ -761,20 +761,4 @@ public class MenuHandler {
         }
     }
 
-    // =============== Compat: vecchi metodi utili (se servono) ===============
-    /** Conservato per eventuali chiamate retrocompatibili. */
-    private void visualizzaRecensioniRistorante () {
-        Ristorante r = chiediRistorante();
-        if (r != null) ristoranteService.visualizzaRecensioni(r);
-    }
-
-    private Ristorante chiediRistorante () {
-        System.out.print("Nome ristorante: ");
-        String nome = sc.nextLine().trim();
-        System.out.print("Località (es. \"Milano, Italia\"): ");
-        String loc = sc.nextLine().trim();
-        Ristorante r = data.findRistorante(nome, loc);
-        if (r == null) System.out.println("Ristorante non trovato (nome e località devono combaciare).");
-        return r;
-    }
 }
