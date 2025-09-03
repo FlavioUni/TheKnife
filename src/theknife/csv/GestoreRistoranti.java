@@ -18,8 +18,29 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * La classe GestoreRistoranti gestisce la persistenza dei ristoranti sul file Ristoranti.csv.
+ * Si occupa di caricare i ristoranti dal file e di salvarli nuovamente su Ristoranti.csv.
+ * 
+ * L’utilizzo della libreria OpenCSV semplifica e rende più robuste le operazioni di
+ * lettura e scrittura dei dati, grazie alla gestione automatica di virgolette,
+ * caratteri speciali e separatori, evitando l’uso di split manuali.
+ * Ad ogni operazione di scrittura viene sovrascritto completamente il file CSV.
+ * 
+ * Autori:
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
+ */
 public class GestoreRistoranti extends GestoreCSV<Ristorante> {
 
+    /**
+     * Carica la lista dei ristoranti leggendo i dati da un file CSV.
+     * Ignora la prima riga (intestazione) e costruisce gli oggetti Ristorante
+     * dalle righe successive. Converte i campi numerici e booleani.
+     * 
+     * @param filePath Percorso del file CSV da cui caricare i dati
+     */
     @Override
     public void caricaDaCSV(String filePath) {
         elementi = new ArrayList<>();
@@ -80,7 +101,7 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
                         longitudine, latitudine, telefono, websiteUrl,
                         premi, servizi, prenotazioneOnline, delivery);
 
-                ristorante.setId(id); // fondamentale per evitare "ristorante senza id"
+                ristorante.setId(id);
                 elementi.add(ristorante);
             }
 
@@ -91,31 +112,38 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         }
     }
 
+    /**
+     * Salva la lista corrente dei ristoranti nel file CSV indicato.
+     * Scrive una riga di intestazione e poi una riga per ogni ristorante,
+     * convertendo i campi nei formati corretti.
+     * 
+     * @param filePath Percorso del file CSV su cui salvare i dati
+     */
     @Override
     public void salvaSuCSV(String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writer.writeNext(new String[]{
-                    "ID", "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
-                    "Longitudine", "Latitudine", "Telefono", "SitoWeb",
-                    "Premio", "Servizi", "PrenotazioneOnline", "Delivery"
+                "ID", "Nome", "Indirizzo", "Location", "Prezzo", "Cucina",
+                "Longitudine", "Latitudine", "Telefono", "SitoWeb",
+                "Premio", "Servizi", "PrenotazioneOnline", "Delivery"
             });
 
             for (Ristorante r : elementi) {
                 writer.writeNext(new String[]{
-                        r.getId(),
-                        r.getNome(),
-                        r.getIndirizzo(),
-                        r.getLocation(),
-                        r.getPrezzoMedio(),
-                        r.getCucina(),
-                        String.valueOf(r.getLongitudine()),
-                        String.valueOf(r.getLatitudine()),
-                        r.getNumeroTelefono(),
-                        r.getWebsiteUrl(),
-                        r.getPremi(),
-                        r.getServizi(),
-                        r.isPrenotazioneOnline() ? "SI" : "NO",
-                        r.isDelivery() ? "SI" : "NO"
+                    r.getId(),
+                    r.getNome(),
+                    r.getIndirizzo(),
+                    r.getLocation(),
+                    r.getPrezzoMedio(),
+                    r.getCucina(),
+                    String.valueOf(r.getLongitudine()),
+                    String.valueOf(r.getLatitudine()),
+                    r.getNumeroTelefono(),
+                    r.getWebsiteUrl(),
+                    r.getPremi(),
+                    r.getServizi(),
+                    r.isPrenotazioneOnline() ? "SI" : "NO",
+                    r.isDelivery() ? "SI" : "NO"
                 });
             }
         } catch (IOException e) {
@@ -123,6 +151,16 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         }
     }
 
+    // === METODI DI SUPPORTO ===
+
+    /**
+     * Converte una stringa in un numero decimale (double).
+     * Se la stringa è nulla o vuota, restituisce 0.0.
+     * Accetta sia virgola che punto come separatore decimale.
+     * 
+     * @param valore Stringa da convertire
+     * @return Numero decimale corrispondente
+     */
     private static double parseDouble(String valore) {
         if (valore == null) return 0.0;
         valore = valore.trim();
@@ -130,6 +168,14 @@ public class GestoreRistoranti extends GestoreCSV<Ristorante> {
         return Double.parseDouble(valore.replace(',', '.'));
     }
 
+    /**
+     * Converte una stringa in un valore booleano.
+     * Restituisce true se la stringa è "si", "sì" o "true" (non fa distinzione tra maiuscole/minuscole).
+     * Altrimenti restituisce false.
+     * 
+     * @param valore Stringa da controllare
+     * @return true o false
+     */
     private static boolean parseBool(String valore) {
         if (valore == null) return false;
         String v = valore.trim();

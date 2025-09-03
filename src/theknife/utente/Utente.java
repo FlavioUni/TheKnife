@@ -14,7 +14,8 @@ import java.util.List;
 
 /**
  * La classe Utente rappresenta un utente del sistema.
- * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) e la lista dei ristoranti associati.
+ * Un utente è caratterizzato da: dati anagrafici, password, ruolo (CLIENTE o RISTORATORE) 
+ * e la lista dei ristoranti associati.
  * 
  * @author Gasparini Lorenzo
  * @author Ciani Flavio Angelo

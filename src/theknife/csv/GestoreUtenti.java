@@ -19,27 +19,32 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- * La classe GestoreUtenti si occupa della gestione della persistenza degli oggetti {@link Utente} da e verso il file CSV.
- * Estende la classe astratta {@link GestoreCSV} adattandola per il tipo Utente.
+ * La classe GestoreUtenti gestisce la persistenza degli utenti sul file Utenti.csv.
+ * Si occupa di caricare gli utenti dal file e di salvarli nuovamente su Utenti.csv.
  * 
- * @author Lorenzo Gasparini
- * @see GestoreCSV
- * @see Utente
- * @see Ruolo
- * @see GestoreDate
+ * L'implementazione della libreria OpenCSV ha semplficato e reso più robuste le operazione di 
+ * lettura e scrittura dati (persistenza dati). Essa infatti offre metodi pronti per leggere 
+ * e scrivere file CSV, rispettando lo standard (gestione di virgolette, caratteri speciali, separatori) 
+ * evitando inoltre la gestione manuale riga per riga dei CSV (es. uso di split(",").
+ * A ogni operazione di scrittura viene sovrascritto completamente il file CSV.
+ * 
+ * 
+ * 
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
  */
-
 public class GestoreUtenti extends GestoreCSV<Utente> {
 	
-	/**
-	 * Carica la lista degli utenti leggendo i dati da un file CSV.
-	 * Il metodo ignora la prima riga (intestazione) e costruisce oggetti {@link Utente} a partire dalle righe successive.
-	 * Gestisce automaticamente la conversione delle date e l'assegnazione del ruolo.
-	 * 
-	 * @param filePath Il percorso del file CSV da cui caricare i dati.
-	 */
+    /**
+     * Carica la lista degli utenti leggendo i dati da un file CSV.
+     * Ignora la prima riga (intestazione) e costruisce gli oggetti Utente
+     * dalle righe successive. Converte le date e assegna il ruolo.
+     * 
+     * @param filePath Percorso del file CSV da cui caricare i dati
+     */
     @Override
-    public void caricaDaCSV (String filePath) {
+    public void caricaDaCSV(String filePath) {
         elementi = new ArrayList<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
@@ -49,7 +54,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
             while ((campi = reader.readNext()) != null) {
                 if (primaRiga) { primaRiga = false; continue; }
 
-                // Minimo: Nome..Ruolo => 7 colonne
+                // Minimo 7 colonne
                 if (campi.length < 7) {
                     System.err.println("Riga utenti ignorata: colonne insufficienti (" + campi.length + ")");
                     continue;
@@ -61,9 +66,7 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                 String username = campi[2];
                 String password = campi[3];
                 String domicilio = campi[4];
-                
                 LocalDate data = GestoreDate.parseNullable(campi[5]);
-                
                 Ruolo ruolo = Ruolo.valueOf(campi[6]);
 
                 Utente u = new Utente(nome, cognome, username, password, domicilio, data, ruolo);
@@ -79,18 +82,18 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
     }
     
     /**
-     * Salva la lista corrente degli utenti nel file CSV di cui &egrave; specificato il percorso.
-     * Crea una riga di intestazione e poi una riga per ogni utente, convertendo i suoi campi in stringhe secondo il formato atteso.
-     * La lista dei ristoranti associati (preferiti o gestiti) viene serializzata in una stringa compatta.
+     * Salva la lista corrente degli utenti nel file CSV indicato.
+     * Scrive una riga di intestazione e poi una riga per ogni utente,
+     * serializzando la lista dei ristoranti associati in formato compatto (vedi Utente).
      * 
-     * @param filePath Il percorso del file CSV su cui salvare i dati.
+     * @param filePath Percorso del file CSV su cui salvare i dati
      */
     @Override
-    public void salvaSuCSV (String filePath) {
-        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+    public void salvaSuCSV(String filePath) {
+        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {        //new FileWriter(filePath, true) per append
             writer.writeNext(new String[]{
                 "Nome", "Cognome", "Username", "Password", "Domicilio", "Data", "Ruolo", "Associati"
-            });
+                });
 
             for (Utente u : elementi) {
                 writer.writeNext(new String[]{
@@ -101,12 +104,11 @@ public class GestoreUtenti extends GestoreCSV<Utente> {
                     u.getDomicilio(),
                     GestoreDate.formatOrEmpty(u.getData()),
                     u.getRuolo().name(),
-                    u.getAssocKeysRaw() // ✅ Salva solo gli ID
+                    u.getAssocKeysRaw()
                 });
             }
         } catch (IOException e) {
             System.err.println("Errore nella scrittura del file utenti: " + e.getMessage());
         }
     }
-    
 }
