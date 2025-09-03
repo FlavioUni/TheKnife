@@ -1,4 +1,5 @@
-/*Ciani Flavio Angelo, 761581, VA
+/*
+Ciani Flavio Angelo, 761581, VA
 Scolaro Gabriele, 760123, VA
 Gasparini Lorenzo, 759929, VA
 */
@@ -10,32 +11,66 @@ import com.byteowls.jopencage.model.JOpenCageResponse;
 import com.byteowls.jopencage.model.JOpenCageResult;
 import theknife.ristorante.Ristorante;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Properties;
 
-/** Servizio di geolocalizzazione (JOpenCage) + cache locale. */
+/**
+ * La classe GeoService fornisce funzionalità di geocoding e ricerca geografica.
+ * Usa l'API JOpenCage per convertire indirizzi in coordinate (latitudine, longitudine)
+ * e mantiene una cache locale su file per ridurre le chiamate all'API.
+ * 
+ * Carica la chiave API da:
+ * 1) file "data/config.properties" (chiave: JOPENCAGE_API_KEY)
+ * 2) variabile d'ambiente "JOPENCAGE_API_KEY"
+ * Se assente, le funzioni di geocoding risultano limitate.
+ * 
+ * @author Gasparini Lorenzo
+ * @author Ciani Flavio Angelo
+ * @author Scolaro Gabriele
+ */
 public class GeoService {
+
+    // CAMPI
     private final String apiKey;
     private Map<String, double[]> geocodeCache = new HashMap<>();
     private static final String CACHE_FILE = "data/geocache.ser";
 
+    /**
+     * COSTRUTTORE di GeoService.
+     * Inizializza la chiave API e carica la cache da file, se presente.
+     */
     public GeoService() {
         this.apiKey = loadApiKey();
         loadCacheFromFile();
     }
 
-    // ===== API KEY =====
+    // ==================== API KEY ====================
+
+    /**
+     * Carica la chiave API cercando prima nel file config.properties e poi
+     * nella variabile d'ambiente.
+     * 
+     * @return La chiave API trovata, oppure {@code null} se non disponibile
+     */
     private String loadApiKey() {
-        // 1) config.properties
         try (FileInputStream fis = new FileInputStream("data/config.properties")) {
             Properties p = new Properties();
             p.load(fis);
             String k = p.getProperty("JOPENCAGE_API_KEY");
-            if (k != null && !k.isBlank()) return k.trim();
+            if (k != null && !k.isBlank()) 
+            	return k.trim();
         } catch (IOException ignore) {
             System.err.println("[GeoService] Nessun config.properties, provo variabile d'ambiente…");
         }
-        // 2) environment
+
         String env = System.getenv("JOPENCAGE_API_KEY");
         if (env == null || env.isBlank()) {
             System.err.println("[GeoService] API Key mancante. Geolocalizzazione limitata.");
@@ -44,7 +79,12 @@ public class GeoService {
         return env.trim();
     }
 
-    // ===== CACHE =====
+    // ==================== CACHE ====================
+
+    /**
+     * Carica la cache indirizzo→coordinate da file, se presente.
+     * In caso di errore la cache viene inizializzata vuota.
+     */
     @SuppressWarnings("unchecked")
     private void loadCacheFromFile() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(CACHE_FILE))) {
@@ -57,8 +97,14 @@ public class GeoService {
         }
     }
 
-    public void shutdown() { saveCacheToFile(); }
+    /**
+     * Salva la cache su file. Da chiamare tipicamente in chiusura applicazione.
+     */
+    public void shutdown() {saveCacheToFile();}
 
+    /**
+     * Serializza la cache su disco.
+     */
     private void saveCacheToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CACHE_FILE))) {
             oos.writeObject(geocodeCache);
@@ -67,46 +113,18 @@ public class GeoService {
         }
     }
 
-    // ===== SUGGERIMENTI INDIRIZZI (per scelta utente) =====
-    /** Restituisce fino a 'limit' indirizzi formattati suggeriti per l'input. */
-    public List<String> suggerisciIndirizzi(String input, int limit) {
-        List<String> out = new ArrayList<>();
-        if (input == null || input.isBlank() || apiKey == null) return out;
-        try {
-            JOpenCageGeocoder g = new JOpenCageGeocoder(apiKey);
-            JOpenCageForwardRequest req = new JOpenCageForwardRequest(input);
-            req.setLimit(Math.max(1, Math.min(limit, 10)));
-            req.setNoAnnotations(true);
-            req.setLanguage("it");
-            JOpenCageResponse resp = g.forward(req);
+    // ==================== GEOCODING ====================
 
-            // filtra duplicati e risultati troppo “generici”
-            List<String> seen = new ArrayList<>();
-            for (JOpenCageResult r : resp.getResults()) {
-                String formatted = r.getFormatted();
-                if (formatted == null || formatted.isBlank()) continue;
-                if (!formatted.matches(".*\\d+.*") && formatted.split(",").length <= 3) continue; // solo città/regione → skip
-
-                boolean dup = false;
-                for (String s : seen) {
-                    if (s.contains(formatted) || formatted.contains(s)) { dup = true; break; }
-                }
-                if (!dup) {
-                    seen.add(formatted);
-                    out.add(formatted);
-                }
-            }
-            out.sort(Comparator.comparingInt(String::length)); // più specifici prima
-        } catch (Exception e) {
-            System.err.println("[GeoService] suggerisciIndirizzi: " + e.getMessage());
-        }
-        return out;
-    }
-
-    // ===== GEOCODING (con cache) =====
-    /** Converte un indirizzo in {lat, lon}. Usa cache locale. */
+    /**
+     * Converte un indirizzo testuale in coordinate geografiche.
+     * Usa una cache locale per evitare chiamate ripetute all’API.
+     * 
+     * @param indirizzo Testo completo dell’indirizzo
+     * @return Array {@code double[2]} nel formato {latitudine, longitudine}, oppure {@code null} se non disponibile
+     */
     public double[] geocode(String indirizzo) {
         if (indirizzo == null || indirizzo.isBlank()) return null;
+
         String key = indirizzo.trim().toLowerCase();
         double[] cached = geocodeCache.get(key);
         if (cached != null) return cached;
@@ -118,6 +136,7 @@ public class GeoService {
             req.setLimit(1);
             req.setNoAnnotations(true);
             req.setLanguage("it");
+
             JOpenCageResponse resp = g.forward(req);
             if (!resp.getResults().isEmpty()) {
                 JOpenCageResult r = resp.getResults().get(0);
@@ -131,40 +150,76 @@ public class GeoService {
         return null;
     }
 
-    // ===== VICINO A… =====
-    /** Filtra ristoranti entro 'distanzaMaxKm' dall'indirizzo dato. */
+    // ==================== RICERCA “VICINO A” ====================
+
+    /**
+     * Filtra e restituisce i ristoranti entro una certa distanza (raggio) da un indirizzo fornito.
+     * 
+     * @param indirizzoUtente Indirizzo di partenza
+     * @param distanzaMaxKm Distanza massima in chilometri
+     * @param lista Lista completa dei ristoranti su cui effettuare il filtro
+     * @return Lista di ristoranti entro il raggio richiesto (può essere vuota)
+     */
     public List<Ristorante> filtraPerVicinoA(String indirizzoUtente, double distanzaMaxKm, List<Ristorante> lista) {
         List<Ristorante> out = new ArrayList<>();
-        if (lista == null || lista.isEmpty()) return out;
+        if (lista == null || lista.isEmpty()) 
+        	return out;
+
         double[] coord = geocode(indirizzoUtente);
         if (coord == null) {
             System.out.println("[GeoService] Non riesco a geocodificare: " + indirizzoUtente);
             return out;
         }
+
         double latU = coord[0], lonU = coord[1];
         for (Ristorante r : lista) {
             double latR = r.getLatitudine();
             double lonR = r.getLongitudine();
-            if (latR == 0.0 && lonR == 0.0) continue; // ignora ristoranti senza coordinate
+            if (latR == 0.0 && lonR == 0.0) 
+            	continue; // ignora i ristoranti senza coordinate
+
             double d = calcolaDistanza(latU, lonU, latR, lonR);
             if (d <= distanzaMaxKm) out.add(r);
         }
         return out;
     }
 
-    /** Distanza Haversine in km. */
+    /**
+     * Calcola la distanza fra due punti (lat/lon) sulla superficie terrestre, in km.
+     * Formula di Haversine.
+     * 
+     * @param lat1 Latitudine punto 1
+     * @param lon1 Longitudine punto 1
+     * @param lat2 Latitudine punto 2
+     * @param lon2 Longitudine punto 2
+     * @return Distanza in chilometri
+     */
     public static double calcolaDistanza(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1), dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat/2)*Math.sin(dLat/2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon/2)*Math.sin(dLon/2);
-        return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        final double R = 6371.0; // raggio terrestre in km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double sinDLat = Math.sin(dLat / 2);
+        double sinDLon = Math.sin(dLon / 2);
+
+        double a = sinDLat * sinDLat
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * sinDLon * sinDLon;
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
-    /** Pulisce le cache in RAM. */
+    // ===== Metodi di utilità potenzialmente futuri =====
+    /**
+     * Svuota la cache (in RAM) degli indirizzi geocodificati.
+     */
     public void clearCache() { geocodeCache.clear(); }
 
-    /** Dimensione cache indirizzi → coordinate. */
+    /**
+     * Restituisce la dimensione attuale della cache in RAM.
+     * 
+     * @return Numero di voci nella cache
+     */
     public int getCacheSize() { return geocodeCache.size(); }
 }

@@ -104,7 +104,7 @@ public class MenuHandler {
                         }
                     }
                 } catch (InputAnnullatoException e) {
-                    // * premuto: torna al loop principale senza fare nulla
+                    return;
                 }
             }
         } catch (InputAnnullatoException e) {
@@ -425,12 +425,12 @@ public class MenuHandler {
                 try {
                     leggiInt(); 
                 } catch (InputAnnullatoException e) {
-                    // ok, torna
+                    return;
                 }
                 return;
             }
 
-            // Cliente: opzioni extra
+            // OPZIONI CLIENTE
             System.out.println("1) Aggiungi ai preferiti");
             System.out.println("2) Rimuovi dai preferiti");
             System.out.println("3) Aggiungi/Modifica la mia recensione");
@@ -465,11 +465,12 @@ public class MenuHandler {
         }
     }
 
-    // ===================== CLIENTE: Preferiti + Mie Recensioni =====================
+    // ===================== CLIENTE: Preferiti e Recensioni =====================
 
     /**
      * Mostra la lista dei preferiti dell'utente e apre la pagina del ristorante selezionato.
-     * @param utente cliente autenticato
+     * 
+     * @param utente CLIENTE autenticato
      */
     private void flussoPreferiti(Utente utente) {
         pulisciTerminale();
@@ -489,13 +490,14 @@ public class MenuHandler {
             Ristorante scelto = selezionaRistoranteDaLista(preferiti);
             if (scelto != null) paginaRistorante(scelto, utente);
         } catch (InputAnnullatoException e) {
-            // torna indietro
+            return;
         }
     }
 
     /**
      * Visualizza e permette la modifica delle recensioni pubblicate dall'utente.
-     * @param utente cliente autenticato
+     * 
+     * @param utente CLIENTE autenticato
      */
     private void flussoMieRecensioni(Utente utente) {
         pulisciTerminale();
@@ -535,7 +537,8 @@ public class MenuHandler {
             System.out.println((mie.size() + 1) + ") Torna indietro");
             System.out.print("Scelta (o * per indietro): ");
             int idx = leggiIntInRange(1, mie.size() + 1);
-            if (idx == mie.size() + 1) return;
+            if (idx == mie.size() + 1) 
+            	return;
 
             Recensione daModificare = mie.get(idx - 1);
             Ristorante r = data.findRistoranteById(daModificare.getIdRistorante());
@@ -547,15 +550,16 @@ public class MenuHandler {
             modificaRecensioneFlow(utente, r, daModificare);
             pausa();
         } catch (InputAnnullatoException e) {
-            // indietro
+            return;
         }
     }
 
     /**
      * Flusso di modifica guidata di una recensione esistente.
-     * @param utente autore
-     * @param r ristorante di riferimento
-     * @param target recensione da modificare
+     * 
+     * @param utente Utente autore
+     * @param r Ristorante di riferimento
+     * @param target Recensione da modificare
      */
     private void modificaRecensioneFlow(Utente utente, Ristorante r, Recensione target) {
         pulisciTerminale();
@@ -579,8 +583,9 @@ public class MenuHandler {
 
     /**
      * Se non esiste una recensione dell'utente sul ristorante, la crea; altrimenti apre la modifica.
-     * @param utente autore
-     * @param r ristorante
+     * 
+     * @param utente Utente autore
+     * @param r Ristorante
      */
     private void aggiungiOModificaMiaRecensione(Utente utente, Ristorante r) {
         try {
@@ -604,11 +609,12 @@ public class MenuHandler {
         }
     }
 
-    // ===================== RISTORATORE: gestione =====================
+    // ===================== RISTORATORE: gestione/creazione ristoranti =====================
 
     /**
      * Gestione dei ristoranti di un ristoratore (modifica campi, rimozione dalla gestione).
-     * @param ristoratore utente con ruolo RISTORATORE
+     * 
+     * @param ristoratore Utente RISTORATORE
      */
     private void flussoGestioneRistoranti(Utente ristoratore) {
         pulisciTerminale();
@@ -618,7 +624,9 @@ public class MenuHandler {
                 if (ristoratore.getRistorantiGestiti() != null) {
                     miei.addAll(ristoratore.getRistorantiGestiti());
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            	return;
+            }
 
             if (miei.isEmpty()) {
                 System.out.println("Non gestisci alcun ristorante.");
@@ -627,7 +635,8 @@ public class MenuHandler {
             }
 
             Ristorante scelto = selezionaRistoranteDaLista(miei);
-            if (scelto == null) return;
+            if (scelto == null) 
+            	return;
 
             boolean stay = true;
             while (stay) {
@@ -661,42 +670,54 @@ public class MenuHandler {
                 }
             }
         } catch (InputAnnullatoException e) {
-            // indietro
+            return;		
         }
     }
 
     /**
-     * Modifica alcuni campi anagrafici del ristorante selezionato.
-     * @param r ristorante da aggiornare
+     * Modifica alcuni campi del ristorante selezionato.
+     * 
+     * @param r Ristorante da modificare
      */
     private void modificaCampiRistorante(Ristorante r) {
         pulisciTerminale();
         try {
             System.out.println("\n--- Modifica campi --- (invio per saltare, * per indietro)");
+
             System.out.print("Prezzo medio attuale: " + safe(r.getPrezzoMedio()) + " -> nuovo: ");
             String prezzo = leggiLineaOpt();
-            if (prezzo != null && !prezzo.isEmpty()) r.setPrezzoMedio(prezzo);
+            if (prezzo != null && !prezzo.isEmpty()) 
+                r.setPrezzoMedio(prezzo);
 
             System.out.print("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
             String tel = leggiLineaOpt();
-            if (tel != null && !tel.isEmpty()) r.setNumeroTelefono(tel);
+            if (tel != null && !tel.isEmpty()) 
+                r.setNumeroTelefono(tel);
 
             System.out.print("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
             String web = leggiLineaOpt();
-            if (web != null && !web.isEmpty()) r.setWebsiteUrl(web);
+            if (web != null && !web.isEmpty()) 
+                r.setWebsiteUrl(web);
 
             System.out.print("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
             String premi = leggiLineaOpt();
-            if (premi != null && !premi.isEmpty()) r.setPremi(premi);
+            if (premi != null && !premi.isEmpty()) 
+                r.setPremi(premi);
 
             System.out.print("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
             String servizi = leggiLineaOpt();
-            if (servizi != null && !servizi.isEmpty()) r.setServizi(servizi);
+            if (servizi != null && !servizi.isEmpty()) 
+                r.setServizi(servizi);
 
-            Boolean delivery = leggiSiNo("Delivery? (s/n/invio, * per indietro): ");
-            if (delivery != null) r.setDelivery(delivery);
-            Boolean pren = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
-            if (pren != null) r.setPrenotazioneOnline(pren);
+            System.out.print("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
+            Boolean pren = leggiSiNo("");
+            if (pren != null) 
+                r.setPrenotazioneOnline(pren);
+
+            System.out.print("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
+            Boolean delivery = leggiSiNo("");
+            if (delivery != null) 
+                r.setDelivery(delivery);
 
             System.out.println("Aggiornato.");
         } catch (InputAnnullatoException e) {
@@ -706,14 +727,16 @@ public class MenuHandler {
 
     /**
      * Visualizza le recensioni dei ristoranti gestiti e permette di rispondere o eliminare una risposta.
-     * @param ristoratore utente con ruolo RISTORATORE
+     * 
+     * @param ristoratore Utente con ruolo RISTORATORE
      */
     private void flussoRecensioniGestite(Utente ristoratore) {
         pulisciTerminale();
         try {
             List<Ristorante> miei = new ArrayList<>();
             try {
-                if (ristoratore.getRistorantiGestiti() != null) miei.addAll(ristoratore.getRistorantiGestiti());
+                if (ristoratore.getRistorantiGestiti() != null) 
+                	miei.addAll(ristoratore.getRistorantiGestiti());
             } catch (Exception ignored) {}
 
             if (miei.isEmpty()) {
@@ -723,7 +746,8 @@ public class MenuHandler {
             }
 
             Ristorante scelto = selezionaRistoranteDaLista(miei);
-            if (scelto == null) return;
+            if (scelto == null) 
+            	return;
 
             List<Recensione> recensioni = new ArrayList<>(scelto.getRecensioni());
             if (recensioni.isEmpty()) {
@@ -747,7 +771,8 @@ public class MenuHandler {
             System.out.println((recensioni.size() + 1) + ") Torna indietro");
             System.out.print("Scelta (o * per indietro): ");
             int idx = leggiIntInRange(1, recensioni.size() + 1);
-            if (idx == recensioni.size() + 1) return;
+            if (idx == recensioni.size() + 1) 
+            	return;
 
             Recensione target = recensioni.get(idx - 1);
             System.out.println("\n--- Recensione selezionata ---");
@@ -784,13 +809,15 @@ public class MenuHandler {
             }
             pausa();
         } catch (InputAnnullatoException e) {
-            // indietro
+            return;
         }
     }
 
     /**
-     * Permette al ristoratore di prendere in gestione un ristorante non ancora gestito.
-     * @param ristoratore utente con ruolo RISTORATORE
+     * Permette al ristoratore di prendere in gestione un ristorante non ancora gestito
+     * ma presente nel file Ristoranti.csv.
+     * 
+     * @param ristoratore Utente con ruolo RISTORATORE
      */
     private void flussoPrendiInGestione(Utente ristoratore) {
         pulisciTerminale();
@@ -829,7 +856,8 @@ public class MenuHandler {
             }
 
             Ristorante scelto = selezionaRistoranteDaLista(filtrati);
-            if (scelto == null) return;
+            if (scelto == null) 
+            	return;
 
             System.out.println("Hai selezionato: " + scelto.getNome() + " - " + scelto.getLocation());
             Boolean conferma = leggiSiNo("Vuoi prendere in gestione questo ristorante? (s/n, * per indietro): ");
@@ -840,14 +868,15 @@ public class MenuHandler {
             }
             pausa();
         } catch (InputAnnullatoException e) {
-            // indietro
+            return;
         }
     }
 
-    // ===================== CREAZIONE RISTORANTE (con conferma Geo) =====================
+    // ===================== CREAZIONE RISTORANTE con conferma GeoLocalizzazione =====================
 
     /**
      * Flusso di creazione di un nuovo ristorante con tentativo di geocoding e conferma da parte dell'utente.
+     * 
      * @return ristorante creato o null se annullato
      */
     private Ristorante creaRistoranteConConfermaGeo() {
@@ -856,23 +885,23 @@ public class MenuHandler {
             System.out.println("\n--- NUOVO RISTORANTE ---");
             System.out.println("(Digita 'annulla' o * in qualsiasi momento per tornare indietro)");
 
-            String nome      = leggiObbligatoria("Nome (o * per indietro): ");
-            String location  = leggiObbligatoria("Località (es. \"Vienna, Austria\", o * per indietro): ");
+            String nome = leggiObbligatoria("Nome (o * per indietro): ");
+            String location = leggiObbligatoria("Località (es. \"Vienna, Austria\", o * per indietro): ");
             String indirizzo = leggiStringa("Indirizzo (via e civico) [invio per saltare, * per indietro]: ");
-            String prezzo    = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio, * per indietro]: ");
-            String cucina    = leggiStringa("Tipo di cucina [invio, * per indietro]: ");
-            String telefono  = leggiStringa("Telefono [invio, * per indietro]: ");
-            String website   = leggiStringa("Sito web (URL) [invio, * per indietro]: ");
-            Boolean pren     = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
+            String prezzo = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio, * per indietro]: ");
+            String cucina = leggiStringa("Tipo di cucina [invio, * per indietro]: ");
+            String telefono = leggiStringa("Telefono [invio, * per indietro]: ");
+            String website = leggiStringa("Sito web (URL) [invio, * per indietro]: ");
+            Boolean pren = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
             Boolean delivery = leggiSiNo("Delivery? (s/n/invio, * per indietro): ");
 
             double lat = 0.0, lon = 0.0;
-            // Conferma geocoding sul miglior query
+           
             while (true) {
                 String query = buildBestGeoQuery(nome, location, indirizzo);
                 double[] coords = null;
                 try {
-                    coords = geoService.geocode(query); // atteso {lat, lon}
+                    coords = geoService.geocode(query); 
                 } catch (Exception e) {
                     System.out.println("[Geo] Errore geocoding: " + e.getMessage());
                 }
@@ -899,7 +928,6 @@ public class MenuHandler {
                     indirizzo = leggiStringa("Reinserisci indirizzo (invio per lasciare vuoto, * per indietro): ");
                     pulisciTerminale();
                 } else {
-                    // invio => lascia stare e prosegui
                     break;
                 }
             }
@@ -910,7 +938,7 @@ public class MenuHandler {
                     location,
                     prezzo != null ? prezzo : "",
                     cucina != null ? cucina : "",
-                    lon, // ATTENZIONE: nella tua classe è (longitudine, latitudine)
+                    lon,
                     lat,
                     telefono != null ? telefono : "",
                     website != null ? website : "",
@@ -919,7 +947,6 @@ public class MenuHandler {
                     Boolean.TRUE.equals(pren),
                     Boolean.TRUE.equals(delivery)
             );
-            // salva coords se impostate
             r.setLatitudine(lat);
             r.setLongitudine(lon);
             return r;
@@ -930,15 +957,23 @@ public class MenuHandler {
     }
 
     /**
-     * Costruisce la query più informativa per il geocoding in base ai dati inseriti.
-     * @param nome nome ristorante
-     * @param location città/paese
-     * @param indirizzo via e civico
-     * @return stringa da passare al geocoder
+     * Costruisce la stringa da usare per cercare le coordinate geografiche.
+     * 
+     * L'ordine di priorità è:
+     * - Se c'è l'indirizzo, usa "indirizzo, location"
+     * - Altrimenti se c'è il nome, usa "nome, location"
+     * - Altrimenti solo la location
+     * 
+     * @param nome Nome del ristorante
+     * @param location Città o paese
+     * @param indirizzo Via e numero civico
+     * @return Stringa da passare al geocoder
      */
     private String buildBestGeoQuery(String nome, String location, String indirizzo) {
-        if (indirizzo != null && !indirizzo.isBlank()) return indirizzo + ", " + location;
-        if (nome != null && !nome.isBlank()) return nome + ", " + location;
+        if (indirizzo != null && !indirizzo.isBlank()) 
+        	return indirizzo + ", " + location;
+        if (nome != null && !nome.isBlank()) 
+        	return nome + ", " + location;
         return location;
     }
 
@@ -948,6 +983,7 @@ public class MenuHandler {
 
     /**
      * Stampa una lista numerata di ristoranti e consente la selezione.
+     * 
      * @param lista elenco ristoranti
      * @return ristorante selezionato o null se annullato
      */
@@ -981,11 +1017,13 @@ public class MenuHandler {
 
     /**
      * Restituisce la media stelle formattata con una cifra decimale o "-" se non disponibile.
+     * Vedi mediaStelle() della classe Ristorante.
      */
     private String formatMediaStelle(Ristorante r) {
         try {
             double media = r.mediaStelle();
-            if (Double.isNaN(media) || media <= 0) return "-";
+            if (Double.isNaN(media) || media <= 0) 
+            	return "-";
             return String.format("%.1f", media);
         } catch (Exception e) {
             return "-";
@@ -993,7 +1031,7 @@ public class MenuHandler {
     }
 
     /**
-     * Ritorna "-" se la stringa è nulla o vuota, altrimenti la stringa originale.
+     * Restituisce "-" se la stringa è nulla o vuota, altrimenti la stringa originale.
      */
     private String safe(String s) {
         return (s == null || s.isBlank()) ? "-" : s;
@@ -1013,11 +1051,13 @@ public class MenuHandler {
 
     /**
      * Legge una riga di testo. Se è * lancia InputAnnullatoException.
-     * @return stringa letta (trim)
+     * 
+     * @return stringa letta 
      */
     private String leggiLineaRaw() {
         String s = sc.nextLine().trim();
-        if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+        if (BACK_KEY.equals(s)) 
+        	throw new InputAnnullatoException();
         return s;
     }
 
@@ -1027,12 +1067,14 @@ public class MenuHandler {
      */
     private String leggiLineaOpt() {
         String s = sc.nextLine().trim();
-        if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+        if (BACK_KEY.equals(s)) 
+        	throw new InputAnnullatoException();
         return s;
     }
 
     /**
      * Legge una stringa con prompt. Supporta "annulla" o * per annullare.
+     * 
      * @param messaggio messaggio di input
      * @return null se invio, altrimenti stringa
      */
@@ -1047,12 +1089,14 @@ public class MenuHandler {
 
     /**
      * Legge un intero. * annulla.
+     * 
      * @return valore intero valido
      */
     private int leggiInt () {
         while (true) {
             String s = sc.nextLine().trim();
-            if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+            if (BACK_KEY.equals(s)) 
+            	throw new InputAnnullatoException();
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
@@ -1062,15 +1106,24 @@ public class MenuHandler {
     }
 
     /**
-     * Legge un intero vincolato all'intervallo [min, max]. * annulla.
+     * Stampa il messaggio di prompt e legge un intero nell’intervallo [min, max].
+     * È un semplice wrapper di leggiIntInRange, ma con un prompt personalizzato.
+     *
+     * @param prompt messaggio da mostrare all’utente
+     * @param min valore minimo accettato (incluso)
+     * @param max valore massimo accettato (incluso)
+     * @return intero inserito dall’utente nell’intervallo [min, max]
+     * @throws InputAnnullatoException se l’utente inserisce '*' per annullare
      */
     private int leggiIntInRange(int min, int max) {
         while (true) {
             String s = sc.nextLine().trim();
-            if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+            if (BACK_KEY.equals(s)) 
+            	throw new InputAnnullatoException();
             try {
                 int v = Integer.parseInt(s);
-                if (v >= min && v <= max) return v;
+                if (v >= min && v <= max) 
+                	return v;
                 System.out.print("Valore non valido. Inserisci tra " + min + " e " + max + " (o * per indietro): ");
             } catch (NumberFormatException e) {
                 System.out.print("Inserisci un numero valido (o * per indietro): ");
@@ -1079,7 +1132,14 @@ public class MenuHandler {
     }
 
     /**
-     * Stampa prompt e poi leggiIntInRange(min, max).
+     * Stampa il messaggio di prompt e legge un intero compreso tra min e max.
+     * È un semplice wrapper di leggiIntInRange, ma con un prompt personalizzato.
+     *
+     * @param prompt messaggio da mostrare all’utente
+     * @param min valore minimo accettato (incluso)
+     * @param max valore massimo accettato (incluso)
+     * @return intero scelto dall’utente nell’intervallo [min, max]
+     * @throws InputAnnullatoException se l’utente inserisce '*' per annullare
      */
     private int leggiIntInRangePrompt(String prompt, int min, int max) {
         System.out.print(prompt);
@@ -1087,18 +1147,23 @@ public class MenuHandler {
     }
 
     /**
-     * Legge un double positivo. * annulla.
-     * @param prompt messaggio da mostrare
-     * @return double > 0
+     * Legge un numero double positivo da input.
+     * L’utente può annullare digitando '*'.
+     *
+     * @param prompt messaggio da mostrare all’utente
+     * @return un double maggiore di 0
+     * @throws InputAnnullatoException se l’utente inserisce '*'
      */
     private double leggiDoublePositivo(String prompt) {
         System.out.print(prompt);
         while (true) {
             String s = sc.nextLine().trim();
-            if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+            if (BACK_KEY.equals(s)) 
+            	throw new InputAnnullatoException();
             try {
                 double v = Double.parseDouble(s);
-                if (v > 0) return v;
+                if (v > 0) 
+                	return v;
                 System.out.print("La distanza deve essere > 0 (o * per indietro): ");
             } catch (NumberFormatException e) {
                 System.out.print("Inserisci un numero valido (o * per indietro): ");
@@ -1112,7 +1177,8 @@ public class MenuHandler {
     private Ruolo leggiRuolo () {
         while (true) {
             String s = sc.nextLine().trim();
-            if (BACK_KEY.equals(s)) throw new InputAnnullatoException();
+            if (BACK_KEY.equals(s)) 
+            	throw new InputAnnullatoException();
             try {
                 return Ruolo.valueOf(s.toUpperCase());
             } catch (IllegalArgumentException e) {
@@ -1123,7 +1189,8 @@ public class MenuHandler {
 
     /**
      * Mostra una scelta guidata e restituisce la fascia prezzo testuale.
-     * @return stringa fascia oppure null per qualsiasi
+     * 
+     * @return stringa fascia di prezzo oppure null per qualsiasi
      */
     private String leggiFasciaPrezzo () {
         System.out.println("Fascia di prezzo:");
@@ -1134,7 +1201,8 @@ public class MenuHandler {
         System.out.print("Scelta (o * per indietro): ");
 
         String scelta = sc.nextLine().trim();
-        if (BACK_KEY.equals(scelta)) throw new InputAnnullatoException();
+        if (BACK_KEY.equals(scelta)) 
+        	throw new InputAnnullatoException();
         return switch (scelta) {
             case "1" -> "minore di 20€";
             case "2" -> "tra 20€ e 50€";
@@ -1144,16 +1212,19 @@ public class MenuHandler {
     }
 
     /**
-     * Legge una risposta sì/no. Restituisce true/false oppure null se invio.
-     * * annulla.
+     * Legge una risposta sì/no. Restituisce true/false oppure null se invio. * annulla.
      */
     private Boolean leggiSiNo (String messaggio) {
         System.out.print(messaggio);
         String input = sc.nextLine().trim().toLowerCase();
-        if (BACK_KEY.equals(input)) throw new InputAnnullatoException();
-        if (input.isEmpty()) return null;
-        if (input.equals("s") || input.equals("si") || input.equals("y") || input.equals("yes")) return true;
-        if (input.equals("n") || input.equals("no")) return false;
+        if (BACK_KEY.equals(input)) 
+        	throw new InputAnnullatoException();
+        if (input.isEmpty()) 
+        	return null;
+        if (input.equals("s") || input.equals("si") || input.equals("y") || input.equals("yes")) 
+        	return true;
+        if (input.equals("n") || input.equals("no")) 
+        	return false;
         System.out.println("Input non valido.");
         return null;
     }
@@ -1181,12 +1252,14 @@ public class MenuHandler {
 
     /**
      * Chiede uno username non vuoto e non già esistente. * o "annulla" per interrompere.
+     * 
      * @return username disponibile
      */
     private String leggiUsernameDisponibile() {
         while (true) {
             String u = sc.nextLine().trim();
-            if ("annulla".equalsIgnoreCase(u) || BACK_KEY.equals(u)) throw new InputAnnullatoException();
+            if ("annulla".equalsIgnoreCase(u) || BACK_KEY.equals(u)) 
+            	throw new InputAnnullatoException();
             if (u.isEmpty()) { System.out.println("Campo obbligatorio."); continue; }
             if (utenteService.trovaUtente(u) != null) {
                 System.out.println("Username non disponibile. Riprova (o * per indietro):");
@@ -1197,8 +1270,9 @@ public class MenuHandler {
     }
 
     /**
-     * Chiede una password 6–12 caratteri con conferma. * o "annulla" per interrompere.
-     * @return password valida
+     * Chiede una password di 6–12 caratteri con conferma. * o "annulla" per interrompere.
+     * 
+     * @return password valida e confermata
      */
     private String leggiPasswordValida() {
         while (true) {
@@ -1223,13 +1297,15 @@ public class MenuHandler {
 
     /**
      * Chiede una stringa non vuota. Ripete finché non è fornita. * per indietro.
-     * @param prompt messaggio
-     * @return stringa non vuota
+     * 
+     * @param prompt messaggio da mostrare all'utente
+     * @return stringa non vuota inserita dall'utente
      */
     private String leggiObbligatoria(String prompt) {
         while (true) {
             String s = leggiStringa(prompt);
-            if (s != null && !s.isBlank()) return s;
+            if (s != null && !s.isBlank()) 
+            	return s;
             System.out.println("Campo obbligatorio (o * per indietro).");
         }
     }
@@ -1237,7 +1313,8 @@ public class MenuHandler {
     /**
      * Costruisce il link Google Maps per il ristorante.
      * Preferisce coordinate se presenti; altrimenti query testuale.
-     * @param r ristorante
+     * 
+     * @param r Ristorante
      * @return URL Google Maps
      */
     private String mapsLink(Ristorante r) {
@@ -1245,7 +1322,7 @@ public class MenuHandler {
         try {
             lat = r.getLatitudine();
             lon = r.getLongitudine();
-        } catch (Exception ignored) { /* se non esistono getter, si passa al fallback */ }
+        } catch (Exception ignored) {}
 
         boolean hasCoords = !Double.isNaN(lat) && !Double.isNaN(lon) && (lat != 0.0 || lon != 0.0);
         if (hasCoords) {
