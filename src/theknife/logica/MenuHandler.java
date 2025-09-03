@@ -165,23 +165,23 @@ public class MenuHandler {
     private void registrazione () {
         pulisciTerminale();
         try {
-            System.out.println("\n--- REGISTRAZIONE --- (o * per indietro in qualunque campo)");
-            System.out.print("Nome: ");
+            System.out.println("\n--- REGISTRAZIONE ---");
+            System.out.println("Nome (o * per indietro): ");
             String nome = leggiLineaRaw();
 
-            System.out.print("Cognome: ");
+            System.out.println("Cognome (o * per indietro): ");
             String cognome = leggiLineaRaw();
 
-            System.out.print("Username: ");
+            System.out.println("Username (o * per indietro): ");
             String username = leggiUsernameDisponibile();
 
-            System.out.print("Password (minimo 6 massimo 12 caratteri): ");
+            System.out.println("Password (minimo 6 massimo 12 caratteri, o * per indietro): ");
             String password = leggiPasswordValida();
 
-            System.out.print("Domicilio: ");
+            System.out.println("Domicilio (o * per indietro): ");
             String domicilio = leggiLineaRaw();
 
-            System.out.print("Data di nascita DD/MM/YYYY (o invio/* per saltare): ");
+            System.out.println("Data di nascita DD/MM/YYYY (invio per saltare, * per indietro): ");
             String dataInput = leggiLineaOpt();
             LocalDate dataNascita = null;
             if (dataInput != null && !dataInput.isEmpty()) {
@@ -192,7 +192,7 @@ public class MenuHandler {
                 }
             }
 
-            System.out.print("Ruolo (CLIENTE/RISTORATORE, o * per indietro): ");
+            System.out.println("Ruolo (CLIENTE/RISTORATORE, o * per indietro): ");
             Ruolo ruolo = leggiRuolo();
 
             Utente nuovo = new Utente(nome, cognome, username, password, domicilio, dataNascita, ruolo);
@@ -212,13 +212,19 @@ public class MenuHandler {
         pulisciTerminale();
         try {
             System.out.println("\n--- LOGIN ---");
-            System.out.print("Username (o * per indietro): ");
+            System.out.println("Username (o * per indietro): ");
             String u = leggiLineaRaw();
-            System.out.print("Password (o * per indietro): ");
+            System.out.println("Password (o * per indietro): ");
             String p = leggiLineaRaw();
 
             Utente loggato = utenteService.login(u, p);
-            if (loggato == null) { pausa(); return; }
+            if (loggato == null) {
+                pausa();
+                return;
+            }
+
+            System.out.println("Login effettuato con successo. Premi invio per continuare.");
+            pausa();
 
             if (loggato.getRuolo() == Ruolo.CLIENTE) {
                 menuCliente(loggato);
@@ -336,8 +342,8 @@ public class MenuHandler {
             String cucina = leggiStringa("Cucina (invio per nessun filtro, * per indietro): ");
             String location = leggiStringa("Località (invio per nessun filtro, * per indietro): ");
             String fascia = leggiFasciaPrezzo();
-            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio, * per indietro): ");
             Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
+            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio, * per indietro): ");           
             Double minStelle = leggiMinStelle();
 
             List<Ristorante> risultati = ristoranteService.cercaRistorantePerFiltri(
@@ -592,9 +598,10 @@ public class MenuHandler {
         try {
             Recensione esistente = r.trovaRecensioneDiUtente(utente.getUsername());
             if (esistente == null) {
-                System.out.print("Stelle (1-5, * per indietro): ");
+            	System.out.println("--- Nuova Recensione --- ");
+                System.out.println("Stelle (1-5, * per indietro): ");
                 int stelle = leggiIntInRange(1, 5);
-                System.out.print("Commento (o * per indietro): ");
+                System.out.println("Commento (o * per indietro): ");
                 String testo = leggiLineaRaw();
                 try {
                     Recensione rec = recensioneService.aggiungiRecensione(utente, r, stelle, testo);
@@ -610,7 +617,7 @@ public class MenuHandler {
         }
     }
 
-    // ===================== RISTORATORE: gestione/creazione ristoranti =====================
+    // ================== RISTORATORE: gestione/creazione ristoranti =====================
 
     /**
      * Gestione dei ristoranti di un ristoratore (modifica campi, rimozione dalla gestione).
@@ -685,37 +692,37 @@ public class MenuHandler {
         try {
             System.out.println("\n--- Modifica campi --- (invio per saltare, * per indietro)");
 
-            System.out.print("Prezzo medio attuale: " + safe(r.getPrezzoMedio()) + " -> nuovo: ");
+            System.out.println("Prezzo medio attuale: " + safe(r.getPrezzoMedio()) + " -> nuovo: ");
             String prezzo = leggiLineaOpt();
             if (prezzo != null && !prezzo.isEmpty()) 
                 r.setPrezzoMedio(prezzo);
 
-            System.out.print("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
+            System.out.println("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
             String tel = leggiLineaOpt();
             if (tel != null && !tel.isEmpty()) 
                 r.setNumeroTelefono(tel);
 
-            System.out.print("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
+            System.out.println("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
             String web = leggiLineaOpt();
             if (web != null && !web.isEmpty()) 
                 r.setWebsiteUrl(web);
 
-            System.out.print("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
+            System.out.println("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
             String premi = leggiLineaOpt();
             if (premi != null && !premi.isEmpty()) 
                 r.setPremi(premi);
 
-            System.out.print("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
+            System.out.println("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
             String servizi = leggiLineaOpt();
             if (servizi != null && !servizi.isEmpty()) 
                 r.setServizi(servizi);
 
-            System.out.print("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
+            System.out.println("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
             Boolean pren = leggiSiNo("");
             if (pren != null) 
                 r.setPrenotazioneOnline(pren);
 
-            System.out.print("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
+            System.out.println("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
             Boolean delivery = leggiSiNo("");
             if (delivery != null) 
                 r.setDelivery(delivery);
@@ -1080,7 +1087,7 @@ public class MenuHandler {
      * @return null se invio, altrimenti stringa
      */
     private String leggiStringa (String messaggio) {
-        System.out.print(messaggio);
+        System.out.println(messaggio);
         String input = sc.nextLine().trim();
         if (input.equalsIgnoreCase("annulla") || BACK_KEY.equals(input)) {
             throw new InputAnnullatoException();
@@ -1101,7 +1108,7 @@ public class MenuHandler {
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                System.out.print("Inserisci un numero valido (o * per indietro): ");
+                System.out.println("Inserisci un numero valido (o * per indietro): ");
             }
         }
     }
@@ -1125,9 +1132,9 @@ public class MenuHandler {
                 int v = Integer.parseInt(s);
                 if (v >= min && v <= max) 
                 	return v;
-                System.out.print("Valore non valido. Inserisci tra " + min + " e " + max + " (o * per indietro): ");
+                System.out.println("Valore non valido. Inserisci tra " + min + " e " + max + " (o * per indietro): ");
             } catch (NumberFormatException e) {
-                System.out.print("Inserisci un numero valido (o * per indietro): ");
+                System.out.println("Inserisci un numero valido (o * per indietro): ");
             }
         }
     }
@@ -1165,9 +1172,9 @@ public class MenuHandler {
                 double v = Double.parseDouble(s);
                 if (v > 0) 
                 	return v;
-                System.out.print("La distanza deve essere > 0 (o * per indietro): ");
+                System.out.println("La distanza deve essere > 0 (o * per indietro): ");
             } catch (NumberFormatException e) {
-                System.out.print("Inserisci un numero valido (o * per indietro): ");
+                System.out.println("Inserisci un numero valido (o * per indietro): ");
             }
         }
     }
@@ -1183,7 +1190,7 @@ public class MenuHandler {
             try {
                 return Ruolo.valueOf(s.toUpperCase());
             } catch (IllegalArgumentException e) {
-                System.out.print("Valore non valido. Scrivi CLIENTE o RISTORATORE (o * per indietro): ");
+                System.out.println("Valore non valido. Scrivi CLIENTE o RISTORATORE (o * per indietro): ");
             }
         }
     }
@@ -1216,7 +1223,7 @@ public class MenuHandler {
      * Legge una risposta sì/no. Restituisce true/false oppure null se invio. * annulla.
      */
     private Boolean leggiSiNo (String messaggio) {
-        System.out.print(messaggio);
+        System.out.println(messaggio);
         String input = sc.nextLine().trim().toLowerCase();
         if (BACK_KEY.equals(input)) 
         	throw new InputAnnullatoException();
@@ -1234,7 +1241,7 @@ public class MenuHandler {
      * Legge un minimo di stelle tra 1 e 5. Restituisce null se invio.
      */
     private Double leggiMinStelle () {
-        System.out.print("Voto minimo (1-5, invio per ignorare, * per indietro): ");
+        System.out.println("Voto minimo (1-5, invio per ignorare, * per indietro): ");
         String input = sc.nextLine().trim();
         if (BACK_KEY.equals(input)) throw new InputAnnullatoException();
         if (input.isEmpty()) return null;
@@ -1285,7 +1292,7 @@ public class MenuHandler {
                 continue;
             }
 
-            System.out.print("Conferma password (o * per indietro): ");
+            System.out.println("Conferma password (o * per indietro): ");
             String c = sc.nextLine();
             if (BACK_KEY.equals(c)) throw new InputAnnullatoException();
             if (!p.equals(c)) {
