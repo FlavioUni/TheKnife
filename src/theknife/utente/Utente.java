@@ -67,10 +67,12 @@ public class Utente
 	public List<Ristorante> getRistorantiPreferiti () {return ristorantiPreferiti;}	
 	public List<Ristorante> getRistorantiGestiti () {return ristorantiGestiti;}
 	
-	// SETTER
+	// SETTER // modifiche anagrafiche, username, domicilio e password attualmente non implementate
 	public void setNome (String x) {this.nome = x;}	
 	public void setCognome (String x) {this.cognome = x;}
-	public void setPassword(String password) {this.password = password;}
+	public void setUsername (String x) {this.username = x;}
+	public void setDomicilio (String x) {this.domicilio = x;}
+	public void setPassword(String password) {this.password = password;} 
 	
 	// METODI
 	

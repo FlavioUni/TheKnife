@@ -168,19 +168,18 @@ public class MenuHandler {
             System.out.println("\n--- REGISTRAZIONE ---");
             System.out.println("Nome (o * per indietro): ");
             String nome = leggiLineaRaw();
-
+            System.out.println();
             System.out.println("Cognome (o * per indietro): ");
             String cognome = leggiLineaRaw();
-
+            System.out.println();
             System.out.println("Username (o * per indietro): ");
             String username = leggiUsernameDisponibile();
-
+            System.out.println();
             System.out.println("Password (minimo 6 massimo 12 caratteri, o * per indietro): ");
             String password = leggiPasswordValida();
-
-            System.out.println("Domicilio (o * per indietro): ");
-            String domicilio = leggiLineaRaw();
-
+            System.out.println();
+            String domicilio = scegliDomicilioConGeocoding();
+            System.out.println();
             System.out.println("Data di nascita DD/MM/YYYY (invio per saltare, * per indietro): ");
             String dataInput = leggiLineaOpt();
             LocalDate dataNascita = null;
@@ -191,7 +190,7 @@ public class MenuHandler {
                     System.out.println("Formato della data non valido, ignoro la data.");
                 }
             }
-
+            System.out.println();
             System.out.println("Ruolo (CLIENTE/RISTORATORE, o * per indietro): ");
             Ruolo ruolo = leggiRuolo();
 
@@ -214,6 +213,7 @@ public class MenuHandler {
             System.out.println("\n--- LOGIN ---");
             System.out.println("Username (o * per indietro): ");
             String u = leggiLineaRaw();
+            System.out.println();
             System.out.println("Password (o * per indietro): ");
             String p = leggiLineaRaw();
 
@@ -339,11 +339,16 @@ public class MenuHandler {
             System.out.println("(Digita 'annulla' o * in qualsiasi momento per tornare indietro)");
 
             String nome = leggiStringa("Nome del ristorante (invio per nessun filtro, * per indietro): ");
+            System.out.println();
             String cucina = leggiStringa("Cucina (invio per nessun filtro, * per indietro): ");
+            System.out.println();
             String location = leggiStringa("Località (invio per nessun filtro, * per indietro): ");
+            System.out.println();
             String fascia = leggiFasciaPrezzo();
             Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
-            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio, * per indietro): ");           
+            System.out.println();
+            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio, * per indietro): ");      
+            System.out.println();
             Double minStelle = leggiMinStelle();
 
             List<Ristorante> risultati = ristoranteService.cercaRistorantePerFiltri(
@@ -1315,6 +1320,46 @@ public class MenuHandler {
             if (s != null && !s.isBlank()) 
             	return s;
             System.out.println("Campo obbligatorio (o * per indietro).");
+        }
+    }
+    
+    /**
+     * Flusso per chiedere il domicilio utente, geocodificarlo e confermare
+     * l’indirizzo. Restituisce la stringa confermata (esattamente come per i ristoranti).
+     */
+    private String scegliDomicilioConGeocoding() {
+        String domicilio = null;
+        while (true) {
+            domicilio = leggiObbligatoria("Domicilio (es. 'Via Dante 5, Milano', * per indietro): ");
+            double[] coords = null;
+            try {
+                coords = geoService.geocode(domicilio);
+            } catch (Exception e) {
+                System.out.println("[Geo] Errore geocoding: " + e.getMessage());
+            }
+
+            if (coords != null) {
+                double lat = coords[0];
+                double lon = coords[1];
+                System.out.println("✅ Indirizzo interpretato: " + domicilio);
+                System.out.printf("   ➜ Latitudine: %.6f%n", lat);
+                System.out.printf("   ➜ Longitudine: %.6f%n", lon);
+                String latS = String.format(java.util.Locale.ROOT, "%.6f", lat);
+                String lonS = String.format(java.util.Locale.ROOT, "%.6f", lon);
+                System.out.printf("   🌍 Google Maps: https://maps.google.com/?q=%s,%s%n", latS, lonS);
+            } else {
+                System.out.println("❌ Impossibile geocodificare l’indirizzo inserito.");
+            }
+
+            Boolean conferma = leggiSiNo("Confermi questo domicilio? (s/n, * per indietro): ");
+            if (Boolean.TRUE.equals(conferma)) {
+                return domicilio; // salviamo SOLO la stringa
+            } else if (Boolean.FALSE.equals(conferma)) {
+                // reinserisci e ripeti il ciclo
+                continue;
+            } else {
+                // * → InputAnnullatoException
+            }
         }
     }
     
