@@ -212,7 +212,7 @@ public class DataContext
     
     /** Rimuove il ristorante dal sistema (liste, indici, associati utenti, recensioni).
      * 
-     *  @parm target Ristorante da rimuovere
+     *  @param target Ristorante da rimuovere
      *  @return true se ristorante rimosso correttamente*/
     public boolean removeRistorante(Ristorante target) {
         if (target == null || target.getId() == null) return false;
