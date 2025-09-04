@@ -161,6 +161,16 @@ public class RistoranteService {
         }
         return ok;
     }
+    
+    public boolean eliminaRistoranteDefinitivamente(Utente ristoratore, Ristorante r) {
+        if (ristoratore == null || r == null) return false;
+        // consenti solo a chi lo gestisce
+        if (!ristoratore.gestisce(r)) {
+            System.out.println("Non hai i permessi per eliminare questo ristorante.");
+            return false;
+        }
+        return dataContext.removeRistorante(r);
+    }
 
     // ===== GEO / VICINO A ME =====
 

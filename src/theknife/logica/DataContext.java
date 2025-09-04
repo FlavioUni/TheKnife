@@ -209,6 +209,41 @@ public class DataContext
         
         return true;
     }
+    
+    /** Rimuove il ristorante dal sistema (liste, indici, associati utenti, recensioni).
+     * 
+     *  @parm target Ristorante da rimuovere
+     *  @return true se ristorante rimosso correttamente*/
+    public boolean removeRistorante(Ristorante target) {
+        if (target == null || target.getId() == null) return false;
+
+        boolean removedList = ristoranti.remove(target);
+        ristorantePerId.remove(target.getId());
+
+        if (utenti != null) {
+            for (Utente u : utenti) {
+                if (u == null) continue;
+                if (u.getRistorantiPreferiti() != null) {
+                    u.getRistorantiPreferiti().remove(target);
+                }
+                if (u.getRistorantiGestiti() != null) {
+                    u.getRistorantiGestiti().remove(target);
+                }
+            }
+        }
+        
+        List<Recensione> toDrop = recensioniPerRistoId.remove(target.getId());
+        if (toDrop != null) {
+            for (Recensione rec : toDrop) {
+                if (rec != null) recensioni.remove(rec);
+            }
+        }
+        if (target.getRecensioni() != null) {
+            target.getRecensioni().clear();
+        }
+
+        return removedList;
+    }
 
     /**
      * Aggiunge una nuova recensione al sistema.

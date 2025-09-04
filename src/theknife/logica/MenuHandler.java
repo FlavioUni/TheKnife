@@ -358,7 +358,7 @@ public class MenuHandler {
                 return;
             }
 
-            Ristorante scelto = selezionaRistoranteDaLista(risultati);
+            Ristorante scelto = selezionaRistoranteDaLista(risultati, "RISULTATI");
             if (scelto != null) paginaRistorante(scelto, utenteCorrente);
         } catch (InputAnnullatoException e) {
             System.out.println("Ricerca annullata.");
@@ -383,7 +383,7 @@ public class MenuHandler {
                 pausa();
                 return;
             }
-            Ristorante scelto = selezionaRistoranteDaLista(vicini);
+            Ristorante scelto = selezionaRistoranteDaLista(vicini, "RISULTATI");
             if (scelto != null) 
             	paginaRistorante(scelto, utenteCorrente);
         } catch (InputAnnullatoException ex) {
@@ -498,7 +498,7 @@ public class MenuHandler {
                 pausa();
                 return;
             }
-            Ristorante scelto = selezionaRistoranteDaLista(preferiti);
+            Ristorante scelto = selezionaRistoranteDaLista(preferiti, "PREFERITI");
             if (scelto != null) paginaRistorante(scelto, utente);
         } catch (InputAnnullatoException e) {
             return;
@@ -531,7 +531,7 @@ public class MenuHandler {
                 return;
             }
 
-            System.out.println("\n--- Le mie recensioni --- (seleziona numero, * per indietro)");
+            System.out.println("\n--- LE MIE RECENSIONI --- (seleziona numero, * per indietro)");
             for (int i = 0; i < mie.size(); i++) {
                 Recensione rec = mie.get(i);
                 Ristorante r = data.findRistoranteById(rec.getIdRistorante());
@@ -577,9 +577,9 @@ public class MenuHandler {
         try {
             System.out.println("\n--- Modifica recensione su " + r.getNome() + " (" + r.getLocation() + ") ---");
             System.out.println("Attuale: " + target.getStelle() + "★ - " + target.getDescrizione());
-            int nuoveStelle = leggiIntInRangePrompt("Nuove stelle (1-5, * per indietro): ", 1, 5);
+            int nuoveStelle = leggiIntInRangePrompt("Nuove stelle (1-5,invio = mantieni * per indietro): ", 1, 5);
             System.out.println();
-            System.out.print("Nuovo testo (o * per indietro): ");
+            System.out.print("Nuovo testo (invio = mantieni o * per indietro): ");
             String nuovoTesto = leggiLineaRaw();
 
             try {
@@ -604,10 +604,10 @@ public class MenuHandler {
             Recensione esistente = r.trovaRecensioneDiUtente(utente.getUsername());
             if (esistente == null) {
             	System.out.println("--- Nuova Recensione --- ");
-                System.out.println("Stelle (1-5, * per indietro): ");
+                System.out.println("Stelle (1-5,invio = mantieni o * per indietro): ");
                 int stelle = leggiIntInRange(1, 5);
                 System.out.println();
-                System.out.println("Commento (o * per indietro): ");
+                System.out.println("Commento (invio = mantieni o * per indietro): ");
                 String testo = leggiLineaRaw();
                 try {
                     Recensione rec = recensioneService.aggiungiRecensione(utente, r, stelle, testo);
@@ -648,7 +648,7 @@ public class MenuHandler {
                 return;
             }
 
-            Ristorante scelto = selezionaRistoranteDaLista(miei);
+            Ristorante scelto = selezionaRistoranteDaLista(miei, "GESTITI");
             if (scelto == null) 
             	return;
 
@@ -658,26 +658,37 @@ public class MenuHandler {
                 System.out.println("\n--- Gestione: " + scelto.getNome() + " - " + scelto.getLocation() + " ---");
                 System.out.println("1) Modifica campi principali");
                 System.out.println("2) Elimina ristorante dalla mia gestione");
-                System.out.println("3) Torna indietro");
+                System.out.println("3) Elimina definitivamente (⚠️ irreversibile)");
+                System.out.println("4) Torna indietro");
                 System.out.print("Scelta (o * per indietro): ");
                 try {
                     int s = leggiInt();
                     switch (s) {
-                        case 1 -> {
-                            modificaCampiRistorante(scelto);
-                            pausa();
-                        }
+                        case 1 -> { modificaCampiRistorante(scelto); pausa(); }
                         case 2 -> {
                             boolean ok = utenteService.rimuoviRistoranteGestito(ristoratore.getUsername(), scelto);
                             System.out.println(ok ? "Rimosso dalla gestione." : "Non rimosso.");
+                            if (ok) data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
                             pausa();
                             stay = false;
                         }
-                        case 3 -> stay = false;
-                        default -> {
-                            System.out.println("Scelta non valida.");
-                            pausa();
+                        case 3 -> {
+                            System.out.println("⚠️ Questa operazione eliminerà definitivamente il ristorante, le sue recensioni");
+                            System.out.println("e lo rimuoverà da preferiti/gestiti di tutti gli utenti.");
+                            String conferma = leggiStringa("Digita esattamente il NOME del ristorante per confermare (o * per indietro): ");
+                            if (scelto.getNome().equalsIgnoreCase(conferma)) {
+                                boolean ok = ristoranteService.eliminaRistoranteDefinitivamente(ristoratore, scelto);
+                                System.out.println(ok ? "Ristorante eliminato definitivamente." : "Eliminazione non riuscita.");
+                                if (ok) data.saveAll(UTENTI_CSV, RISTORANTI_CSV, RECENSIONI_CSV);
+                                pausa();
+                                stay = false; 
+                            } else {
+                                System.out.println("Nome non corrispondente. Operazione annullata.");
+                                pausa();
+                            }
                         }
+                        case 4 -> stay = false;
+                        default -> { System.out.println("Scelta non valida."); pausa(); }
                     }
                 } catch (InputAnnullatoException e) {
                     stay = false;
@@ -696,45 +707,45 @@ public class MenuHandler {
     private void modificaCampiRistorante(Ristorante r) {
         pulisciTerminale();
         try {
-            System.out.println("\n--- Modifica campi --- (invio per saltare, * per indietro)");
+            System.out.println("\n--- Modifica campi --- (invio = mantieni, * per indietro)");
 
-            System.out.println("Prezzo medio attuale: " + safe(r.getPrezzoMedio()) + " -> nuovo: ");
+            System.out.print("Prezzo medio attuale: " + safe(r.getPrezzoMedio()) + " -> nuovo: ");
             String prezzo = leggiLineaOpt();
             if (prezzo != null && !prezzo.isEmpty()) 
                 r.setPrezzoMedio(prezzo);
             System.out.println();
 
-            System.out.println("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
+            System.out.print("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
             String tel = leggiLineaOpt();
             if (tel != null && !tel.isEmpty()) 
                 r.setNumeroTelefono(tel);
             System.out.println();
 
-            System.out.println("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
+            System.out.print("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
             String web = leggiLineaOpt();
             if (web != null && !web.isEmpty()) 
                 r.setWebsiteUrl(web);
             System.out.println();
 
-            System.out.println("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
+            System.out.print("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
             String premi = leggiLineaOpt();
             if (premi != null && !premi.isEmpty()) 
                 r.setPremi(premi);
             System.out.println();
 
-            System.out.println("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
+            System.out.print("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
             String servizi = leggiLineaOpt();
             if (servizi != null && !servizi.isEmpty()) 
                 r.setServizi(servizi);
             System.out.println();
 
-            System.out.println("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
+            System.out.print("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
             Boolean pren = leggiSiNo("");
             if (pren != null) 
                 r.setPrenotazioneOnline(pren);
             System.out.println();
 
-            System.out.println("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
+            System.out.print("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
             Boolean delivery = leggiSiNo("");
             if (delivery != null) 
                 r.setDelivery(delivery);
@@ -766,7 +777,7 @@ public class MenuHandler {
                 return;
             }
 
-            Ristorante scelto = selezionaRistoranteDaLista(miei);
+            Ristorante scelto = selezionaRistoranteDaLista(miei, "RECENSIONI");
             if (scelto == null) 
             	return;
 
@@ -876,7 +887,7 @@ public class MenuHandler {
                 return;
             }
 
-            Ristorante scelto = selezionaRistoranteDaLista(filtrati);
+            Ristorante scelto = selezionaRistoranteDaLista(filtrati, "PRENDI IN GESTIONE");
             if (scelto == null) 
             	return;
 
@@ -913,36 +924,46 @@ public class MenuHandler {
             System.out.println();
             String indirizzo = leggiStringa("Indirizzo (via e civico) [invio per saltare, * per indietro]: ");
             System.out.println();
-            
+
             double lat = 0.0, lon = 0.0;
-            
+
             while (true) {
                 String query = buildBestGeoQuery(nome, location, indirizzo);
-                double[] coords = null;
-                try {
-                    coords = geoService.geocode(query); 
-                } catch (Exception e) {
-                    System.out.println("[Geo] Errore geocoding: " + e.getMessage());
+                List<String> proposte = geoService.suggestAddresses(query, 5);
+
+                String scelto; 
+                if (proposte != null && !proposte.isEmpty()) {
+                	System.out.println("Seleziona l'indirizzo corretto:");
+                	for (int i = 0; i < proposte.size(); i++) {
+                	    System.out.printf("%d) %s%n", i + 1, proposte.get(i));
+                	}
+                	System.out.println((proposte.size() + 1) + ") Usa l'indirizzo inserito: " + query);
+
+                	int pick = leggiIntInRangePrompt("Scelta -> ", 1, proposte.size() + 1);
+                    scelto = (pick == proposte.size() + 1) ? query : proposte.get(pick - 1);
+                } else {
+                    scelto = query;
                 }
+
+                double[] coords = null;
+                try { coords = geoService.geocode(scelto); } 
+                catch (Exception e) { System.out.println("[Geo] Errore geocoding: " + e.getMessage()); }
 
                 if (coords != null) {
                     lat = coords[0];
                     lon = coords[1];
-                    System.out.println("✅ Indirizzo interpretato: " + query);
-                    //System.out.printf("   ➜ Latitudine: %.6f\n", lat);
-                    //System.out.printf("   ➜ Longitudine: %.6f\n", lon);
-
+                    System.out.println("✅ Indirizzo interpretato: " + scelto);
                     String latFormatted = String.format(Locale.ROOT, "%.6f", lat);
                     String lonFormatted = String.format(Locale.ROOT, "%.6f", lon);
                     System.out.println();
-                    System.out.printf("🌍 Google Maps: https://maps.google.com/?q=%s,%s\n", latFormatted, lonFormatted);
+                    System.out.printf("🌍 Google Maps: https://maps.google.com/?q=%s,%s%n", latFormatted, lonFormatted);
                 } else {
-                    System.out.println("❌ Impossibile ottenere coordinate per: " + query);
+                    System.out.println("❌ Impossibile ottenere coordinate per: " + scelto);
                 }
-                
+
                 Boolean ok = leggiSiNo("Confermi questo indirizzo? (s/n, * per indietro): ");
                 if (Boolean.TRUE.equals(ok)) {
-                    if (coords != null) { lat = coords[0]; lon = coords[1]; }
+                    indirizzo = scelto; 
                     break;
                 } else if (Boolean.FALSE.equals(ok)) {
                     indirizzo = leggiStringa("Reinserisci indirizzo (invio per lasciare vuoto, * per indietro): ");
@@ -951,7 +972,7 @@ public class MenuHandler {
                     break;
                 }
             }
-            
+
             String prezzo = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio per omettere, * per indietro]: ");
             String cucina = leggiStringa("Tipo di cucina [invio per omettere, * per indietro]: ");
             String telefono = leggiStringa("Telefono [invio per omettere, * per indietro]: ");
@@ -961,7 +982,7 @@ public class MenuHandler {
 
             Ristorante r = new Ristorante(
                     nome,
-                    indirizzo != null ? indirizzo : "",
+                    indirizzo != null ? indirizzo : "",   
                     location,
                     prezzo != null ? prezzo : "",
                     cucina != null ? cucina : "",
@@ -977,12 +998,13 @@ public class MenuHandler {
             r.setLatitudine(lat);
             r.setLongitudine(lon);
             return r;
+
         } catch (InputAnnullatoException e) {
             System.out.println("Creazione annullata.");
             return null;
         }
     }
-
+    
     /**
      * Costruisce la stringa da usare per cercare le coordinate geografiche.
      * 
@@ -1012,16 +1034,17 @@ public class MenuHandler {
      * Stampa una lista numerata di ristoranti e consente la selezione.
      * 
      * @param lista elenco ristoranti
+     * @param titolo Stringa per stabilire se lista preferiti, ricercati o gestiti
      * @return ristorante selezionato o null se annullato
      */
-    private Ristorante selezionaRistoranteDaLista(List<Ristorante> lista) {
+    private Ristorante selezionaRistoranteDaLista(List<Ristorante> lista, String titolo) {
         pulisciTerminale();
         if (lista == null || lista.isEmpty()) {
             System.out.println("Nessun ristorante.");
             pausa();
             return null;
         }
-        System.out.println("\n--- Risultati ---");
+        System.out.println("\n--- " + titolo + " ---");
         for (int i = 0; i < lista.size(); i++) {
             Ristorante r = lista.get(i);
             System.out.printf("%d) %s - %s  |  %s  |  ★%s%n",
@@ -1242,7 +1265,7 @@ public class MenuHandler {
      * Legge una risposta sì/no. Restituisce true/false oppure null se invio. * annulla.
      */
     private Boolean leggiSiNo (String messaggio) {
-        System.out.println(messaggio);
+        System.out.print(messaggio);
         String input = sc.nextLine().trim().toLowerCase();
         if (BACK_KEY.equals(input)) 
         	throw new InputAnnullatoException();
@@ -1397,7 +1420,7 @@ public class MenuHandler {
                 return;
             }
 
-            Ristorante scelto = selezionaRistoranteDaLista(vicini);
+            Ristorante scelto = selezionaRistoranteDaLista(vicini, "RISULTATI");
             if (scelto != null) paginaRistorante(scelto, utente);
         } catch (InputAnnullatoException e) {
             System.out.println("Ricerca annullata.");
