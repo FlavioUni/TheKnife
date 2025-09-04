@@ -178,7 +178,7 @@ public class MenuHandler {
             System.out.println("Password (minimo 6 massimo 12 caratteri, o * per indietro): ");
             String password = leggiPasswordValida();
             System.out.println();
-            String domicilio = scegliDomicilioConGeocoding();
+            String domicilio = scegliDomicilioConSuggerimenti();
             System.out.println();
             System.out.println("Data di nascita DD/MM/YYYY (invio per saltare, * per indietro): ");
             String dataInput = leggiLineaOpt();
@@ -254,27 +254,24 @@ public class MenuHandler {
             pulisciTerminale();
             System.out.println("\n--------- CLIENTE ---------");
             System.out.println("1) Cerca ristoranti (filtri)");
-            System.out.println("2) Cerca ristoranti per indirizzo (geo + raggio km)");
-            System.out.println("3) I miei preferiti");
-            System.out.println("4) Le mie recensioni (visualizza/modifica)");
-            System.out.println("5) Logout");
+            System.out.println("2) Vicino a me (dal mio domicilio)");
+            System.out.println("3) Cerca ristoranti per indirizzo (geo + raggio km)");
+            System.out.println("4) I miei preferiti");
+            System.out.println("5) Le mie recensioni (visualizza/modifica)");
+            System.out.println("6) Logout");
             System.out.print("Scelta (o * per indietro): ");
             try {
                 int scelta = leggiInt();
                 switch (scelta) {
                     case 1 -> flussoRicercaGenerale(utente);
-                    case 2 -> flussoRicercaGeografica(utente);
-                    case 3 -> flussoPreferiti(utente);
-                    case 4 -> flussoMieRecensioni(utente);
-                    case 5 -> continua = false;
-                    default -> {
-                        System.out.println("Scelta non valida.");
-                        pausa();
-                    }
+                    case 2 -> flussoVicinoAMe(utente);                     
+                    case 3 -> flussoRicercaGeografica(utente);
+                    case 4 -> flussoPreferiti(utente);
+                    case 5 -> flussoMieRecensioni(utente);
+                    case 6 -> continua = false;
+                    default -> { System.out.println("Scelta non valida."); pausa(); }
                 }
-            } catch (InputAnnullatoException e) {
-                return;
-            }
+            } catch (InputAnnullatoException e) { return; }
         }
     }
 
@@ -345,9 +342,9 @@ public class MenuHandler {
             String location = leggiStringa("Località (invio per nessun filtro, * per indietro): ");
             System.out.println();
             String fascia = leggiFasciaPrezzo();
-            Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
+            Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio per nessun filtro, * per indietro): ");
             System.out.println();
-            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio, * per indietro): ");      
+            Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio per nessun filtro, * per indietro): ");      
             System.out.println();
             Double minStelle = leggiMinStelle();
 
@@ -415,6 +412,7 @@ public class MenuHandler {
             System.out.println("Media stelle: " + formatMediaStelle(r));
             System.out.println("Premi: " + safe(r.getPremi()));
             System.out.println("Maps: " + mapsLink(r));
+            System.out.println();
             System.out.println("---------------------------------");
             System.out.println("Recensioni positive recenti:");
             for (Recensione rec : r.getRecensioni()) {
@@ -430,6 +428,7 @@ public class MenuHandler {
                 }
             }
             System.out.println("---------------------------------");
+            System.out.println();
 
             if (!isCliente) {
                 System.out.println("1) Torna indietro");
@@ -579,6 +578,7 @@ public class MenuHandler {
             System.out.println("\n--- Modifica recensione su " + r.getNome() + " (" + r.getLocation() + ") ---");
             System.out.println("Attuale: " + target.getStelle() + "★ - " + target.getDescrizione());
             int nuoveStelle = leggiIntInRangePrompt("Nuove stelle (1-5, * per indietro): ", 1, 5);
+            System.out.println();
             System.out.print("Nuovo testo (o * per indietro): ");
             String nuovoTesto = leggiLineaRaw();
 
@@ -606,6 +606,7 @@ public class MenuHandler {
             	System.out.println("--- Nuova Recensione --- ");
                 System.out.println("Stelle (1-5, * per indietro): ");
                 int stelle = leggiIntInRange(1, 5);
+                System.out.println();
                 System.out.println("Commento (o * per indietro): ");
                 String testo = leggiLineaRaw();
                 try {
@@ -701,36 +702,43 @@ public class MenuHandler {
             String prezzo = leggiLineaOpt();
             if (prezzo != null && !prezzo.isEmpty()) 
                 r.setPrezzoMedio(prezzo);
+            System.out.println();
 
             System.out.println("Telefono attuale: " + safe(r.getNumeroTelefono()) + " -> nuovo: ");
             String tel = leggiLineaOpt();
             if (tel != null && !tel.isEmpty()) 
                 r.setNumeroTelefono(tel);
+            System.out.println();
 
             System.out.println("Website attuale: " + safe(r.getWebsiteUrl()) + " -> nuovo: ");
             String web = leggiLineaOpt();
             if (web != null && !web.isEmpty()) 
                 r.setWebsiteUrl(web);
+            System.out.println();
 
             System.out.println("Premi attuali: " + safe(r.getPremi()) + " -> nuovi: ");
             String premi = leggiLineaOpt();
             if (premi != null && !premi.isEmpty()) 
                 r.setPremi(premi);
+            System.out.println();
 
             System.out.println("Servizi attuali: " + safe(r.getServizi()) + " -> nuovi: ");
             String servizi = leggiLineaOpt();
             if (servizi != null && !servizi.isEmpty()) 
                 r.setServizi(servizi);
+            System.out.println();
 
             System.out.println("Prenotazione online attuale: " + (r.isPrenotazioneOnline() ? "sì" : "no") + " -> nuova (s/n/invio, * per indietro): ");
             Boolean pren = leggiSiNo("");
             if (pren != null) 
                 r.setPrenotazioneOnline(pren);
+            System.out.println();
 
             System.out.println("Delivery attuale: " + (r.isDelivery() ? "sì" : "no") + " -> nuovo (s/n/invio, * per indietro): ");
             Boolean delivery = leggiSiNo("");
             if (delivery != null) 
                 r.setDelivery(delivery);
+            System.out.println();
 
             System.out.println("Aggiornato.");
         } catch (InputAnnullatoException e) {
@@ -897,19 +905,17 @@ public class MenuHandler {
         try {
             System.out.println("\n--- NUOVO RISTORANTE ---");
             System.out.println("(Digita 'annulla' o * in qualsiasi momento per tornare indietro)");
+            System.out.println();
 
             String nome = leggiObbligatoria("Nome (o * per indietro): ");
+            System.out.println();
             String location = leggiObbligatoria("Località (es. \"Vienna, Austria\", o * per indietro): ");
+            System.out.println();
             String indirizzo = leggiStringa("Indirizzo (via e civico) [invio per saltare, * per indietro]: ");
-            String prezzo = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio, * per indietro]: ");
-            String cucina = leggiStringa("Tipo di cucina [invio, * per indietro]: ");
-            String telefono = leggiStringa("Telefono [invio, * per indietro]: ");
-            String website = leggiStringa("Sito web (URL) [invio, * per indietro]: ");
-            Boolean pren = leggiSiNo("Prenotazione online? (s/n/invio, * per indietro): ");
-            Boolean delivery = leggiSiNo("Delivery? (s/n/invio, * per indietro): ");
-
+            System.out.println();
+            
             double lat = 0.0, lon = 0.0;
-           
+            
             while (true) {
                 String query = buildBestGeoQuery(nome, location, indirizzo);
                 double[] coords = null;
@@ -923,12 +929,13 @@ public class MenuHandler {
                     lat = coords[0];
                     lon = coords[1];
                     System.out.println("✅ Indirizzo interpretato: " + query);
-                    System.out.printf("   ➜ Latitudine: %.6f\n", lat);
-                    System.out.printf("   ➜ Longitudine: %.6f\n", lon);
+                    //System.out.printf("   ➜ Latitudine: %.6f\n", lat);
+                    //System.out.printf("   ➜ Longitudine: %.6f\n", lon);
 
                     String latFormatted = String.format(Locale.ROOT, "%.6f", lat);
                     String lonFormatted = String.format(Locale.ROOT, "%.6f", lon);
-                    System.out.printf("   🌍 Google Maps: https://maps.google.com/?q=%s,%s\n", latFormatted, lonFormatted);
+                    System.out.println();
+                    System.out.printf("🌍 Google Maps: https://maps.google.com/?q=%s,%s\n", latFormatted, lonFormatted);
                 } else {
                     System.out.println("❌ Impossibile ottenere coordinate per: " + query);
                 }
@@ -944,6 +951,13 @@ public class MenuHandler {
                     break;
                 }
             }
+            
+            String prezzo = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio per omettere, * per indietro]: ");
+            String cucina = leggiStringa("Tipo di cucina [invio per omettere, * per indietro]: ");
+            String telefono = leggiStringa("Telefono [invio per omettere, * per indietro]: ");
+            String website = leggiStringa("Sito web (URL) [invio per omettere, * per indietro]: ");
+            Boolean pren = leggiSiNo("Prenotazione online? (s/n/invio per omettere, * per indietro): ");
+            Boolean delivery = leggiSiNo("Delivery? (s/n/invio per omettere, * per indietro): ");
 
             Ristorante r = new Ristorante(
                     nome,
@@ -1246,7 +1260,7 @@ public class MenuHandler {
      * Legge un minimo di stelle tra 1 e 5. Restituisce null se invio.
      */
     private Double leggiMinStelle () {
-        System.out.println("Voto minimo (1-5, invio per ignorare, * per indietro): ");
+        System.out.println("Voto minimo (1-5, invio per nessun filtro, * per indietro): ");
         String input = sc.nextLine().trim();
         if (BACK_KEY.equals(input)) throw new InputAnnullatoException();
         if (input.isEmpty()) return null;
@@ -1327,39 +1341,70 @@ public class MenuHandler {
      * Flusso per chiedere il domicilio utente, geocodificarlo e confermare
      * l’indirizzo. Restituisce la stringa confermata (esattamente come per i ristoranti).
      */
-    private String scegliDomicilioConGeocoding() {
-        String domicilio = null;
+    private String scegliDomicilioConSuggerimenti() {
         while (true) {
-            domicilio = leggiObbligatoria("Domicilio (es. 'Via Dante 5, Milano', * per indietro): ");
-            double[] coords = null;
-            try {
-                coords = geoService.geocode(domicilio);
-            } catch (Exception e) {
-                System.out.println("[Geo] Errore geocoding: " + e.getMessage());
+            String query = leggiObbligatoria("INSERISCI INDIRIZZO [Via, Città]: ");
+
+            List<String> proposte = geoService.suggestAddresses(query, 5);
+
+            if (proposte.isEmpty()) {
+                System.out.println("Nessun suggerimento. Usare comunque: " + query);
+                Boolean ok = leggiSiNo("(s/n, * per indietro): ");
+                if (Boolean.TRUE.equals(ok)) return query;
+                if (Boolean.FALSE.equals(ok)) continue;
+            } else {
+                System.out.println("\nSeleziona l'indirizzo corretto:");
+                for (int i = 0; i < proposte.size(); i++) {
+                    System.out.printf("%d. %s%n", i + 1, proposte.get(i));
+                }
+                System.out.println((proposte.size() + 1) + ". Usa l'indirizzo inserito: " + query);
+
+                int scelta = leggiIntInRange(1, proposte.size() + 1);
+                if (scelta == proposte.size() + 1) return query;
+                return proposte.get(scelta - 1);
+            }
+        }
+    }
+    
+    /**
+     * Ricerca ristoranti entro X km dal domicilio dell'utente.
+     * Se il domicilio manca/non è geocodificabile, offre l'inserimento manuale (riuso flusso esistente).
+     */
+    private void flussoVicinoAMe(Utente utente) {
+        pulisciTerminale();
+        try {
+            String dom = (utente.getDomicilio() == null) ? "" : utente.getDomicilio().trim();
+            if (dom.isEmpty()) {
+                System.out.println("Non hai un domicilio salvato. Passo alla ricerca per indirizzo.");
+                pausa();
+                flussoRicercaGeografica(utente);
+                return;
             }
 
-            if (coords != null) {
-                double lat = coords[0];
-                double lon = coords[1];
-                System.out.println("✅ Indirizzo interpretato: " + domicilio);
-                System.out.printf("   ➜ Latitudine: %.6f%n", lat);
-                System.out.printf("   ➜ Longitudine: %.6f%n", lon);
-                String latS = String.format(java.util.Locale.ROOT, "%.6f", lat);
-                String lonS = String.format(java.util.Locale.ROOT, "%.6f", lon);
-                System.out.printf("   🌍 Google Maps: https://maps.google.com/?q=%s,%s%n", latS, lonS);
-            } else {
-                System.out.println("❌ Impossibile geocodificare l’indirizzo inserito.");
+            System.out.println("--- VICINO A ME ---");
+            System.out.println("Domicilio salvato: " + dom);
+            double km = leggiDoublePositivo("Distanza massima in km: ");
+
+            // Riusa il service già esistente (geocoding + filtro su ristoranti)
+            java.util.List<Ristorante> vicini = ristoranteService.cercaVicinoA(dom, km);
+
+            if (vicini.isEmpty()) {
+                System.out.println("Nessun ristorante entro " + km + " km dal tuo domicilio.");
+                // Opzionale: offrire di inserire un indirizzo diverso al volo
+                Boolean alt = leggiSiNo("Vuoi cercare da un indirizzo diverso? (s/n, * per indietro): ");
+                if (Boolean.TRUE.equals(alt)) { flussoRicercaGeografica(utente); }
+                pausa();
+                return;
             }
 
-            Boolean conferma = leggiSiNo("Confermi questo domicilio? (s/n, * per indietro): ");
-            if (Boolean.TRUE.equals(conferma)) {
-                return domicilio; // salviamo SOLO la stringa
-            } else if (Boolean.FALSE.equals(conferma)) {
-                // reinserisci e ripeti il ciclo
-                continue;
-            } else {
-                // * → InputAnnullatoException
-            }
+            Ristorante scelto = selezionaRistoranteDaLista(vicini);
+            if (scelto != null) paginaRistorante(scelto, utente);
+        } catch (InputAnnullatoException e) {
+            System.out.println("Ricerca annullata.");
+            pausa();
+        } catch (Exception ex) {
+            System.out.println("Errore durante la ricerca: " + ex.getMessage());
+            pausa();
         }
     }
     

@@ -150,6 +150,32 @@ public class GeoService {
         }
         return null;
     }
+    
+    /** 
+     * Restituisce fino a 5 indirizzi formattati suggeriti dal geocoder.
+     */
+    public List<String> suggestAddresses(String query, int limit) {
+        List<String> out = new ArrayList<>();
+        if (query == null || query.isBlank() || apiKey == null) return out;
+        try {
+            JOpenCageGeocoder g = new JOpenCageGeocoder(apiKey);
+            JOpenCageForwardRequest req = new JOpenCageForwardRequest(query);
+            req.setNoAnnotations(true);
+            req.setLanguage("it");
+            req.setLimit(limit);
+
+            JOpenCageResponse resp = g.forward(req);
+            if (resp != null && resp.getResults() != null) {
+                for (JOpenCageResult r : resp.getResults()) {
+                    String formatted = r.getFormatted();
+                    if (formatted != null && !formatted.isBlank()) out.add(formatted);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[GeoService] suggestAddresses error: " + e.getMessage());
+        }
+        return out;
+    }
 
     // ==================== RICERCA “VICINO A” ====================
 
