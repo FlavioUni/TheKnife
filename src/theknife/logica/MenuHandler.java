@@ -33,7 +33,7 @@ import theknife.recensione.Recensione;
 public class MenuHandler {
 
 	// CAMPI
-    private static final String UTENTI_CSV     = "data/Utenti.csv";
+    private static final String UTENTI_CSV  = "data/Utenti.csv";
     private static final String RISTORANTI_CSV = "data/Ristoranti.csv";
     private static final String RECENSIONI_CSV = "data/Recensioni.csv";
 
