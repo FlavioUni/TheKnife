@@ -342,6 +342,7 @@ public class MenuHandler {
             String location = leggiStringa("Località (invio per nessun filtro, * per indietro): ");
             System.out.println();
             String fascia = leggiFasciaPrezzo();
+            System.out.println();
             Boolean prenotazione = leggiSiNo("Prenotazione online? (s/n/invio per nessun filtro, * per indietro): ");
             System.out.println();
             Boolean delivery = leggiSiNo("Delivery disponibile? (s/n/invio per nessun filtro, * per indietro): ");      
@@ -658,7 +659,7 @@ public class MenuHandler {
                 System.out.println("\n--- Gestione: " + scelto.getNome() + " - " + scelto.getLocation() + " ---");
                 System.out.println("1) Modifica campi principali");
                 System.out.println("2) Elimina ristorante dalla mia gestione");
-                System.out.println("3) Elimina definitivamente (⚠️ irreversibile)");
+                System.out.println("3) Elimina definitivamente (⚠️ irreversibile ⚠️)");
                 System.out.println("4) Torna indietro");
                 System.out.print("Scelta (o * per indietro): ");
                 try {
@@ -853,6 +854,7 @@ public class MenuHandler {
      */
     private void flussoPrendiInGestione(Utente ristoratore) {
         pulisciTerminale();
+        System.out.println("--- PRENDI IN GESTIONE ---");
         try {
             List<Ristorante> nonGestiti = new ArrayList<>();
             List<Ristorante> tutti = data.getRistoranti();
@@ -972,12 +974,19 @@ public class MenuHandler {
                     break;
                 }
             }
+            
+            System.out.println();
 
             String prezzo = leggiStringa("Prezzo medio (es. \"25\" o \"€€\") [invio per omettere, * per indietro]: ");
+            System.out.println();
             String cucina = leggiStringa("Tipo di cucina [invio per omettere, * per indietro]: ");
+            System.out.println();
             String telefono = leggiStringa("Telefono [invio per omettere, * per indietro]: ");
+            System.out.println();
             String website = leggiStringa("Sito web (URL) [invio per omettere, * per indietro]: ");
+            System.out.println();
             Boolean pren = leggiSiNo("Prenotazione online? (s/n/invio per omettere, * per indietro): ");
+            System.out.println();
             Boolean delivery = leggiSiNo("Delivery? (s/n/invio per omettere, * per indietro): ");
 
             Ristorante r = new Ristorante(
